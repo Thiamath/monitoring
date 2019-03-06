@@ -1,7 +1,15 @@
 [[constraint]]
-    name="github.com/rs/zerolog"
-    version="v1.8.0"
+  name="github.com/rs/zerolog"
+  version="v1.8.0"
 
 [[constraint]]
-    name="github.com/spf13/cobra"
-    version="v0.0.3"
+  name="github.com/spf13/cobra"
+  version="v0.0.3"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "v1.18.0"
+
+[[constraint]]
+  name = "github.com/nalej/derrors"
+  version = "v2.0.0"

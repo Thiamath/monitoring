@@ -2,12 +2,35 @@
 
 
 [[projects]]
+  digest = "1:d3d38150b6d77b2aad42a9e105170538b6563518993d43df78a1add6e31cce62"
+  name = "github.com/golang/protobuf"
+  packages = [
+    "proto",
+    "protoc-gen-go/descriptor",
+    "ptypes",
+    "ptypes/any",
+    "ptypes/duration",
+    "ptypes/timestamp",
+  ]
+  pruneopts = ""
+  revision = "c823c79ea1570fb5ff454033735a8e68575d1d0f"
+  version = "v1.3.0"
+
+[[projects]]
   digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   pruneopts = ""
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
   version = "v1.0"
+
+[[projects]]
+  digest = "1:0cc441f3dfe124dd74f44dd7e466dfc17cc7edff468094fbc3847a96b5ebf6f7"
+  name = "github.com/nalej/derrors"
+  packages = ["."]
+  pruneopts = ""
+  revision = "7a6df7f0bb1c7cddfec82c91119f193f6fcbc9d5"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -46,14 +69,114 @@
   revision = "298182f68c66c05229eb03ac171abe6e309ee79a"
   version = "v1.0.3"
 
+[[projects]]
+  branch = "master"
+  digest = "1:7489cf41e267d966cbc16d9b98622e7124818af9339d5466aaec4fc736c404c0"
+  name = "golang.org/x/net"
+  packages = [
+    "context",
+    "http/httpguts",
+    "http2",
+    "http2/hpack",
+    "idna",
+    "internal/timeseries",
+    "trace",
+  ]
+  pruneopts = ""
+  revision = "16b79f2e4e95ea23b2bf9903c9809ff7b013ce85"
+
+[[projects]]
+  branch = "master"
+  digest = "1:f5959e6952c6a66c752a4ee5c152d1b73203938d0c93808c7955bff8459caf9f"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  pruneopts = ""
+  revision = "a98ae47d97a5abb3a3e9045da36315f9f8312970"
+
+[[projects]]
+  digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
+  name = "golang.org/x/text"
+  packages = [
+    "collate",
+    "collate/build",
+    "internal/colltab",
+    "internal/gen",
+    "internal/tag",
+    "internal/triegen",
+    "internal/ucd",
+    "language",
+    "secure/bidirule",
+    "transform",
+    "unicode/bidi",
+    "unicode/cldr",
+    "unicode/norm",
+    "unicode/rangetable",
+  ]
+  pruneopts = ""
+  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
+  version = "v0.3.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:d682a671593b0fc5a96e0b75420b22daa29a337e85ef83857fc3194262d43dd7"
+  name = "google.golang.org/genproto"
+  packages = ["googleapis/rpc/status"]
+  pruneopts = ""
+  revision = "c21a8b77f9f040598af1c8c5c0870568f1959df3"
+
+[[projects]]
+  digest = "1:b6c17b0c657f047118ae59b358950b28515914512cf3de02388cc42e33a92520"
+  name = "google.golang.org/grpc"
+  packages = [
+    ".",
+    "balancer",
+    "balancer/base",
+    "balancer/roundrobin",
+    "binarylog/grpc_binarylog_v1",
+    "codes",
+    "connectivity",
+    "credentials",
+    "credentials/internal",
+    "encoding",
+    "encoding/proto",
+    "grpclog",
+    "internal",
+    "internal/backoff",
+    "internal/binarylog",
+    "internal/channelz",
+    "internal/envconfig",
+    "internal/grpcrand",
+    "internal/grpcsync",
+    "internal/syscall",
+    "internal/transport",
+    "keepalive",
+    "metadata",
+    "naming",
+    "peer",
+    "reflection",
+    "reflection/grpc_reflection_v1alpha",
+    "resolver",
+    "resolver/dns",
+    "resolver/passthrough",
+    "stats",
+    "status",
+    "tap",
+  ]
+  pruneopts = ""
+  revision = "2fdaae294f38ed9a121193c51ec99fecd3b13eb7"
+  version = "v1.19.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/nalej/derrors",
     "github.com/nalej/golang-template/version",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
+    "google.golang.org/grpc",
+    "google.golang.org/grpc/reflection",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
