@@ -29,19 +29,22 @@ func (conf *Config) Validate() derrors.Error {
 	if conf.Port <= 0 {
 		return derrors.NewInvalidArgumentError("port must be specified")
 	}
-	if conf.InCluster && conf.Kubeconfig != "" {
-		return derrors.NewInvalidArgumentError("cannot specify kubeconfig when running in cluster")
+
+	if conf.InCluster {
+		return nil
 	}
-	if !conf.InCluster && conf.Kubeconfig == "" {
+
+	// Not in cluster, check kube config
+	if conf.Kubeconfig == "" {
 		return derrors.NewInvalidArgumentError("one of in-cluster or kubeconfig should be specified")
 	}
-	if conf.Kubeconfig != "" {
-		f, err := os.Open(conf.Kubeconfig)
-		if err != nil {
-			return derrors.NewInvalidArgumentError(fmt.Sprintf("cannot open kubeconfig %s", conf.Kubeconfig), err)
-		}
-		f.Close()
+
+	f, err := os.Open(conf.Kubeconfig)
+	if err != nil {
+		return derrors.NewInvalidArgumentError(fmt.Sprintf("cannot open kubeconfig %s", conf.Kubeconfig), err)
 	}
+	f.Close()
+
 	return nil
 }
 
