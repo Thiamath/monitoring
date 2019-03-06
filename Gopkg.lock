@@ -41,6 +41,30 @@
   revision = "963fce8db8e46778ce622932e01b7a643d10ed01"
 
 [[projects]]
+  digest = "1:44f7426538411ea9f774f96e3b102decc9f549b188e55e29ecc15be69542a96b"
+  name = "github.com/nalej/grpc-common-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "e1513decc4192934536180d456748a4c3dec0245"
+  version = "v0.0.30"
+
+[[projects]]
+  digest = "1:6973c345abcc2530f5ae4ddaa179521470a37b9cc8a2b7568227190df7f381e2"
+  name = "github.com/nalej/grpc-infrastructure-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "ea9783c67dc5bf7f6429935c0fdc59eee3f361e1"
+  version = "v0.0.32"
+
+[[projects]]
+  digest = "1:9921e275160e1559963d6452a918027db3563746fd03f63369ab104c0fbf16bf"
+  name = "github.com/nalej/grpc-organization-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "c571882666c05213df408ae9da8ab08f71a7a7bb"
+  version = "v0.0.28"
+
+[[projects]]
   digest = "1:36de4f001b7f3fca448ba85270a4de8854f5abcb97d02d57be7fd6fc4a39d259"
   name = "github.com/rs/zerolog"
   packages = [
@@ -172,6 +196,7 @@
   input-imports = [
     "github.com/nalej/derrors",
     "github.com/nalej/golang-template/version",
+    "github.com/nalej/grpc-infrastructure-go",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
