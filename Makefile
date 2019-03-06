@@ -3,7 +3,7 @@
 # 
 
 # Name of the target applications to be built
-APPS=example-app other-app
+APPS=infrastructure-monitor-slave
 
 # Use global Makefile for common targets
 export
