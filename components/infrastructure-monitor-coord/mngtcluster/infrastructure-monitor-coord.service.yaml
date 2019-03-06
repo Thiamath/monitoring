@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: infrastructure-monitor-coord
+  namespace: __NPH_NAMESPACE
+  labels:
+    cluster: management
+    component: infrastructure-monitor
+    service: infrastructure-monitor-coord
+spec:
+  selector:
+      cluster: management
+      component: infrastructure-monitor
+      service: infrastructure-monitor-coord
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8423
+    targetPort: 8423

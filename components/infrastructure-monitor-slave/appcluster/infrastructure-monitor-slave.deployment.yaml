@@ -1,0 +1,38 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    cluster: application
+    component: infrastructure-monitor
+    service: infrastructure-monitor-slave
+  name: infrastructure-monitor-slave
+  namespace: __NPH_NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cluster: application
+      component: infrastructure-monitor
+      service: infrastructure-monitor-slave
+  template:
+    metadata:
+      labels:
+        cluster: application
+        component: infrastructure-monitor
+        service: infrastructure-monitor-slave
+    spec:
+      containers:
+      - name: infrastructure-monitor-slave
+        image: __NPH_REGISTRY.azurecr.io/__NPH_REGISTRY_NAMESPACE/infrastructure-monitor-slave:__NPH_VERSION
+        imagePullPolicy: Always
+        securityContext:
+          runAsUser: 2000
+        args:
+        - "run"
+        - "--in-cluster"
+        - "--debug"
+        ports:
+        - name: api-port
+          containerPort: 8422
+      imagePullSecrets:
+      - name: nalej-registry
