@@ -10,6 +10,9 @@ import (
 
 	"github.com/nalej/derrors"
 
+	"github.com/nalej/infrastructure-monitor/internal/pkg/metrics"
+	"github.com/nalej/infrastructure-monitor/pkg/provider/collector"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"github.com/rs/zerolog/log"
@@ -41,7 +44,14 @@ func (s *Service) Run() derrors.Error {
 		return derrors.NewUnavailableError("failed to listen", err)
 	}
 
+	// Create Kubernetes Collector Provider
+	kubeCollector, derr := collector.NewKubeCollectorProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster)
+	if derr != nil {
+		return derr
+	}
+
 	// Create managers and handler
+	_, _ = metrics.NewManager(kubeCollector)
 	// TBD
 
 	// Create server and register handler
