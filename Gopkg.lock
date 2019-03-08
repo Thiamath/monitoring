@@ -150,14 +150,6 @@
   version = "v2.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:6d0de1bc2c378fa4f9b90ddb7f4f5a2d2abcfd9ad89aecf8657f2bdc8e263fa3"
-  name = "github.com/nalej/golang-template"
-  packages = ["version"]
-  pruneopts = ""
-  revision = "963fce8db8e46778ce622932e01b7a643d10ed01"
-
-[[projects]]
   digest = "1:44f7426538411ea9f774f96e3b102decc9f549b188e55e29ecc15be69542a96b"
   name = "github.com/nalej/grpc-common-go"
   packages = ["."]
@@ -252,14 +244,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f5959e6952c6a66c752a4ee5c152d1b73203938d0c93808c7955bff8459caf9f"
+  digest = "1:b723a8ef66371461da4327c018f8b7a879fc59e525f6ac4b03a9f6411a7155ff"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = ""
-  revision = "a98ae47d97a5abb3a3e9045da36315f9f8312970"
+  revision = "584f3b12f43e1e55248c90e84804777009eed0a4"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -294,11 +286,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d682a671593b0fc5a96e0b75420b22daa29a337e85ef83857fc3194262d43dd7"
+  digest = "1:6a8803e2481c92e20f9fc654b8ddfbd5a2a802c0454d0bc5b7a018b218282205"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = ""
-  revision = "c21a8b77f9f040598af1c8c5c0870568f1959df3"
+  revision = "5fe7a883aa19554f42890211544aa549836af7b7"
 
 [[projects]]
   digest = "1:b6c17b0c657f047118ae59b358950b28515914512cf3de02388cc42e33a92520"
@@ -513,7 +505,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/nalej/derrors",
-    "github.com/nalej/golang-template/version",
     "github.com/nalej/grpc-infrastructure-go",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",

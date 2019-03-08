@@ -8,6 +8,7 @@ package coord
 
 import (
 	"github.com/nalej/derrors"
+	"github.com/nalej/infrastructure-monitor/version"
 	"github.com/rs/zerolog/log"
 )
 
@@ -45,6 +46,7 @@ func (conf *Config) Validate() derrors.Error {
 
 // Print the current API configuration to the log.
 func (conf *Config) Print() {
+	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
 	log.Info().Int("port", conf.Port).Msg("gRPC port")
 	log.Info().Str("URL", conf.SystemModelAddress).Msg("systemModelAddress")
 	log.Info().Str("prefix", conf.AppClusterPrefix).Msg("appClusterPrefix")
