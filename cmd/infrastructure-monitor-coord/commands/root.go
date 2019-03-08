@@ -18,9 +18,9 @@ var debugLevel bool
 var consoleLogging bool
 
 var rootCmd = &cobra.Command{
-	Use:   "infrastructure-monitor-slave",
-	Short: "Infrastructure Monitor Application Cluster component",
-	Long:  `Infrastructure Monitor component on Application Cluster stores Kubernetes events in Prometheus`,
+	Use:   "infrastructure-monitor-coord",
+	Short: "Infrastructure Monitor Management Cluster component",
+	Long:  `Infrastructure Monitor component on Management Cluster forwards queries to Application Clusters`,
 	Version: "unknown-version",
 
 	Run: func(cmd *cobra.Command, args []string) {
