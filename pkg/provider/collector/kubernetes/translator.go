@@ -32,7 +32,7 @@ var Translatable = []schema.GroupVersionKind{
 
 type TranslateAction string
 const (
-	TranslateCreate TranslateAction = "create"
+	TranslateAdd TranslateAction = "add"
 	TranslateUpdate TranslateAction = "update"
 	TranslateDelete TranslateAction = "delete"
 )
@@ -65,13 +65,25 @@ func NewTranslator() (*Translator, derrors.Error) {
 }
 
 func (t *Translator) OnAdd(obj interface{}) {
+	t.dispatch(obj, TranslateAdd)
+}
+
+func (t *Translator) OnUpdate(oldObj, newObj interface{}) {
+	t.dispatch(newObj, TranslateUpdate)
+}
+
+func (t *Translator) OnDelete(obj interface{}) {
+	t.dispatch(obj, TranslateDelete)
+}
+
+func (t *Translator) dispatch(obj interface{}, action TranslateAction) {
 	// We should be able to cast every object to meta
 	meta, ok := obj.(meta_v1.Object)
 	if !ok {
 		log.Error().Msg("non-kubernetes object received")
 		return
 	}
-	l := log.With().Str("resource", meta.GetSelfLink()).Logger()
+	l := log.With().Str("action", string(action)).Str("resource", meta.GetSelfLink()).Logger()
 
 	kinds, _, err := scheme.Scheme.ObjectKinds(obj.(runtime.Object))
 	if err != nil {
@@ -96,25 +108,17 @@ func (t *Translator) OnAdd(obj interface{}) {
 		l.Warn().Msg("no translator function found")
 		return
 	}
-	f(obj, TranslateCreate)
-
-	l.Debug().Msg("resource added")
-
-}
-
-func (t *Translator) OnUpdate(oldObj, newObj interface{}) {
-
-}
-
-func (t *Translator) OnDelete(obj interface{}) {
-
+	l.Debug().Msg("dispatching")
+	f(obj, action)
 }
 
 // Translating functions
 func (t *Translator) TranslateDeployment(obj interface{}, action TranslateAction) {
-	log.Debug().Msg("HURRAY")
+	d := obj.(*apps_v1.Deployment)
+	log.Debug().Str("name", d.Name).Msg("deployment")
 }
 
 func (t *Translator) TranslateNamespace(obj interface{}, action TranslateAction) {
-
+	n := obj.(*core_v1.Namespace)
+	log.Debug().Str("name", n.Name).Msg("namespace")
 }
