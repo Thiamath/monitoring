@@ -30,7 +30,7 @@ type CollectorProvider struct {
 	stopChan chan struct{}
 
 	// Metrics collector
-	// TBD
+	collector *collector.Collector
 }
 
 // NOTE: There is a simple example on how to deal with Kubernetes events here:
@@ -52,6 +52,11 @@ type CollectorProvider struct {
 func NewCollectorProvider(configfile string, incluster bool) (*CollectorProvider, derrors.Error) {
 	log.Debug().Str("config", configfile).Bool("in-cluster", incluster).Msg("creating kubernetes collector provider")
 
+	collector, derr := collector.NewCollector()
+	if derr != nil {
+		return nil, derr
+	}
+
         var kubeconfig *rest.Config
 	var err error
 	if incluster {
@@ -67,6 +72,7 @@ func NewCollectorProvider(configfile string, incluster bool) (*CollectorProvider
 	provider := &CollectorProvider{
 		kubeconfig: kubeconfig,
 		stopChan: make(chan struct{}),
+		collector: collector,
 	}
 	return provider, nil
 }
@@ -75,7 +81,7 @@ func NewCollectorProvider(configfile string, incluster bool) (*CollectorProvider
 func (c *CollectorProvider) Start() (derrors.Error) {
 	log.Info().Msg("starting kubernetes collector")
 
-	translator, err := NewTranslator()
+	translator, err := NewTranslator(c.collector)
 	if err != nil {
 		return err
 	}

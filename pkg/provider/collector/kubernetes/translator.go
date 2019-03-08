@@ -11,6 +11,7 @@ import (
 	"reflect"
 
 	"github.com/nalej/derrors"
+	"github.com/nalej/infrastructure-monitor/pkg/provider/collector"
 
 	"github.com/rs/zerolog/log"
 
@@ -41,12 +42,15 @@ type TranslateFunc func(interface{}, TranslateAction)
 // Translator implements k8s.io/client-go/tools/cache.ResourceEventHandler
 // so it can be used directly in the informer.
 type Translator struct {
+	// Collect metrics based on events
+	Collector *collector.Collector
 	// The mapping from kind to function pointer
 	funcMap map[schema.GroupVersionKind]TranslateFunc
 }
 
-func NewTranslator() (*Translator, derrors.Error) {
+func NewTranslator(collector *collector.Collector) (*Translator, derrors.Error) {
 	translator := &Translator{
+		Collector: collector,
 		funcMap: make(map[schema.GroupVersionKind]TranslateFunc, len(Translatable)),
 	}
 
