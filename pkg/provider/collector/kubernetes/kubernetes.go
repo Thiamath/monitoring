@@ -75,9 +75,14 @@ func NewCollectorProvider(configfile string, incluster bool) (*CollectorProvider
 func (c *CollectorProvider) Start() (derrors.Error) {
 	log.Info().Msg("starting kubernetes collector")
 
+	translator, err := NewTranslator()
+	if err != nil {
+		return err
+	}
+
 	// Set up watchers
 	for _, kind := range(Translatable) {
-		watcher, err := NewWatcher(c.kubeconfig, &kind, nil)
+		watcher, err := NewWatcher(c.kubeconfig, &kind, translator)
 		if err != nil {
 			c.Stop()
 			return err

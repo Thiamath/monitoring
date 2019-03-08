@@ -35,12 +35,6 @@ type Watcher struct {
 func NewWatcher(config *rest.Config, gvk *schema.GroupVersionKind, handler cache.ResourceEventHandler) (*Watcher, derrors.Error) {
 	log.Debug().Str("kind", gvk.String()).Msg("new watcher")
 
-	if handler == nil {
-		handler = cache.ResourceEventHandlerFuncs{AddFunc: func(obj interface{}) {
-			log.Info().Str("obj", obj.(meta_v1.Object).GetName()).Msg("")
-		}}
-	}
-
 	// Create client
 	client, derr := createClient(config, gvk.GroupVersion())
 	if derr != nil {
