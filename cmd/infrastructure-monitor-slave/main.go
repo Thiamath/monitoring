@@ -11,7 +11,7 @@ package main
 
 import (
 	"github.com/nalej/infrastructure-monitor/cmd/infrastructure-monitor-slave/commands"
-	"github.com/nalej/golang-template/version"
+	"github.com/nalej/infrastructure-monitor/version"
 )
 
 var MainVersion string
