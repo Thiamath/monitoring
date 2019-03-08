@@ -7,6 +7,9 @@
 package kubernetes
 
 import (
+	"fmt"
+	"reflect"
+
 	"github.com/nalej/derrors"
 
 	"github.com/rs/zerolog/log"
@@ -27,14 +30,35 @@ var Translatable = []schema.GroupVersionKind{
 	core_v1.SchemeGroupVersion.WithKind("Namespace"),
 }
 
+type TranslateAction string
+const (
+	TranslateCreate TranslateAction = "create"
+	TranslateUpdate TranslateAction = "update"
+	TranslateDelete TranslateAction = "delete"
+)
+type TranslateFunc func(interface{}, TranslateAction)
+
 // Translator implements k8s.io/client-go/tools/cache.ResourceEventHandler
 // so it can be used directly in the informer.
 type Translator struct {
-
+	// The mapping from kind to function pointer
+	funcMap map[schema.GroupVersionKind]TranslateFunc
 }
 
 func NewTranslator() (*Translator, derrors.Error) {
 	translator := &Translator{
+		funcMap: make(map[schema.GroupVersionKind]TranslateFunc, len(Translatable)),
+	}
+
+	// Create the dynamic function map to this exact instance
+	for _, kind := range(Translatable) {
+		fName := fmt.Sprintf("Translate%s", kind.Kind)
+		tValue := reflect.ValueOf(translator)
+		fValue := tValue.MethodByName(fName)
+		if !fValue.IsValid() {
+			return nil, derrors.NewInternalError(fmt.Sprintf("function %s not defined in translator", fName))
+		}
+		translator.funcMap[kind] = fValue.Interface().(func(interface{}, TranslateAction))
 	}
 
 	return translator, nil
@@ -47,30 +71,35 @@ func (t *Translator) OnAdd(obj interface{}) {
 		log.Error().Msg("non-kubernetes object received")
 		return
 	}
+	l := log.With().Str("resource", meta.GetSelfLink()).Logger()
 
 	kinds, _, err := scheme.Scheme.ObjectKinds(obj.(runtime.Object))
 	if err != nil {
-		log.Warn().Str("link", meta.GetSelfLink()).Msg("invalid object received")
+		l.Warn().Msg("invalid object received")
 		return
 	}
 
 	// Not sure what to do if an object matches multiple kinds, let's
 	// at least warn
 	if len(kinds) > 1 {
-		l := log.Warn().Str("link", meta.GetSelfLink())
+		kindLog := l.Warn()
 		for _, k := range(kinds) {
-			l = l.Str("candidate", k.String())
+			kindLog = kindLog.Str("candidate", k.String())
 		}
-		l.Msg("received ambiguous object, picking first candidate")
+		kindLog.Msg("received ambiguous object, picking first candidate")
 	}
 
+	// Dispatch to translator function
 	kind := kinds[0]
-	log.Debug().
-		Str("link", meta.GetSelfLink()).
-		Str("kind", kind.String()).
-		Str("namespace", meta.GetNamespace()).
-		Str("name", meta.GetName()).
-		Msg("resource added")
+	f, found := t.funcMap[kind]
+	if !found {
+		l.Warn().Msg("no translator function found")
+		return
+	}
+	f(obj, TranslateCreate)
+
+	l.Debug().Msg("resource added")
+
 }
 
 func (t *Translator) OnUpdate(oldObj, newObj interface{}) {
@@ -78,5 +107,14 @@ func (t *Translator) OnUpdate(oldObj, newObj interface{}) {
 }
 
 func (t *Translator) OnDelete(obj interface{}) {
+
+}
+
+// Translating functions
+func (t *Translator) TranslateDeployment(obj interface{}, action TranslateAction) {
+	log.Debug().Msg("HURRAY")
+}
+
+func (t *Translator) TranslateNamespace(obj interface{}, action TranslateAction) {
 
 }
