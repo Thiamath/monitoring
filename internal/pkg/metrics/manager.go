@@ -8,6 +8,8 @@
 package metrics
 
 import (
+	"time"
+
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/infrastructure-monitor/pkg/provider/collector"
@@ -30,6 +32,8 @@ func NewManager(provider collector.CollectorProvider) (*Manager, derrors.Error) 
 func (m *Manager) Start() (derrors.Error) {
 	log.Debug().Msg("starting metrics manager")
 
+	go m.tickerLogger(time.Tick(time.Second * 10))
+
 	// Start collector
 	err := m.provider.Start()
 	if err != nil {
@@ -37,4 +41,20 @@ func (m *Manager) Start() (derrors.Error) {
 	}
 
 	return nil
+}
+
+func (m *Manager) tickerLogger(c <-chan time.Time) {
+	for {
+		<-c
+		log.Debug().Msg("ticker")
+		metrics, _ := m.provider.GetMetrics()
+		for t, m := range(metrics) {
+			log.Debug().
+				Int64("created", m.Created).
+				Int64("deleted", m.Deleted).
+				Int64("running", m.CurrentRunning).
+				Int64("error", m.CurrentError).
+				Msg(string(t))
+		}
+	}
 }

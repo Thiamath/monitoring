@@ -89,6 +89,8 @@ func (t *Translator) dispatch(obj interface{}, action TranslateAction) {
 	}
 	l := log.With().Str("action", string(action)).Str("resource", meta.GetSelfLink()).Logger()
 
+	// TODO: filter out non-application objects
+
 	kinds, _, err := scheme.Scheme.ObjectKinds(obj.(runtime.Object))
 	if err != nil {
 		l.Warn().Msg("invalid object received")
@@ -125,4 +127,10 @@ func (t *Translator) TranslateDeployment(obj interface{}, action TranslateAction
 func (t *Translator) TranslateNamespace(obj interface{}, action TranslateAction) {
 	n := obj.(*core_v1.Namespace)
 	log.Debug().Str("name", n.Name).Msg("namespace")
+	switch action {
+	case TranslateAdd:
+		t.Collector.Create(collector.MetricServices)
+	case TranslateDelete:
+		t.Collector.Delete(collector.MetricServices)
+	}
 }

@@ -21,4 +21,4 @@ type Metric struct {
 }
 
 // Metrics collection
-type Metrics map[MetricType]Metric
+type Metrics map[MetricType]*Metric

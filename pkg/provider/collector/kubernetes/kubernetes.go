@@ -110,5 +110,5 @@ func (c *CollectorProvider) Stop() (derrors.Error) {
 
 // Get specific metrics, or all available when no specific metrics are requested
 func (c *CollectorProvider) GetMetrics(metrics ...collector.MetricType) (collector.Metrics, derrors.Error) {
-	return nil, nil
+	return c.collector.GetMetrics()
 }
