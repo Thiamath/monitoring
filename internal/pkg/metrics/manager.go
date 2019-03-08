@@ -11,6 +11,8 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/infrastructure-monitor/pkg/provider/collector"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Manager struct {
@@ -25,6 +27,14 @@ func NewManager(provider collector.CollectorProvider) (*Manager, derrors.Error) 
 	return manager, nil
 }
 
-func (m *Manager) Start() {
+func (m *Manager) Start() (derrors.Error) {
+	log.Debug().Msg("starting metrics manager")
 
+	// Start collector
+	err := m.provider.Start()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

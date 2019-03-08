@@ -11,7 +11,7 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/infrastructure-monitor/internal/pkg/metrics"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/collector"
+	"github.com/nalej/infrastructure-monitor/pkg/provider/collector/kubernetes"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -45,18 +45,27 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create Kubernetes Collector Provider
-	kubeCollector, derr := collector.NewKubeCollectorProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster)
+	kubeCollector, derr := kubernetes.NewCollectorProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster)
 	if derr != nil {
 		return derr
 	}
 
 	// Create managers and handler
-	_, _ = metrics.NewManager(kubeCollector)
-	// TBD
+	metricsManager, derr := metrics.NewManager(kubeCollector)
+	if derr != nil {
+		return derr
+	}
+	// TBD create handler
 
 	// Create server and register handler
 	server := grpc.NewServer()
 	// TBD: register handler
+
+	// Start managers
+	derr = metricsManager.Start()
+	if derr != nil {
+		return derr
+	}
 
 	reflection.Register(server)
 	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")
