@@ -211,6 +211,7 @@
   packages = [
     "prometheus",
     "prometheus/internal",
+    "prometheus/promhttp",
   ]
   pruneopts = ""
   revision = "505eaef017263e299324067d40ca2c48f6a2cf50"
@@ -568,6 +569,7 @@
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-infrastructure-go",
     "github.com/prometheus/client_golang/prometheus",
+    "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/prometheus/client_model/go",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",

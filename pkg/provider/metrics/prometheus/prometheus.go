@@ -13,6 +13,7 @@ import (
 	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,6 +23,8 @@ type MetricsProvider struct {
 	// Map of collectors - each metric has a few collectors and we will
 	// create and register these on-the-fly.
 	subsystems map[metrics.MetricType]*Subsystem
+	// Handler provided by prometheus
+	handler http.Handler
 }
 
 type Subsystem struct {
@@ -29,18 +32,25 @@ type Subsystem struct {
 	Running prometheus.Gauge
 }
 
-
 func NewMetricsProvider() (*MetricsProvider, derrors.Error) {
 	log.Debug().Msg("creating prometheus metrics provider")
+
+	registry := prometheus.NewRegistry()
+
+	handler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{
+	})
+
 	provider := &MetricsProvider{
-		registry: prometheus.NewRegistry(),
+		registry: registry,
 		subsystems: map[metrics.MetricType]*Subsystem{},
+		handler: handler,
 	}
 
 	return provider, nil
 }
 
 func (p *MetricsProvider) Metrics(w http.ResponseWriter, r *http.Request) {
+	p.handler.ServeHTTP(w, r)
 }
 
 func (p *MetricsProvider) Create(t metrics.MetricType) {

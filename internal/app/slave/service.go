@@ -7,6 +7,7 @@ package slave
 import (
 	"fmt"
 	"net"
+	"net/http"
 
 	"github.com/nalej/derrors"
 
@@ -40,7 +41,11 @@ func NewService(conf *Config) (*Service, derrors.Error) {
 // Run the service, launch the REST service handler.
 func (s *Service) Run() derrors.Error {
 	// Start listening
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
+	grpcListener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
+	if err != nil {
+		return derrors.NewUnavailableError("failed to listen", err)
+	}
+	httpListener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.MetricsPort))
 	if err != nil {
 		return derrors.NewUnavailableError("failed to listen", err)
 	}
@@ -72,8 +77,10 @@ func (s *Service) Run() derrors.Error {
 	// TBD
 
 	// Create server and register handler
-	server := grpc.NewServer()
-	// TBD: register handler
+	grpcServer := grpc.NewServer()
+	httpServer := http.Server{}
+
+	http.HandleFunc("/metrics", collectHandler.Metrics)
 
 	// Start managers
 	derr = collectManager.Start()
@@ -81,16 +88,17 @@ func (s *Service) Run() derrors.Error {
 		return derr
 	}
 
+	// Listen on HTTP port
+	log.Info().Int("port", s.Configuration.MetricsPort).Msg("Launching HTTP server")
+	go httpServer.Serve(httpListener)
+
 	// Listen on gRPC port
-	reflection.Register(server)
+	reflection.Register(grpcServer)
 	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")
-	if err := server.Serve(lis); err != nil {
+	if err := grpcServer.Serve(grpcListener); err != nil {
 		return derrors.NewUnavailableError("failed to serve", err)
 	}
 
-	// Listen on HTTP port
-	// TBD
-	_ = collectHandler
 
 	return nil
 }
