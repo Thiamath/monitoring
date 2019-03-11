@@ -57,7 +57,9 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create Kubernetes event collector provider
-	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster, promMetrics.GetCollector())
+	labelSelector := "nalej-organization" // only get events relevant for user applications
+	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster,
+		labelSelector, promMetrics.GetCollector())
 	if derr != nil {
 		return derr
 	}

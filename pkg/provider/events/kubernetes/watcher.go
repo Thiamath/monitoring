@@ -15,6 +15,7 @@ import (
 
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
         "k8s.io/client-go/kubernetes/scheme"
@@ -32,7 +33,7 @@ type Watcher struct {
 	controller cache.Controller
 }
 
-func NewWatcher(config *rest.Config, gvk *schema.GroupVersionKind, handler cache.ResourceEventHandler) (*Watcher, derrors.Error) {
+func NewWatcher(config *rest.Config, gvk *schema.GroupVersionKind, handler cache.ResourceEventHandler, labelSelector string) (*Watcher, derrors.Error) {
 	log.Debug().Str("kind", gvk.String()).Msg("new watcher")
 
 	// Create client
@@ -47,11 +48,21 @@ func NewWatcher(config *rest.Config, gvk *schema.GroupVersionKind, handler cache
 		return nil, derrors.NewInternalError(fmt.Sprintf("failed creating object for %s", gvk.String()), err)
 	}
 
+	// Check selectors
+	parsedLabelSelector, err := labels.Parse(labelSelector)
+	if err != nil {
+		return nil, derrors.NewInternalError("failed parsing label selector", err)
+	}
+
 	// Create a lister-watcher
 	// We're adding an 's' to the kind - REST API seems to have e.g., the
 	// endpoint "deployments" for the kind "deployment". Not sure how to do
 	// this properly - we'll see when this fails.
-	watchlist := cache.NewListWatchFromClient(client, gvk.Kind + "s", meta_v1.NamespaceAll, fields.Everything())
+	optionsModifier := func(options *meta_v1.ListOptions) {
+		options.FieldSelector = fields.Everything().String()
+		options.LabelSelector = parsedLabelSelector.String()
+	}
+	watchlist := cache.NewFilteredListWatchFromClient(client, gvk.Kind + "s", meta_v1.NamespaceAll, optionsModifier)
 
 	// Create an informer
 	_ /* store */, controller := cache.NewInformer(watchlist, objType, 0 /* No resync */, handler)

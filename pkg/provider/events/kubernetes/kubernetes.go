@@ -25,6 +25,8 @@ type EventsProvider struct {
 	kubeconfig *rest.Config
 	// Kubernetes client for event subscription
 	client *kubernetes.Clientset
+	// Filters for the watchers
+	labelSelector string
 
 	// Channel to stop informers. Close to stop.
 	stopChan chan struct{}
@@ -49,7 +51,7 @@ type EventsProvider struct {
 // An extensive description of the event mechanism can be found here:
 //   https://lairdnelson.wordpress.com/2018/01/07/understanding-kubernetes-tools-cache-package-part-0/
 
-func NewEventsProvider(configfile string, incluster bool, collector metrics.Collector) (*EventsProvider, derrors.Error) {
+func NewEventsProvider(configfile string, incluster bool, labelSelector string, collector metrics.Collector) (*EventsProvider, derrors.Error) {
 	log.Debug().Str("config", configfile).Bool("in-cluster", incluster).Msg("creating kubernetes events provider")
 
         var kubeconfig *rest.Config
@@ -66,6 +68,7 @@ func NewEventsProvider(configfile string, incluster bool, collector metrics.Coll
 
 	provider := &EventsProvider{
 		kubeconfig: kubeconfig,
+		labelSelector: labelSelector,
 		stopChan: make(chan struct{}),
 		collector: collector,
 	}
@@ -83,7 +86,7 @@ func (p *EventsProvider) Start() (derrors.Error) {
 
 	// Set up watchers
 	for _, kind := range(dispatcher.Dispatchable()) {
-		watcher, err := NewWatcher(p.kubeconfig, &kind, dispatcher)
+		watcher, err := NewWatcher(p.kubeconfig, &kind, dispatcher, p.labelSelector)
 		if err != nil {
 			p.Stop()
 			return err
