@@ -51,6 +51,13 @@ func (p *MetricsProvider) Create(t metrics.MetricType) {
 	subsystem.Running.Inc()
 }
 
+func (p *MetricsProvider) Existing(t metrics.MetricType) {
+	log.Debug().Str("metric", string(t)).Msg("existing")
+	subsystem := p.getSubsystem(t)
+
+	subsystem.Running.Inc()
+}
+
 func (p *MetricsProvider) Delete(t metrics.MetricType) {
 	log.Debug().Str("metric", string(t)).Msg("deleted")
 	subsystem := p.getSubsystem(t)

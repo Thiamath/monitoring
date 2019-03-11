@@ -7,17 +7,23 @@
 package kubernetes
 
 import (
+	"time"
+
 	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 
 	"github.com/rs/zerolog/log"
 
 	apps_v1 "k8s.io/api/apps/v1"
 	core_v1 "k8s.io/api/core/v1"
+
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type TranslateFuncs struct {
 	// Collect metrics based on events
 	collector metrics.Collector
+	// Server startup
+	startupTime time.Time
 }
 
 // NOTE: On start, we should count the incoming create/delete to update
@@ -27,6 +33,7 @@ type TranslateFuncs struct {
 func NewTranslateFuncs(collector metrics.Collector) *TranslateFuncs {
 	return &TranslateFuncs{
 		collector: collector,
+		startupTime: time.Now(),
 	}
 }
 
@@ -48,8 +55,17 @@ func (t *TranslateFuncs) OnNamespace(obj interface{}, action EventAction) {
 	log.Debug().Str("name", n.Name).Msg("namespace")
 	switch action {
 	case EventAdd:
-		t.collector.Create(metrics.MetricServices)
+		t.createOrExisting(metrics.MetricServices, n.CreationTimestamp)
 	case EventDelete:
 		t.collector.Delete(metrics.MetricServices)
+	}
+}
+
+// Calls create function if after server startup, existing otherwise
+func (t *TranslateFuncs) createOrExisting(metric metrics.MetricType, ts meta_v1.Time) {
+	if ts.After(t.startupTime) {
+		t.collector.Create(metric)
+	} else {
+		t.collector.Existing(metric)
 	}
 }
