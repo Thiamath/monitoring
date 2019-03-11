@@ -36,7 +36,9 @@ func NewManager(eventsProvider events.EventsProvider, metricsProvider metrics.Me
 func (m *Manager) Start() (derrors.Error) {
 	log.Debug().Msg("starting metrics manager")
 
-	go m.tickerLogger(time.Tick(time.Second * 10))
+	if log.Debug().Enabled() {
+		go m.tickerLogger(time.Tick(time.Second * 10))
+	}
 
 	// Start collecting events
 	err := m.eventsProvider.Start()
@@ -54,14 +56,13 @@ func (m *Manager) Metrics(w http.ResponseWriter, r *http.Request) {
 func (m *Manager) tickerLogger(c <-chan time.Time) {
 	for {
 		<-c
-		log.Debug().Msg("ticker")
 		metrics, _ := m.eventsProvider.GetMetrics()
 		for t, m := range(metrics) {
 			log.Debug().
 				Int64("created", m.Created).
 				Int64("deleted", m.Deleted).
-				Int64("running", m.CurrentRunning).
-				Int64("error", m.CurrentError).
+				Int64("running", m.Running).
+				Int64("errors", m.Errors).
 				Msg(string(t))
 		}
 	}

@@ -11,7 +11,6 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/infrastructure-monitor/internal/pkg/collect"
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/events/kubernetes"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/metrics/prometheus"
 
@@ -46,20 +45,14 @@ func (s *Service) Run() derrors.Error {
 		return derrors.NewUnavailableError("failed to listen", err)
 	}
 
-	// Create collector
-	collector, derr := metrics.NewSimpleCollector()
+	// Create metrics endpoint provider
+	promMetrics, derr := prometheus.NewMetricsProvider()
 	if derr != nil {
 		return derr
 	}
 
 	// Create Kubernetes event collector provider
-	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster, collector)
-	if derr != nil {
-		return derr
-	}
-
-	// Create metrics endpoint provider
-	promMetrics, derr := prometheus.NewMetricsProvider()
+	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster, promMetrics.GetCollector())
 	if derr != nil {
 		return derr
 	}

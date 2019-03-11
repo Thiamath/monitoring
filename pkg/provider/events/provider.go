@@ -16,6 +16,8 @@ import (
 // Depending on the provider, it stores those events internally or in
 // a Collector. Useful metrics may be retrieved through GetMetrics
 // or through the Collector if used.
+// NOTE: If we use a collector, do not assume it is thread safe and do not
+// call concurrently
 type EventsProvider interface {
 	// Start collecting metrics
 	Start() (derrors.Error)

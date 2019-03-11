@@ -20,6 +20,10 @@ type TranslateFuncs struct {
 	collector metrics.Collector
 }
 
+// NOTE: On start, we should count the incoming create/delete to update
+// total running, but created/deleted should be 0 to properly use
+// the prometheus counters
+
 func NewTranslateFuncs(collector metrics.Collector) *TranslateFuncs {
 	return &TranslateFuncs{
 		collector: collector,

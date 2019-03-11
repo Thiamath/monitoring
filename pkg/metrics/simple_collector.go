@@ -43,7 +43,7 @@ func (c *SimpleCollector) collect() {
 			metric = &Metric{}
 		}
 
-		metric.CurrentRunning = metric.CurrentRunning + count.c
+		metric.Running = metric.Running + count.c
 		if count.c > 0 {
 			metric.Created = metric.Created + count.c
 		} else {

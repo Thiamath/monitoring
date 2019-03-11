@@ -15,9 +15,18 @@ const (
 	MetricEndpoints MetricType = "endpoints"
 )
 
+// String references for the counters in a metric
+type MetricCounter string
+const (
+	MetricCreated MetricCounter = "created"
+	MetricDeleted MetricCounter = "deleted"
+	MetricErrors MetricCounter = "errors"
+	MetricRunning MetricCounter = "running"
+)
+
 // Individual metric
 type Metric struct {
-	Created, Deleted, CurrentRunning, CurrentError int64
+	Created, Deleted, Running, Errors int64
 }
 
 // Metrics collection
