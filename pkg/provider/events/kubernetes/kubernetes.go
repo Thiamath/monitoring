@@ -7,13 +7,20 @@
 package kubernetes
 
 import (
+	"fmt"
+
 	"github.com/nalej/derrors"
 	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 
 	"github.com/rs/zerolog/log"
 
-        "k8s.io/client-go/kubernetes"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+
+        "k8s.io/client-go/discovery"
+        "k8s.io/client-go/kubernetes/scheme"
         "k8s.io/client-go/rest"
+        "k8s.io/client-go/restmapper"
         "k8s.io/client-go/tools/clientcmd"
 )
 
@@ -23,8 +30,10 @@ import (
 type EventsProvider struct {
 	// Configuration to create Kubernetes client
 	kubeconfig *rest.Config
-	// Kubernetes client for event subscription
-	client *kubernetes.Clientset
+
+	// Cached Kubernetes clients for event subscription
+	clients map[schema.GroupVersion]rest.Interface
+
 	// Filters for the watchers
 	labelSelector string
 
@@ -68,6 +77,7 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string, 
 
 	provider := &EventsProvider{
 		kubeconfig: kubeconfig,
+		clients: map[schema.GroupVersion]rest.Interface{},
 		labelSelector: labelSelector,
 		stopChan: make(chan struct{}),
 		collector: collector,
@@ -79,23 +89,83 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string, 
 func (p *EventsProvider) Start() (derrors.Error) {
 	log.Info().Msg("starting kubernetes events listener")
 
-	dispatcher, err := NewDispatcher(NewTranslateFuncs(p.collector))
-	if err != nil {
-		return err
+	dispatcher, derr := NewDispatcher(NewTranslateFuncs(p.collector))
+	if derr != nil {
+		return derr
 	}
+
+	// Create discovery client
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(p.kubeconfig)
+	if err != nil {
+		return derrors.NewInternalError("failed to create discovery client", err)
+	}
+	resources, err := restmapper.GetAPIGroupResources(discoveryClient)
+	if err != nil {
+		return derrors.NewInternalError("failed to get api group resources", err)
+	}
+	mapper := restmapper.NewDiscoveryRESTMapper(resources)
 
 	// Set up watchers
 	for _, kind := range(dispatcher.Dispatchable()) {
-		watcher, err := NewWatcher(p.kubeconfig, &kind, dispatcher, p.labelSelector)
+		// Create cached client
+		client, derr := p.createClient(kind.GroupVersion())
+		if derr != nil {
+			p.Stop()
+			return derr
+		}
+
+		// Figure out resource with RESTMapper
+		mapping, err := mapper.RESTMapping(kind.GroupKind(), kind.Version)
 		if err != nil {
 			p.Stop()
-			return err
+			return derrors.NewInternalError("unable to get rest mapping", err)
+		}
+		resource := mapping.Resource.Resource
+
+		watcher, derr := NewWatcher(client, &kind, resource, dispatcher, p.labelSelector)
+		if derr != nil {
+			p.Stop()
+			return derr
 		}
 
 		watcher.Start(p.stopChan)
 	}
 
 	return nil
+}
+
+func (p *EventsProvider) createClient(gv schema.GroupVersion) (rest.Interface, derrors.Error) {
+	client, found := p.clients[gv]
+	if found {
+		return client, nil
+	}
+
+	log.Debug().Str("gv", gv.String()).Msg("creating new client")
+
+	// Create shallow copy
+	c := *p.kubeconfig
+
+	c.GroupVersion = &gv
+
+	// The core api has no group and has a slightly different base URL
+	if gv.Group != "" {
+		c.APIPath = "/apis"
+	} else {
+		c.APIPath = "/api"
+	}
+	c.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+
+	if c.UserAgent == "" {
+		c.UserAgent = rest.DefaultKubernetesUserAgent()
+	}
+
+	client, err := rest.RESTClientFor(&c)
+	if err != nil {
+		return nil, derrors.NewInternalError(fmt.Sprintf("failed creating kubernetes client for %s", gv.String()), err)
+	}
+
+	p.clients[gv] = client
+	return client, nil
 }
 
 // Stop collecting metrics
