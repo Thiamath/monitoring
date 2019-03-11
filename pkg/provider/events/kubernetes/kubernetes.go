@@ -76,14 +76,14 @@ func NewEventsProvider(configfile string, incluster bool, collector metrics.Coll
 func (p *EventsProvider) Start() (derrors.Error) {
 	log.Info().Msg("starting kubernetes events listener")
 
-	translator, err := NewTranslator(p.collector)
+	dispatcher, err := NewDispatcher(NewTranslateFuncs(p.collector))
 	if err != nil {
 		return err
 	}
 
 	// Set up watchers
-	for _, kind := range(Translatable) {
-		watcher, err := NewWatcher(p.kubeconfig, &kind, translator)
+	for _, kind := range(dispatcher.Dispatchable()) {
+		watcher, err := NewWatcher(p.kubeconfig, &kind, dispatcher)
 		if err != nil {
 			p.Stop()
 			return err
