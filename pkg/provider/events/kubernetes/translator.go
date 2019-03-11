@@ -11,7 +11,7 @@ import (
 	"reflect"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/collector"
+	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 
 	"github.com/rs/zerolog/log"
 
@@ -43,12 +43,12 @@ type TranslateFunc func(interface{}, TranslateAction)
 // so it can be used directly in the informer.
 type Translator struct {
 	// Collect metrics based on events
-	Collector *collector.Collector
+	Collector metrics.Collector
 	// The mapping from kind to function pointer
 	funcMap map[schema.GroupVersionKind]TranslateFunc
 }
 
-func NewTranslator(collector *collector.Collector) (*Translator, derrors.Error) {
+func NewTranslator(collector metrics.Collector) (*Translator, derrors.Error) {
 	translator := &Translator{
 		Collector: collector,
 		funcMap: make(map[schema.GroupVersionKind]TranslateFunc, len(Translatable)),
@@ -129,8 +129,8 @@ func (t *Translator) TranslateNamespace(obj interface{}, action TranslateAction)
 	log.Debug().Str("name", n.Name).Msg("namespace")
 	switch action {
 	case TranslateAdd:
-		t.Collector.Create(collector.MetricServices)
+		t.Collector.Create(metrics.MetricServices)
 	case TranslateDelete:
-		t.Collector.Delete(collector.MetricServices)
+		t.Collector.Delete(metrics.MetricServices)
 	}
 }

@@ -2,9 +2,9 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-// Structs for metrics and list of all metrics that a provider can provide
+// Structs for platform metrics for collecting and querying
 
-package collector
+package metrics
 
 // List of available metrics
 type MetricType string

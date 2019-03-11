@@ -10,8 +10,10 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/infrastructure-monitor/internal/pkg/metrics"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/collector/kubernetes"
+	"github.com/nalej/infrastructure-monitor/internal/pkg/collect"
+	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/infrastructure-monitor/pkg/provider/events/kubernetes"
+	"github.com/nalej/infrastructure-monitor/pkg/provider/metrics/prometheus"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -44,34 +46,58 @@ func (s *Service) Run() derrors.Error {
 		return derrors.NewUnavailableError("failed to listen", err)
 	}
 
-	// Create Kubernetes Collector Provider
-	kubeCollector, derr := kubernetes.NewCollectorProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster)
+	// Create collector
+	collector, derr := metrics.NewSimpleCollector()
+	if derr != nil {
+		return derr
+	}
+
+	// Create Kubernetes event collector provider
+	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster, collector)
+	if derr != nil {
+		return derr
+	}
+
+	// Create metrics endpoint provider
+	promMetrics, derr := prometheus.NewMetricsProvider()
 	if derr != nil {
 		return derr
 	}
 
 	// Create managers and handler
-	metricsManager, derr := metrics.NewManager(kubeCollector)
+	// Events collector and Metrics HTTP endpoint
+	collectManager, derr := collect.NewManager(kubeEvents, promMetrics)
 	if derr != nil {
 		return derr
 	}
-	// TBD create handler
+	collectHandler, derr := collect.NewHandler(collectManager)
+	if derr != nil {
+		return derr
+	}
+
+	// Query gRPC endpoints
+	// TBD
 
 	// Create server and register handler
 	server := grpc.NewServer()
 	// TBD: register handler
 
 	// Start managers
-	derr = metricsManager.Start()
+	derr = collectManager.Start()
 	if derr != nil {
 		return derr
 	}
 
+	// Listen on gRPC port
 	reflection.Register(server)
 	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")
 	if err := server.Serve(lis); err != nil {
 		return derrors.NewUnavailableError("failed to serve", err)
 	}
+
+	// Listen on HTTP port
+	// TBD
+	_ = collectHandler
 
 	return nil
 }

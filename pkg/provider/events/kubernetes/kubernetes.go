@@ -2,13 +2,13 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-// Kubernetes Collector provider
+// Kubernetes Events provider
 
 package kubernetes
 
 import (
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/collector"
+	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 
 	"github.com/rs/zerolog/log"
 
@@ -17,10 +17,10 @@ import (
         "k8s.io/client-go/tools/clientcmd"
 )
 
-// CollectorProvider implements the CollectorProvider interface; it
+// EventsProvider implements the EventsProvider interface; it
 // subscribes to Kubernetes events and translates each incoming event to
 // a platform metric
-type CollectorProvider struct {
+type EventsProvider struct {
 	// Configuration to create Kubernetes client
 	kubeconfig *rest.Config
 	// Kubernetes client for event subscription
@@ -30,7 +30,7 @@ type CollectorProvider struct {
 	stopChan chan struct{}
 
 	// Metrics collector
-	collector *collector.Collector
+	collector metrics.Collector
 }
 
 // NOTE: There is a simple example on how to deal with Kubernetes events here:
@@ -49,13 +49,8 @@ type CollectorProvider struct {
 // An extensive description of the event mechanism can be found here:
 //   https://lairdnelson.wordpress.com/2018/01/07/understanding-kubernetes-tools-cache-package-part-0/
 
-func NewCollectorProvider(configfile string, incluster bool) (*CollectorProvider, derrors.Error) {
-	log.Debug().Str("config", configfile).Bool("in-cluster", incluster).Msg("creating kubernetes collector provider")
-
-	collector, derr := collector.NewCollector()
-	if derr != nil {
-		return nil, derr
-	}
+func NewEventsProvider(configfile string, incluster bool, collector metrics.Collector) (*EventsProvider, derrors.Error) {
+	log.Debug().Str("config", configfile).Bool("in-cluster", incluster).Msg("creating kubernetes events provider")
 
         var kubeconfig *rest.Config
 	var err error
@@ -69,7 +64,7 @@ func NewCollectorProvider(configfile string, incluster bool) (*CollectorProvider
 	}
         log.Info().Str("host", kubeconfig.Host).Msg("created kubeconfig")
 
-	provider := &CollectorProvider{
+	provider := &EventsProvider{
 		kubeconfig: kubeconfig,
 		stopChan: make(chan struct{}),
 		collector: collector,
@@ -78,37 +73,37 @@ func NewCollectorProvider(configfile string, incluster bool) (*CollectorProvider
 }
 
 // Start collecting metrics
-func (c *CollectorProvider) Start() (derrors.Error) {
-	log.Info().Msg("starting kubernetes collector")
+func (p *EventsProvider) Start() (derrors.Error) {
+	log.Info().Msg("starting kubernetes events listener")
 
-	translator, err := NewTranslator(c.collector)
+	translator, err := NewTranslator(p.collector)
 	if err != nil {
 		return err
 	}
 
 	// Set up watchers
 	for _, kind := range(Translatable) {
-		watcher, err := NewWatcher(c.kubeconfig, &kind, translator)
+		watcher, err := NewWatcher(p.kubeconfig, &kind, translator)
 		if err != nil {
-			c.Stop()
+			p.Stop()
 			return err
 		}
 
-		watcher.Start(c.stopChan)
+		watcher.Start(p.stopChan)
 	}
 
 	return nil
 }
 
 // Stop collecting metrics
-func (c *CollectorProvider) Stop() (derrors.Error) {
+func (p *EventsProvider) Stop() (derrors.Error) {
 	log.Info().Msg("stopping kubernetes collector")
 	// Stop informers
-	close(c.stopChan)
+	close(p.stopChan)
 	return nil
 }
 
 // Get specific metrics, or all available when no specific metrics are requested
-func (c *CollectorProvider) GetMetrics(metrics ...collector.MetricType) (collector.Metrics, derrors.Error) {
-	return c.collector.GetMetrics()
+func (p *EventsProvider) GetMetrics(types ...metrics.MetricType) (metrics.Metrics, derrors.Error) {
+	return p.collector.GetMetrics(types...)
 }
