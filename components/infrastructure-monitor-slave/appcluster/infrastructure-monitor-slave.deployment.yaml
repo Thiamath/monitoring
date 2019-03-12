@@ -34,5 +34,7 @@ spec:
         ports:
         - name: api-port
           containerPort: 8422
+        - name: metric-port
+          containerPort: 8424
       imagePullSecrets:
       - name: nalej-registry
