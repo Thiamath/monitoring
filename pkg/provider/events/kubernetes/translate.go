@@ -94,6 +94,6 @@ func (t *TranslateFuncs) translate(action EventAction, metric metrics.MetricType
 			t.collector.Existing(metric)
 		}
 	case EventDelete:
-		t.collector.Delete(metrics.MetricEndpoints)
+		t.collector.Delete(metric)
 	}
 }
