@@ -80,9 +80,9 @@ func (s *Service) Run() derrors.Error {
 
 	// Create server and register handler
 	grpcServer := grpc.NewServer()
-	httpServer := http.Server{}
-
-	http.HandleFunc("/metrics", collectHandler.Metrics)
+	httpServer := http.Server{
+		Handler: collectHandler,
+	}
 
 	// Start managers
 	derr = collectManager.Start()

@@ -14,14 +14,24 @@ import (
 
 type Handler struct {
 	manager *Manager
+	mux *http.ServeMux
 }
 
 func NewHandler(manager *Manager) (*Handler, derrors.Error) {
 	handler := &Handler{
 		manager: manager,
+		mux: http.NewServeMux(),
 	}
 
+	// Register metrics HTTP endpoint
+	handler.mux.HandleFunc("/metrics", handler.Metrics)
+
 	return handler, nil
+}
+
+// Make this a valid HTTP handler
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.mux.ServeHTTP(w, r)
 }
 
 func (h *Handler) Metrics(w http.ResponseWriter, r *http.Request) {
