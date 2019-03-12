@@ -37,7 +37,7 @@ func (m *Manager) Start() (derrors.Error) {
 	log.Debug().Msg("starting metrics manager")
 
 	if log.Debug().Enabled() {
-		go m.tickerLogger(time.Tick(time.Second * 10))
+		go m.tickerLogger(time.Tick(time.Minute))
 	}
 
 	// Start collecting events
