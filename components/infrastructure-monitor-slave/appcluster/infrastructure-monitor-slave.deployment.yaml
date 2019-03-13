@@ -30,6 +30,8 @@ spec:
         args:
         - "run"
         - "--in-cluster"
+        - "--retrieve.prometheus.enabled"
+        - "--retrieve.prometheus.url=http://prometheus:9090"
         - "--debug"
         ports:
         - name: api-port
