@@ -50,7 +50,9 @@ func NewPrometheusResult(val model.Value) *PrometheusResult {
 	case model.ValVector:
 		result = vectorResult(val)
 	case model.ValMatrix:
+		result = matrixResult(val)
 	case model.ValString:
+		result = stringResult(val)
 	}
 
 	return result
@@ -65,16 +67,7 @@ func scalarResult(val model.Value) *PrometheusResult {
 
 	result := &PrometheusResult{
 		Type: PrometheusResultScalar,
-		Values: []*PrometheusResultValue{
-			&PrometheusResultValue{
-				Values: []*PrometheusValue{
-					&PrometheusValue{
-						Timestamp: v.Timestamp.Time(),
-						Value: v.Value.String(),
-					},
-				},
-			},
-		},
+		Values: singleValueResult(v.Timestamp.Time(), v.Value.String()),
 	}
 
 	return result
@@ -85,18 +78,9 @@ func vectorResult(val model.Value) *PrometheusResult {
 
 	resVals := make([]*PrometheusResultValue, 0, v.Len())
 	for _, sample := range(([]*model.Sample)(v)) {
-		labels := map[string]string{}
-		for k,v := range(sample.Metric) {
-			labels[string(k)] = string(v)
-		}
 		resVal := &PrometheusResultValue{
-			Labels: labels,
-			Values: []*PrometheusValue{
-				&PrometheusValue{
-					Timestamp: sample.Timestamp.Time(),
-					Value: sample.Value.String(),
-				},
-			},
+			Labels: metricToLabel(sample.Metric),
+			Values: singleValueList(sample.Timestamp.Time(), sample.Value.String()),
 		}
 		resVals = append(resVals, resVal)
 	}
@@ -107,4 +91,69 @@ func vectorResult(val model.Value) *PrometheusResult {
 	}
 
 	return result
+}
+
+func matrixResult(val model.Value) *PrometheusResult {
+	v := val.(model.Matrix)
+
+	resVals := make([]*PrometheusResultValue, 0, v.Len())
+	for _, sampleStream := range(([]*model.SampleStream)(v)) {
+		values := make([]*PrometheusValue, 0, len(sampleStream.Values))
+		for _, sample := range(sampleStream.Values) {
+			values = append(values, value(sample.Timestamp.Time(), sample.Value.String()))
+		}
+		resVal := &PrometheusResultValue{
+			Labels: metricToLabel(sampleStream.Metric),
+			Values: values,
+		}
+		resVals = append(resVals, resVal)
+	}
+
+	result := &PrometheusResult{
+		Type: PrometheusResultMatrix,
+		Values: resVals,
+	}
+
+	return result
+}
+
+func stringResult(val model.Value) *PrometheusResult {
+	v := val.(*model.String)
+
+	result := &PrometheusResult{
+		Type: PrometheusResultString,
+		Values: singleValueResult(v.Timestamp.Time(), v.Value),
+	}
+
+	return result
+}
+
+func value(ts time.Time, s string) *PrometheusValue {
+	return &PrometheusValue{
+		Timestamp: ts,
+		Value: s,
+	}
+}
+
+func singleValueList(ts time.Time, s string) []*PrometheusValue {
+	return []*PrometheusValue{
+		value(ts, s),
+	}
+}
+
+func singleValueResult(ts time.Time, s string) []*PrometheusResultValue {
+	return []*PrometheusResultValue{
+		&PrometheusResultValue{
+			Values: singleValueList(ts, s),
+		},
+	}
+}
+
+func metricToLabel(m model.Metric) map[string]string {
+	label := make(map[string]string, len(m))
+	for k,v := range(m) {
+		label[string(k)] = string(v)
+	}
+
+	return label
 }

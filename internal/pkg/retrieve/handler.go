@@ -56,7 +56,6 @@ func (h *Handler) Query(ctx context.Context, request *grpc.QueryRequest) (*grpc.
 	res, err := h.manager.Query(ctx, request)
 	if err != nil {
 		log.Info().Str("err", err.DebugReport()).Err(err).Msg("error executing query")
-		// TODO: convert error
 		return nil, err
 	}
 

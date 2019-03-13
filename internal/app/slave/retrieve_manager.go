@@ -88,6 +88,5 @@ func (m *RetrieveManager) Query(ctx context.Context, request *grpc.QueryRequest)
 	queryResponse.OrganizationId = request.GetOrganizationId()
 	queryResponse.ClusterId = request.GetClusterId()
 
-	fmt.Printf("%+v\n", queryResponse)
 	return queryResponse, nil
 }

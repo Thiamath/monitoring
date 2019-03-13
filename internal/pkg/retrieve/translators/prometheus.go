@@ -24,13 +24,16 @@ func PrometheusTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Err
 	if !ok || promResult.ResultType() != prometheus.ProviderType {
 		return nil, derrors.NewInternalError("invalid query result type")
 	}
+	if promResult == nil {
+		return nil, derrors.NewInternalError("nil query result")
+	}
 
 	grpcRes := make([]*grpc.QueryResponse_PrometheusResponse_ResultValue, 0, len(promResult.Values))
 	for _, resVal := range(promResult.Values) {
 		grpcValues := make([]*grpc.QueryResponse_PrometheusResponse_ResultValue_Value, 0, len(resVal.Values))
 		for _, val := range(resVal.Values) {
 			grpcVal := &grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
-				// Timestamp: ,
+				Timestamp: GRPCTime(val.Timestamp),
 				Value: val.Value,
 			}
 			grpcValues = append(grpcValues, grpcVal)
