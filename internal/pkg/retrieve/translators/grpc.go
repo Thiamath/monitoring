@@ -23,3 +23,11 @@ func GRPCTime(t time.Time) *timestamp.Timestamp {
 		Nanos: int32(t.Nanosecond()),
 	}
 }
+
+func GoTime(ts *timestamp.Timestamp) time.Time {
+	if ts == nil {
+		var t time.Time // Uninitialized time is zero
+		return t
+	}
+	return time.Unix(ts.GetSeconds(), int64(ts.GetNanos()))
+}

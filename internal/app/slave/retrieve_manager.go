@@ -64,7 +64,10 @@ func (m *RetrieveManager) Query(ctx context.Context, request *grpc.QueryRequest)
 	q := &query.Query{
 		QueryString: request.GetQuery(),
 		Range: query.QueryRange{
-			Step: time.Duration(queryRange.GetStep() * 1000 * 1000 * 1000),
+			Start: translators.GoTime(queryRange.GetStart()),
+			End: translators.GoTime(queryRange.GetEnd()),
+			// Step is a float32 in seconds, convert to int64 in nanos
+			Step: time.Duration(queryRange.GetStep() * float32(1000 * 1000 * 1000)),
 		},
 	}
 
