@@ -182,6 +182,14 @@
   version = "v0.0.32"
 
 [[projects]]
+  digest = "1:563634bd58d7111660d55e03735d16f13176027243c5e0d3f2c7f4e2daf2f74b"
+  name = "github.com/nalej/grpc-infrastructure-monitor-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "17cd2b9c7c344556cc15b657a74e84ff70da5eba"
+  version = "v0.0.1"
+
+[[projects]]
   digest = "1:9921e275160e1559963d6452a918027db3563746fd03f63369ab104c0fbf16bf"
   name = "github.com/nalej/grpc-organization-go"
   packages = ["."]
@@ -538,6 +546,7 @@
   input-imports = [
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-infrastructure-go",
+    "github.com/nalej/grpc-infrastructure-monitor-go",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/prometheus/client_model/go",
