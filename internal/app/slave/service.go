@@ -150,12 +150,14 @@ func (s *Service) startRetrieve(errChan chan<- error) (*grpc.Server, derrors.Err
 	}
 
 	// Create and register Prometheus as query provider
-	// TODO: only if specified on command line
-	prometheusProvider, derr := query_prometheus.NewProvider()
-	if derr != nil {
-		return nil, derr
+	// If more than a couple, move to a list of providers in the config
+	if s.Configuration.PrometheusEnabled {
+		prometheusProvider, derr := query_prometheus.NewProvider(s.Configuration.PrometheusURL)
+		if derr != nil {
+			return nil, derr
+		}
+		query.Register(prometheusProvider)
 	}
-	query.Register(prometheusProvider)
 
 	// Create manager and handler for gRPC endpoints
 	retrieveManager, derr := NewRetrieveManager() // Use query.DefaultRegistry

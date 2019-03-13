@@ -37,6 +37,11 @@ func init() {
 	}
 	runCmd.PersistentFlags().StringVar(&config.Kubeconfig, "kubeconfig", kubeconfigpath, "Kubernetes config file")
 	runCmd.PersistentFlags().BoolVar(&config.InCluster, "in-cluster", false, "Running inside Kubernetes cluster (--kubeconfig is ignored)")
+
+	// Configuration for the various retrieval backends - currently only Prometheus
+	runCmd.Flags().BoolVar(&config.PrometheusEnabled, "retrieve.prometheus.enabled", false, "Enable Prometheus retrieval backend")
+	runCmd.Flags().StringVar(&config.PrometheusURL, "retrieve.prometheus.url", "http://localhost:9090", "Prometheus retrieval backend URL")
+
 	rootCmd.AddCommand(runCmd)
 }
 
@@ -45,14 +50,12 @@ func Run() {
 
 	server, err := slave.NewService(&config)
 	if err != nil {
-		log.Fatal().Str("err", err.DebugReport()).Err(err)
-		panic(err.Error())
+		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to create service")
 	}
 
 	err = server.Run()
 	if err != nil {
-		log.Fatal().Str("err", err.DebugReport()).Err(err)
-		panic(err.Error())
+		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to start service")
 	}
 }
 

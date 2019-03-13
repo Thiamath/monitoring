@@ -40,12 +40,23 @@ func (h *Handler) GetClusterStats(context.Context, *grpc.ClusterStatsRequest) (*
 
 // Execute a query directly on the monitoring storage backend
 func (h *Handler) Query(ctx context.Context, request *grpc.QueryRequest) (*grpc.QueryResponse, error) {
+	log.Debug().
+		Str("organization_id", request.GetOrganizationId()).
+		Str("cluster_id", request.GetClusterId()).
+		Str("type", request.GetType().String()).
+		Str("query", request.GetQuery()).
+		Msg("received query request")
+
 	// Validate
+	// TODO: check cluster id
+	// Check querytype is set
+	// check querystring is not nil
 
 	// Execute
 	res, err := h.manager.Query(ctx, request)
 	if err != nil {
 		log.Info().Str("err", err.DebugReport()).Err(err).Msg("error executing query")
+		// TODO: convert error
 		return nil, err
 	}
 

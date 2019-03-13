@@ -217,6 +217,8 @@
   digest = "1:6f218995d6a74636cfcab45ce03005371e682b4b9bee0e5eb0ccfd83ef85364f"
   name = "github.com/prometheus/client_golang"
   packages = [
+    "api",
+    "api/prometheus/v1",
     "prometheus",
     "prometheus/internal",
     "prometheus/promhttp",
@@ -547,9 +549,12 @@
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-infrastructure-go",
     "github.com/nalej/grpc-infrastructure-monitor-go",
+    "github.com/prometheus/client_golang/api",
+    "github.com/prometheus/client_golang/api/prometheus/v1",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/prometheus/client_model/go",
+    "github.com/prometheus/common/model",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",

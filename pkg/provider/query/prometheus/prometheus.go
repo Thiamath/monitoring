@@ -4,7 +4,7 @@
 
 // Prometheus query provider implementation
 
-package query
+package prometheus
 
 import (
 	"context"
@@ -12,23 +12,59 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+
+	"github.com/prometheus/client_golang/api"
+	prometheus_v1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/prometheus/common/model"
+	"github.com/rs/zerolog/log"
 )
 
-const providerType query.QueryProviderType = "PROMETHEUS"
+const ProviderType query.QueryProviderType = "PROMETHEUS"
 
 type PrometheusProvider struct {
+	api prometheus_v1.API
 }
 
-func NewProvider() (*PrometheusProvider, derrors.Error) {
-	return &PrometheusProvider{}, nil
+func NewProvider(url string) (*PrometheusProvider, derrors.Error) {
+	log.Debug().Str("url", url).Str("type", string(ProviderType)).Msg("creating query provider")
+	// Create API client
+	client, err := api.NewClient(api.Config{
+		Address: url,
+	})
+	if err != nil {
+		return nil, derrors.NewInternalError("failed creating prometheus client", err)
+	}
+
+	provider := &PrometheusProvider{
+		api: prometheus_v1.NewAPI(client),
+	}
+
+	return provider, nil
 }
 
 // Returns the query provider type
-func (p *PrometheusProvider) Type() query.QueryProviderType {
-	return providerType
+func (p *PrometheusProvider) ProviderType() query.QueryProviderType {
+	return ProviderType
 }
 
 // Execute query q.
 func (p *PrometheusProvider) Query(ctx context.Context, q *query.Query) (query.QueryResult, derrors.Error) {
-	return &PrometheusResult{}, nil
+	var val model.Value
+	var err error
+
+	// TODO: validate safe query?
+
+	log.Debug().Str("query", q.QueryString).Msg("executing query")
+	// Range or instance query
+	if q.Range.End.IsZero() {
+		// Instance query
+		val, err = p.api.Query(ctx, q.QueryString, q.Range.Start)
+	} else {
+		val, err = p.api.QueryRange(ctx, q.QueryString, prometheus_v1.Range(q.Range))
+	}
+	if err != nil {
+		return nil, derrors.NewInternalError("failed executing query", err)
+	}
+
+	return NewPrometheusResult(val), nil
 }

@@ -25,6 +25,12 @@ type Config struct {
 	Kubeconfig string
 	// Running inside Kubernetes cluster
 	InCluster bool
+
+	// Retrieval backends
+	// TODO: If we have more than a couple, think about a RetrievalConfig
+	// interface and pushing the backend config completely to the providers.
+	PrometheusEnabled bool
+	PrometheusURL string
 }
 
 // Validate the configuration.
@@ -61,4 +67,5 @@ func (conf *Config) Print() {
 	log.Info().Int("port", conf.Port).Msg("gRPC port")
 	log.Info().Int("port", conf.MetricsPort).Msg("metrics port")
 	log.Info().Str("file", conf.Kubeconfig).Bool("in-cluster", conf.InCluster).Msg("kubeconfig")
+	log.Info().Bool("enabled", conf.PrometheusEnabled).Str("url", conf.PrometheusURL).Msg("prometheus retrieval backend")
 }

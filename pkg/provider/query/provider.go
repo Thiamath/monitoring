@@ -15,7 +15,7 @@ import (
 
 type QueryProvider interface {
 	// Returns the query provider type
-	Type() QueryProviderType
+	ProviderType() QueryProviderType
 	// Execute query q. The response is specific to the query provider
 	// but have some common convenience functions to get e.g., the raw
 	// values
@@ -41,6 +41,6 @@ type QueryRange struct {
 // is provided to get the basic values as well.
 type QueryResult interface {
 	// Return type of the query response
-	Type() QueryProviderType
+	ResultType() QueryProviderType
 	// TBD Get some useful result
 }
