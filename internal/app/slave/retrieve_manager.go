@@ -42,19 +42,36 @@ func NewRetrieveManager(providers query.QueryProviders, defaultProvider query.Qu
 // Retrieve a summary of high level cluster resource availability
 func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error) {
 	avg := time.Minute * time.Duration(request.GetRangeMinutes())
-	val, derr := m.providers[m.defaultProvider].ExecuteTemplate(ctx, "cpu_available", avg)
-	if derr != nil {
-		return nil, derr
-	}
 
 	// Create result
 	res := &grpc.ClusterSummary{
 		OrganizationId: request.GetOrganizationId(),
 		ClusterId: request.GetClusterId(),
-		CpuMillicores: &grpc.ClusterStat{
-			Available: val,
-		},
 	}
+
+	// Create mapping to fill
+	resultMap := map[query.TemplateName]**grpc.ClusterStat{
+		query.TemplateName_CPU: &res.CpuMillicores,
+		query.TemplateName_Memory: &res.MemoryBytes,
+		query.TemplateName_Storage: &res.StorageBytes,
+	}
+
+	for name, stat := range(resultMap) {
+		available, derr := m.providers[m.defaultProvider].ExecuteTemplate(ctx, name + query.TemplateName_Available, avg)
+		if derr != nil {
+			return nil, derr
+		}
+		total, derr := m.providers[m.defaultProvider].ExecuteTemplate(ctx, name + query.TemplateName_Total, avg)
+		if derr != nil {
+			return nil, derr
+		}
+
+		*stat = &grpc.ClusterStat{
+			Total: total,
+			Available: available,
+		}
+	}
+
 	return res, nil
 }
 

@@ -25,7 +25,7 @@ import (
 
 type PrometheusProvider struct {
 	api prometheus_v1.API
-	templates map[string]*template.Template
+	templates query.TemplateMap
 }
 
 func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) {
@@ -40,12 +40,12 @@ func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) 
 
 	provider := &PrometheusProvider{
 		api: prometheus_v1.NewAPI(client),
-		templates: make(map[string]*template.Template, len(queryTemplates)),
+		templates: make(query.TemplateMap, len(queryTemplates)),
 	}
 
 	// Pre-parse templates
 	for name, tmplStr := range(queryTemplates) {
-		parsed, err := template.New(name).Parse(tmplStr)
+		parsed, err := template.New(name.String()).Parse(tmplStr)
 		if err != nil {
 			return nil, derrors.NewInternalError("failed parsing template", err)
 		}
@@ -82,8 +82,8 @@ func (p *PrometheusProvider) Query(ctx context.Context, q *query.Query) (query.Q
 	return NewPrometheusResult(val), nil
 }
 
-func (p *PrometheusProvider) ExecuteTemplate(ctx context.Context, name string, avg time.Duration) (int64, derrors.Error) {
-	log.Debug().Str("name", name).Str("avg", avg.String()).Msg("executing template query")
+func (p *PrometheusProvider) ExecuteTemplate(ctx context.Context, name query.TemplateName, avg time.Duration) (int64, derrors.Error) {
+	log.Debug().Str("name", name.String()).Str("avg", avg.String()).Msg("executing template query")
 
 	// TODO: make part of this generic
 	tmpl, found := p.templates[name]

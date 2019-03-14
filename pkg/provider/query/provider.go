@@ -25,7 +25,7 @@ type QueryProvider interface {
 	// indicating the time range over which the result should be
 	// averaged. This function executes such a template using the
 	// provider
-	ExecuteTemplate(ctx context.Context, name string, avg time.Duration) (int64, derrors.Error)
+	ExecuteTemplate(ctx context.Context, name TemplateName, avg time.Duration) (int64, derrors.Error)
 }
 
 // Query descriptor
