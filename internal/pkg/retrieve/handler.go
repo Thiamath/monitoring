@@ -48,9 +48,12 @@ func (h *Handler) Query(ctx context.Context, request *grpc.QueryRequest) (*grpc.
 		Msg("received query request")
 
 	// Validate
+	derr := validateQuery(request)
+	if derr != nil {
+		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("invalid request")
+		return nil, derr
+	}
 	// TODO: check cluster id
-	// Check querytype is set
-	// check querystring is not nil
 
 	// Execute
 	res, err := h.manager.Query(ctx, request)
