@@ -12,6 +12,7 @@ import (
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/infrastructure-monitor/version"
+	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
 	"github.com/rs/zerolog/log"
 )
 
@@ -27,10 +28,7 @@ type Config struct {
 	InCluster bool
 
 	// Retrieval backends
-	// TODO: If we have more than a couple, think about a RetrievalConfig
-	// interface and pushing the backend config completely to the providers.
-	PrometheusEnabled bool
-	PrometheusURL string
+	QueryProviders query.QueryProviderConfigs
 }
 
 // Validate the configuration.
@@ -42,6 +40,16 @@ func (conf *Config) Validate() derrors.Error {
 	if conf.MetricsPort <= 0 {
 		return derrors.NewInvalidArgumentError("metricsPort must be specified")
 	}
+
+	// Retrieval backends validation
+	for _, queryConfig := range(conf.QueryProviders) {
+		derr := queryConfig.Validate()
+		if derr != nil {
+			return derr
+		}
+	}
+
+	// NOTE: All validation except kubeconfig should go before this line
 
 	if conf.InCluster {
 		return nil
@@ -67,5 +75,9 @@ func (conf *Config) Print() {
 	log.Info().Int("port", conf.Port).Msg("gRPC port")
 	log.Info().Int("port", conf.MetricsPort).Msg("metrics port")
 	log.Info().Str("file", conf.Kubeconfig).Bool("in-cluster", conf.InCluster).Msg("kubeconfig")
-	log.Info().Bool("enabled", conf.PrometheusEnabled).Str("url", conf.PrometheusURL).Msg("prometheus retrieval backend")
+
+	// Retrieval backends
+	for _, queryConfig := range(conf.QueryProviders) {
+		queryConfig.Print(log.Info())
+	}
 }

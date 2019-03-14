@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/nalej/infrastructure-monitor/internal/app/slave"
+	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -38,9 +39,11 @@ func init() {
 	runCmd.PersistentFlags().StringVar(&config.Kubeconfig, "kubeconfig", kubeconfigpath, "Kubernetes config file")
 	runCmd.PersistentFlags().BoolVar(&config.InCluster, "in-cluster", false, "Running inside Kubernetes cluster (--kubeconfig is ignored)")
 
-	// Configuration for the various retrieval backends - currently only Prometheus
-	runCmd.Flags().BoolVar(&config.PrometheusEnabled, "retrieve.prometheus.enabled", false, "Enable Prometheus retrieval backend")
-	runCmd.Flags().StringVar(&config.PrometheusURL, "retrieve.prometheus.url", "http://localhost:9090", "Prometheus retrieval backend URL")
+	// Configuration for the various retrieval backends - see pkg/provider/query/*/config.go
+	config.QueryProviders = make(query.QueryProviderConfigs, query.Registry.NumEntries())
+	for queryProviderType, configFunc := range(query.Registry) {
+		config.QueryProviders[queryProviderType] = configFunc(runCmd)
+	}
 
 	rootCmd.AddCommand(runCmd)
 }

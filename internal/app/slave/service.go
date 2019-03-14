@@ -22,7 +22,6 @@ import (
 	"github.com/nalej/infrastructure-monitor/pkg/provider/events/kubernetes"
 	metrics_prometheus "github.com/nalej/infrastructure-monitor/pkg/provider/metrics/prometheus"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
-	query_prometheus "github.com/nalej/infrastructure-monitor/pkg/provider/query/prometheus"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -149,18 +148,20 @@ func (s *Service) startRetrieve(errChan chan<- error) (*grpc.Server, derrors.Err
 		return nil, derrors.NewUnavailableError("failed to listen", err)
 	}
 
-	// Create and register Prometheus as query provider
-	// If more than a couple, move to a list of providers in the config
-	if s.Configuration.PrometheusEnabled {
-		prometheusProvider, derr := query_prometheus.NewProvider(s.Configuration.PrometheusURL)
-		if derr != nil {
-			return nil, derr
+	// Create query providers
+	queryProviders := query.QueryProviders{}
+	for queryProviderType, queryProviderConfig := range(s.Configuration.QueryProviders) {
+		if queryProviderConfig.Enabled() {
+			queryProvider, derr := queryProviderConfig.NewProvider()
+			if derr != nil {
+				return nil, derr
+			}
+			queryProviders[queryProviderType] = queryProvider
 		}
-		query.Register(prometheusProvider)
 	}
 
 	// Create manager and handler for gRPC endpoints
-	retrieveManager, derr := NewRetrieveManager() // Use query.DefaultRegistry
+	retrieveManager, derr := NewRetrieveManager(queryProviders)
 	if derr != nil {
 		return nil, derr
 	}

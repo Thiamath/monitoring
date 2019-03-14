@@ -6,53 +6,48 @@
 
 package query
 
+import (
+	"github.com/nalej/derrors"
+	"github.com/spf13/cobra"
+	"github.com/rs/zerolog"
+)
+
 type QueryProviderType string
 func (t QueryProviderType) String() string {
 	return string(t)
 }
 
-/* NOTE
+type QueryProviderConfigFunc func(*cobra.Command) QueryProviderConfig
 
-init in provider calls Register
-
-RegistryEntry {
-	configFunc Config
-	initFunc(Config)
+type QueryProviderConfig interface {
+	Enabled() bool
+	Print(*zerolog.Event)
+	Validate() derrors.Error
+	NewProvider() (QueryProvider, derrors.Error)
 }
-*r Config(cobra app) {
-	r.Config = configFunc(app)
-}
-
-*c Enabled() bool {}
-
-in init() call config and create app config map[type]config ProviderConfigs
-in config call print/enabled
-in run call init(config) and create map[type]instance ProviderInstances
-*/
 
 // A query provider registry translates between a query provider type and
-// a QueryProvider implementation instance
-type QueryProviderRegistry map[QueryProviderType]QueryProvider
+// its configuration function. The returned configuration can be used
+// to create a new instance
+type QueryProviderRegistry map[QueryProviderType]QueryProviderConfigFunc
 
-func (r QueryProviderRegistry) Register(p QueryProvider) {
-	r[p.ProviderType()] = p
+// Created during command initialization
+type QueryProviderConfigs map[QueryProviderType]QueryProviderConfig
+
+// Created during service start
+type QueryProviders map[QueryProviderType]QueryProvider
+
+func (r QueryProviderRegistry) Register(tpe QueryProviderType, f QueryProviderConfigFunc) {
+	r[tpe] = f
 }
 
-func (r QueryProviderRegistry) GetProvider(t QueryProviderType) QueryProvider {
-	p, found := r[t]
-	if !found {
-		return nil
-	}
-	return p
+func (r QueryProviderRegistry) NumEntries() int {
+	return len(r)
 }
 
 // Default global query provider registry and convenience functions
-var DefaultRegistry = QueryProviderRegistry{}
+var Registry = QueryProviderRegistry{}
 
-func Register(p QueryProvider) {
-	DefaultRegistry.Register(p)
-}
-
-func GetProvider(t QueryProviderType) QueryProvider {
-	return DefaultRegistry.GetProvider(t)
+func Register(tpe QueryProviderType, f QueryProviderConfigFunc) {
+	Registry.Register(tpe, f)
 }

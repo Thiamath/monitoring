@@ -19,17 +19,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const ProviderType query.QueryProviderType = "PROMETHEUS"
-
 type PrometheusProvider struct {
 	api prometheus_v1.API
 }
 
-func NewProvider(url string) (*PrometheusProvider, derrors.Error) {
-	log.Debug().Str("url", url).Str("type", string(ProviderType)).Msg("creating query provider")
+func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) {
+	log.Debug().Str("url", config.Url).Str("type", string(ProviderType)).Msg("creating query provider")
 	// Create API client
 	client, err := api.NewClient(api.Config{
-		Address: url,
+		Address: config.Url,
 	})
 	if err != nil {
 		return nil, derrors.NewInternalError("failed creating prometheus client", err)

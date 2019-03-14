@@ -20,20 +20,13 @@ import (
 )
 
 type RetrieveManager struct {
-	registry query.QueryProviderRegistry
+	providers query.QueryProviders
 }
 
-// Create a new query manager. Without arguments, use the default
-// registry for providers. With arguments, only the first registry
-// is actually used
-func NewRetrieveManager(r ...query.QueryProviderRegistry) (*RetrieveManager, derrors.Error) {
-	registry := query.DefaultRegistry
-	if len(r) > 0 {
-		registry = r[0]
-	}
-
+// Create a new query manager.
+func NewRetrieveManager(providers query.QueryProviders) (*RetrieveManager, derrors.Error) {
 	manager := &RetrieveManager{
-		registry: registry,
+		providers: providers,
 	}
 
 	return manager, nil
@@ -54,8 +47,8 @@ func (m *RetrieveManager) GetClusterStats(context.Context, *grpc.ClusterStatsReq
 func (m *RetrieveManager) Query(ctx context.Context, request *grpc.QueryRequest) (*grpc.QueryResponse, derrors.Error) {
 	// Validate we have the right request type for the backend
 	providerType := query.QueryProviderType(request.GetType().String())
-	provider := m.registry.GetProvider(providerType)
-	if provider == nil {
+	provider, found := m.providers[providerType]
+	if !found {
 		return nil, derrors.NewUnavailableError(fmt.Sprintf("requested query provider %s not available", string(providerType)))
 	}
 
