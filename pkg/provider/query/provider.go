@@ -42,5 +42,4 @@ type QueryRange struct {
 type QueryResult interface {
 	// Return type of the query response
 	ResultType() QueryProviderType
-	// TBD Get some useful result
 }
