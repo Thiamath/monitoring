@@ -22,10 +22,10 @@ func init() {
 func PrometheusTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Error) {
 	promResult, ok := q.(*prometheus.PrometheusResult)
 	if !ok || promResult.ResultType() != prometheus.ProviderType {
-		return nil, derrors.NewInternalError("invalid query result type")
+		return nil, derrors.NewAbortedError("invalid query result type")
 	}
 	if promResult == nil {
-		return nil, derrors.NewInternalError("nil query result")
+		return nil, derrors.NewAbortedError("nil query result")
 	}
 
 	grpcRes := make([]*grpc.QueryResponse_PrometheusResponse_ResultValue, 0, len(promResult.Values))

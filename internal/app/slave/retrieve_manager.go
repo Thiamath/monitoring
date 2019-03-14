@@ -72,7 +72,7 @@ func (m *RetrieveManager) Query(ctx context.Context, request *grpc.QueryRequest)
 	// Translate result
 	translator, found := translators.GetTranslator(providerType)
 	if !found {
-		return nil, derrors.NewInternalError(fmt.Sprintf("no result translator found for type %s", string(providerType)))
+		return nil, derrors.NewUnimplementedError(fmt.Sprintf("no result translator found for type %s", string(providerType)))
 	}
 
 	queryResponse, derr := translator(res)

@@ -30,12 +30,12 @@ func NewHandler(m RetrieveManager) (*Handler, derrors.Error) {
 
 // Retrieve a summary of high level cluster resource availability
 func (h *Handler) GetClusterSummary(context.Context, *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, error) {
-	return nil, nil
+	return nil, derrors.NewUnimplementedError("GetClusterSummary is not implemented")
 }
 
 // Retrieve statistics on cluster with respect to platform resources
 func (h *Handler) GetClusterStats(context.Context, *grpc.ClusterStatsRequest) (*grpc.ClusterStats, error) {
-	return nil, nil
+	return nil, derrors.NewUnimplementedError("GetClusterStats is not implemented")
 }
 
 // Execute a query directly on the monitoring storage backend

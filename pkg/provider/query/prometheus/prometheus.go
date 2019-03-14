@@ -30,7 +30,7 @@ func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) 
 		Address: config.Url,
 	})
 	if err != nil {
-		return nil, derrors.NewInternalError("failed creating prometheus client", err)
+		return nil, derrors.NewUnavailableError("failed creating prometheus client", err)
 	}
 
 	provider := &PrometheusProvider{
@@ -61,7 +61,7 @@ func (p *PrometheusProvider) Query(ctx context.Context, q *query.Query) (query.Q
 		val, err = p.api.QueryRange(ctx, q.QueryString, prometheus_v1.Range(q.Range))
 	}
 	if err != nil {
-		return nil, derrors.NewInternalError("failed executing query", err)
+		return nil, derrors.NewInvalidArgumentError("failed executing query", err)
 	}
 
 	return NewPrometheusResult(val), nil
