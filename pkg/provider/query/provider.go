@@ -20,6 +20,12 @@ type QueryProvider interface {
 	// but have some common convenience functions to get e.g., the raw
 	// values
 	Query(ctx context.Context, q *Query) (QueryResult, derrors.Error)
+	// We define a number of query templates, referenced by name, that
+	// return a single integer and take a single, optional parameter
+	// indicating the time range over which the result should be
+	// averaged. This function executes such a template using the
+	// provider
+	ExecuteTemplate(ctx context.Context, name string, avg time.Duration) (int64, derrors.Error)
 }
 
 // Query descriptor

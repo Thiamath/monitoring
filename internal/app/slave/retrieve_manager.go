@@ -21,20 +21,41 @@ import (
 
 type RetrieveManager struct {
 	providers query.QueryProviders
+	defaultProvider query.QueryProviderType
 }
 
 // Create a new query manager.
-func NewRetrieveManager(providers query.QueryProviders) (*RetrieveManager, derrors.Error) {
+func NewRetrieveManager(providers query.QueryProviders, defaultProvider query.QueryProviderType) (*RetrieveManager, derrors.Error) {
 	manager := &RetrieveManager{
 		providers: providers,
+		defaultProvider: defaultProvider,
+	}
+
+	_, found := providers[defaultProvider]
+	if !found {
+		return nil, derrors.NewUnavailableError("default provider not available")
 	}
 
 	return manager, nil
 }
 
 // Retrieve a summary of high level cluster resource availability
-func (m *RetrieveManager) GetClusterSummary(context.Context, *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error) {
-	return nil, nil
+func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error) {
+	avg := time.Minute * time.Duration(request.GetRangeMinutes())
+	val, derr := m.providers[m.defaultProvider].ExecuteTemplate(ctx, "cpu_available", avg)
+	if derr != nil {
+		return nil, derr
+	}
+
+	// Create result
+	res := &grpc.ClusterSummary{
+		OrganizationId: request.GetOrganizationId(),
+		ClusterId: request.GetClusterId(),
+		CpuMillicores: &grpc.ClusterStat{
+			Available: val,
+		},
+	}
+	return res, nil
 }
 
 // Retrieve statistics on cluster with respect to platform resources

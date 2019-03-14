@@ -7,8 +7,10 @@
 package prometheus
 
 import (
+	"strconv"
 	"time"
 
+	"github.com/nalej/derrors"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
 
 	"github.com/prometheus/common/model"
@@ -60,6 +62,29 @@ func NewPrometheusResult(val model.Value) *PrometheusResult {
 
 func (r *PrometheusResult) ResultType() query.QueryProviderType {
 	return ProviderType
+}
+
+func (r *PrometheusResult) GetScalarInt() (val int64, derr derrors.Error) {
+	// We want to catch the panic if some of the arrays below are
+	// out of bound
+	defer func() {
+		if r := recover(); r != nil {
+			val = 0
+			derr = derrors.NewInternalError("query result empty")
+		}
+	}()
+	if r.Type != PrometheusResultScalar {
+		return 0, derrors.NewInternalError("query does not return scalar")
+	}
+
+        fval, err := strconv.ParseFloat(r.Values[0].Values[0].Value, 64)
+        if err != nil {
+                return 0, derrors.NewInternalError("invalid query result", err)
+        }
+
+	// TODO: proper float to int
+
+	return int64(fval), nil
 }
 
 func scalarResult(val model.Value) *PrometheusResult {
