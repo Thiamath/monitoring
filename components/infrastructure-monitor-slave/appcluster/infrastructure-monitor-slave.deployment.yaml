@@ -30,7 +30,20 @@ spec:
         args:
         - "run"
         - "--in-cluster"
+        - "--retrieve.prometheus.enabled"
+        - "--retrieve.prometheus.url=http://prometheus:9090"
         - "--debug"
+        env:
+          - name: NALEJ_ORGANIZATION_ID
+            valueFrom:
+              configMapKeyRef:
+                name: cluster-config
+                key: organization_id
+          - name: NALEJ_CLUSTER_ID
+            valueFrom:
+              configMapKeyRef:
+                name: cluster-config
+                key: cluster_id
         ports:
         - name: api-port
           containerPort: 8422

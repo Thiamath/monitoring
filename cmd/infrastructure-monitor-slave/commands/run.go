@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/nalej/infrastructure-monitor/internal/app/slave"
+	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -37,6 +38,13 @@ func init() {
 	}
 	runCmd.PersistentFlags().StringVar(&config.Kubeconfig, "kubeconfig", kubeconfigpath, "Kubernetes config file")
 	runCmd.PersistentFlags().BoolVar(&config.InCluster, "in-cluster", false, "Running inside Kubernetes cluster (--kubeconfig is ignored)")
+
+	// Configuration for the various retrieval backends - see pkg/provider/query/*/config.go
+	config.QueryProviders = make(query.QueryProviderConfigs, query.Registry.NumEntries())
+	for queryProviderType, configFunc := range(query.Registry) {
+		config.QueryProviders[queryProviderType] = configFunc(runCmd)
+	}
+
 	rootCmd.AddCommand(runCmd)
 }
 
@@ -45,14 +53,12 @@ func Run() {
 
 	server, err := slave.NewService(&config)
 	if err != nil {
-		log.Fatal().Str("err", err.DebugReport()).Err(err)
-		panic(err.Error())
+		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to create service")
 	}
 
 	err = server.Run()
 	if err != nil {
-		log.Fatal().Str("err", err.DebugReport()).Err(err)
-		panic(err.Error())
+		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to start service")
 	}
 }
 
