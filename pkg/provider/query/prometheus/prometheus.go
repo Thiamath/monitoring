@@ -21,6 +21,12 @@ import (
 
 type PrometheusProvider struct {
 	api prometheus_v1.API
+	templates query.TemplateMap
+}
+
+var PrometheusSupports = query.QueryProviderSupport{
+	query.FeaturePlatformStats,
+	query.FeatureSystemStats,
 }
 
 func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) {
@@ -33,8 +39,14 @@ func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) 
 		return nil, derrors.NewUnavailableError("failed creating prometheus client", err)
 	}
 
+	templates, derr := queryTemplates.ParseTemplates()
+	if derr != nil {
+		return nil, derr
+	}
+
 	provider := &PrometheusProvider{
 		api: prometheus_v1.NewAPI(client),
+		templates: templates,
 	}
 
 	return provider, nil
@@ -43,6 +55,10 @@ func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) 
 // Returns the query provider type
 func (p *PrometheusProvider) ProviderType() query.QueryProviderType {
 	return ProviderType
+}
+
+func (p *PrometheusProvider) Supported() query.QueryProviderSupport {
+	return PrometheusSupports
 }
 
 // Execute query q.
@@ -65,4 +81,23 @@ func (p *PrometheusProvider) Query(ctx context.Context, q *query.Query) (query.Q
 	}
 
 	return NewPrometheusResult(val), nil
+}
+
+func (p *PrometheusProvider) ExecuteTemplate(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
+	q, derr := p.templates.GetTemplateQuery(name, vars)
+	if derr != nil {
+		return 0, derr
+	}
+
+	res, derr := p.Query(ctx, q)
+	if derr != nil {
+		return 0, derr
+	}
+
+	val, derr := res.(*PrometheusResult).GetScalarInt()
+	if derr != nil {
+		return 0, derr
+	}
+
+	return val, nil
 }

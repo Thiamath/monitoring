@@ -63,3 +63,11 @@ func validateQuery(request *grpc.QueryRequest) derrors.Error {
 	}
 	return validate(request)
 }
+
+func validateClusterSummary(request *grpc.ClusterSummaryRequest) derrors.Error {
+	return validate(request)
+}
+
+func validateClusterStats(request *grpc.ClusterStatsRequest) derrors.Error {
+	return validate(request)
+}

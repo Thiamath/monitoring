@@ -14,6 +14,7 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve/translators"
+	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
 
 	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
@@ -21,26 +22,132 @@ import (
 
 type RetrieveManager struct {
 	providers query.QueryProviders
+	featureProviders map[query.QueryProviderFeature]query.QueryProvider
 }
 
 // Create a new query manager.
 func NewRetrieveManager(providers query.QueryProviders) (*RetrieveManager, derrors.Error) {
+	// Check providers for specific features
+	// NOTE: this only gives us the last provider with a certain feature,
+	// but at least we have one we can use
+	featureProviders := map[query.QueryProviderFeature]query.QueryProvider{}
+	for _, provider := range(providers) {
+		for _, feature := range(provider.Supported()) {
+			featureProviders[feature] = provider
+		}
+	}
+
 	manager := &RetrieveManager{
 		providers: providers,
+		featureProviders: featureProviders,
 	}
 
 	return manager, nil
 }
 
 // Retrieve a summary of high level cluster resource availability
-func (m *RetrieveManager) GetClusterSummary(context.Context, *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error) {
-	return nil, nil
+func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error) {
+	// Get right provider
+	provider, found := m.featureProviders[query.FeatureSystemStats]
+	if !found {
+		return nil, derrors.NewUnavailableError("no query provider for system statistics")
+	}
+
+	vars := &query.TemplateVars{
+		AvgSeconds: request.GetRangeMinutes() * 60,
+	}
+
+	// Create result
+	res := &grpc.ClusterSummary{
+		OrganizationId: request.GetOrganizationId(),
+		ClusterId: request.GetClusterId(),
+	}
+
+	// Create mapping to fill
+	resultMap := map[query.TemplateName]**grpc.ClusterStat{
+		query.TemplateName_CPU: &res.CpuMillicores,
+		query.TemplateName_Memory: &res.MemoryBytes,
+		query.TemplateName_Storage: &res.StorageBytes,
+	}
+
+	for name, stat := range(resultMap) {
+		available, derr := provider.ExecuteTemplate(ctx, name + query.TemplateName_Available, vars)
+		if derr != nil {
+			return nil, derr
+		}
+		total, derr := provider.ExecuteTemplate(ctx, name + query.TemplateName_Total, vars)
+		if derr != nil {
+			return nil, derr
+		}
+
+		*stat = &grpc.ClusterStat{
+			Total: total,
+			Available: available,
+		}
+	}
+
+	return res, nil
 }
 
 // Retrieve statistics on cluster with respect to platform resources
-func (m *RetrieveManager) GetClusterStats(context.Context, *grpc.ClusterStatsRequest) (*grpc.ClusterStats, derrors.Error) {
-	return nil, nil
+func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.ClusterStatsRequest) (*grpc.ClusterStats, derrors.Error) {
+	// Get right provider
+	provider, found := m.featureProviders[query.FeaturePlatformStats]
+	if !found {
+		return nil, derrors.NewUnavailableError("no query provider for platform statistics")
+	}
 
+	vars := &query.TemplateVars{
+		AvgSeconds: request.GetRangeMinutes() * 60,
+	}
+
+	// If no specific fields are requested, get all
+	fields := request.GetFields()
+	if len(fields) == 0 {
+		fields = AllGRPCStatsFields()
+	}
+
+	// TODO: parallel queries
+	var stats = map[int32]*grpc.PlatformStat{}
+	for _, field := range(fields) {
+		metric := GRPCStatsFieldToMetric(field)
+		stat := &grpc.PlatformStat{}
+
+		// Create mapping to fill
+		resultMap := map[metrics.MetricCounter]*int64{
+			metrics.MetricCreated: &stat.Created,
+			metrics.MetricDeleted: &stat.Deleted,
+			metrics.MetricErrors: &stat.Errors,
+			metrics.MetricRunning: &stat.Running,
+		}
+
+		vars.MetricName = metric.String()
+		for counter, valPtr := range(resultMap) {
+			// Determine template based on value type (counter, gauge)
+			templateName, derr := query.GetPlatformTemplateName(counter)
+			if derr != nil {
+				return nil, derr
+			}
+
+			vars.StatName = counter.String()
+			val, derr := provider.ExecuteTemplate(ctx, templateName, vars)
+			if derr != nil {
+				return nil, derr
+			}
+			*valPtr = val
+		}
+
+		stats[int32(field)] = stat
+	}
+
+	// Create result
+	res := &grpc.ClusterStats{
+		OrganizationId: request.GetOrganizationId(),
+		ClusterId: request.GetClusterId(),
+		Stats: stats,
+	}
+
+	return res, nil
 }
 
 // Execute a query directly on the monitoring storage backend

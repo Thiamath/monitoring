@@ -29,13 +29,51 @@ func NewHandler(m RetrieveManager) (*Handler, derrors.Error) {
 }
 
 // Retrieve a summary of high level cluster resource availability
-func (h *Handler) GetClusterSummary(context.Context, *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, error) {
-	return nil, derrors.NewUnimplementedError("GetClusterSummary is not implemented")
+func (h *Handler) GetClusterSummary(ctx context.Context, request *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, error) {
+	log.Debug().
+		Str("organization_id", request.GetOrganizationId()).
+		Str("cluster_id", request.GetClusterId()).
+		Int32("avg", request.GetRangeMinutes()).
+		Msg("received cluster summary request")
+
+	// Validate
+	derr := validateClusterSummary(request)
+	if derr != nil {
+		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("invalid request")
+		return nil, derr
+	}
+
+	res, derr := h.manager.GetClusterSummary(ctx, request)
+	if derr != nil {
+		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("error retrieving cluster summary")
+		return nil, derr
+	}
+
+	return res, nil
 }
 
 // Retrieve statistics on cluster with respect to platform resources
-func (h *Handler) GetClusterStats(context.Context, *grpc.ClusterStatsRequest) (*grpc.ClusterStats, error) {
-	return nil, derrors.NewUnimplementedError("GetClusterStats is not implemented")
+func (h *Handler) GetClusterStats(ctx context.Context, request *grpc.ClusterStatsRequest) (*grpc.ClusterStats, error) {
+	log.Debug().
+		Str("organization_id", request.GetOrganizationId()).
+		Str("cluster_id", request.GetClusterId()).
+		Int32("avg", request.GetRangeMinutes()).
+		Msg("received cluster statistics request")
+
+	// Validate
+	derr := validateClusterStats(request)
+	if derr != nil {
+		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("invalid request")
+		return nil, derr
+	}
+
+	res, derr := h.manager.GetClusterStats(ctx, request)
+	if derr != nil {
+		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("error retrieving cluster statistics")
+		return nil, derr
+	}
+
+	return res, nil
 }
 
 // Execute a query directly on the monitoring storage backend
@@ -53,7 +91,6 @@ func (h *Handler) Query(ctx context.Context, request *grpc.QueryRequest) (*grpc.
 		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("invalid request")
 		return nil, derr
 	}
-	// TODO: check cluster id
 
 	// Execute
 	res, err := h.manager.Query(ctx, request)
