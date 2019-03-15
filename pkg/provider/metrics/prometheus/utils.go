@@ -8,11 +8,11 @@ package prometheus
 
 import (
 	"fmt"
-	"math"
 	"strings"
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/infrastructure-monitor/pkg/utils"
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
@@ -42,9 +42,9 @@ func parseMetrics(pMetrics []*dto.MetricFamily) (metrics.Metrics, derrors.Error)
 		var err error
 		switch *pMetric.Type {
 		case dto.MetricType_COUNTER:
-			value, err = ftoi(*pMetric.Metric[0].Counter.Value)
+			value, err = utils.Ftoi(*pMetric.Metric[0].Counter.Value)
 		case dto.MetricType_GAUGE:
-			value, err = ftoi(*pMetric.Metric[0].Gauge.Value)
+			value, err = utils.Ftoi(*pMetric.Metric[0].Gauge.Value)
 		default:
 			return nil, derrors.NewInternalError(fmt.Sprintf("unsupported prometheus metric type %d", pMetric.Type))
 		}
@@ -92,12 +92,3 @@ func createSubsystem(t metrics.MetricType) *Subsystem {
 		Running: prometheus.NewGauge(runningOpts),
 	}
 }
-
-func ftoi(f float64) (int64, error) {
-	i := int64(f)
-	if float64(i) != math.Trunc(f) {
-		return 0, fmt.Errorf("float %f out of int64 range", f)
-	}
-	return i, nil
-}
-

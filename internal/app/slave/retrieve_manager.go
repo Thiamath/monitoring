@@ -41,7 +41,9 @@ func NewRetrieveManager(providers query.QueryProviders, defaultProvider query.Qu
 
 // Retrieve a summary of high level cluster resource availability
 func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error) {
-	avg := time.Minute * time.Duration(request.GetRangeMinutes())
+	vars := &query.TemplateVars{
+		AvgSeconds: request.GetRangeMinutes() * 60,
+	}
 
 	// Create result
 	res := &grpc.ClusterSummary{
@@ -57,11 +59,11 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 	}
 
 	for name, stat := range(resultMap) {
-		available, derr := m.providers[m.defaultProvider].ExecuteTemplate(ctx, name + query.TemplateName_Available, avg)
+		available, derr := m.templateQuery(ctx, name + query.TemplateName_Available, vars)
 		if derr != nil {
 			return nil, derr
 		}
-		total, derr := m.providers[m.defaultProvider].ExecuteTemplate(ctx, name + query.TemplateName_Total, avg)
+		total, derr := m.templateQuery(ctx, name + query.TemplateName_Total, vars)
 		if derr != nil {
 			return nil, derr
 		}
@@ -79,6 +81,15 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 func (m *RetrieveManager) GetClusterStats(context.Context, *grpc.ClusterStatsRequest) (*grpc.ClusterStats, derrors.Error) {
 	return nil, nil
 
+}
+
+func (m *RetrieveManager) templateQuery(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
+	val, derr := m.providers[m.defaultProvider].ExecuteTemplate(ctx, name, vars)
+	if derr != nil {
+		return 0, derr
+	}
+
+	return val, nil
 }
 
 // Execute a query directly on the monitoring storage backend

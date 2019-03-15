@@ -12,6 +12,7 @@ import (
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	"github.com/nalej/infrastructure-monitor/pkg/utils"
 
 	"github.com/prometheus/common/model"
 )
@@ -82,9 +83,11 @@ func (r *PrometheusResult) GetScalarInt() (val int64, derr derrors.Error) {
                 return 0, derrors.NewInternalError("invalid query result", err)
         }
 
-	// TODO: proper float to int
-
-	return int64(fval), nil
+	ival, err := utils.Ftoi(fval)
+	if err != nil {
+                return 0, derrors.NewInternalError("error converting query result", err)
+	}
+	return ival, nil
 }
 
 func scalarResult(val model.Value) *PrometheusResult {
