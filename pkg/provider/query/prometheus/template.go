@@ -81,18 +81,18 @@ scalar(sum(node_filesystem_size))
 	TemplateName_PlatformStatsCounter:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(increase({{ .StatName }}[{{ .AvgSeconds }}s]))
+scalar(increase({{ .MetricName }}_{{ .StatName }}_total[{{ .AvgSeconds }}s]))
 {{- else -}}
-scalar(irate({{ .StatName }}[2m]) * 60)
+scalar(irate({{ .MetricName }}_{{ .StatName }}_total[2m]) * 60)
 {{- end -}}
 `,
 
 	TemplateName_PlatformStatsGauge:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(avg_over_time({{ .StatName }}[{{ .AvgSeconds }}s]))
+scalar(avg_over_time({{ .MetricName }}_{{ .StatName }}[{{ .AvgSeconds }}s]))
 {{- else -}}
-scalar({{ .StatName }})
+scalar({{ .MetricName }}_{{ .StatName }})
 {{- end -}}
 `,
 }

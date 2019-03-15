@@ -104,6 +104,7 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 	var stats = map[int32]*grpc.PlatformStat{}
 
 	// TODO: use request fields
+	// TODO: parallel queries
 	for _, metric := range(metrics.AllMetrics) {
 		stat := &grpc.PlatformStat{}
 		// Create mapping to fill
@@ -114,6 +115,7 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 			metrics.MetricRunning: &stat.Running,
 		}
 
+		vars.MetricName = metric.String()
 		for counter, valPtr := range(resultMap) {
 			// Determine template based on value type (counter, gauge)
 			var templateName query.TemplateName
@@ -122,13 +124,10 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 				return nil, derrors.NewUnavailableError("no appropriate statistic available")
 			}
 
-			// Specific statistic
-			vars.StatName = fmt.Sprintf("%s_%s", metric.String(), counter.String())
-
+			vars.StatName = counter.String()
 			switch valType {
 			case metrics.ValueCounter:
 				templateName = query.TemplateName_PlatformStatsCounter
-				vars.StatName = vars.StatName + "_total" // TODO: fix
 			case metrics.ValueGauge:
 				templateName = query.TemplateName_PlatformStatsGauge
 			default:
