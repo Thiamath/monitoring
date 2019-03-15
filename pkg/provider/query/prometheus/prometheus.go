@@ -24,6 +24,11 @@ type PrometheusProvider struct {
 	templates query.TemplateMap
 }
 
+var PrometheusSupports = query.QueryProviderSupport{
+	query.FeaturePlatformStats,
+	query.FeatureSystemStats,
+}
+
 func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) {
 	log.Debug().Str("url", config.Url).Str("type", string(ProviderType)).Msg("creating query provider")
 	// Create API client
@@ -50,6 +55,10 @@ func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) 
 // Returns the query provider type
 func (p *PrometheusProvider) ProviderType() query.QueryProviderType {
 	return ProviderType
+}
+
+func (p *PrometheusProvider) Supported() query.QueryProviderSupport {
+	return PrometheusSupports
 }
 
 // Execute query q.

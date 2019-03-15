@@ -16,6 +16,8 @@ import (
 type QueryProvider interface {
 	// Returns the query provider type
 	ProviderType() QueryProviderType
+	// Returns supported features of provider
+	Supported() QueryProviderSupport
 	// Execute query q. The response is specific to the query provider
 	// but have some common convenience functions to get e.g., the raw
 	// values
@@ -26,6 +28,23 @@ type QueryProvider interface {
 	// averaged. This function executes such a template using the
 	// provider
 	ExecuteTemplate(ctx context.Context, name TemplateName, vars *TemplateVars) (int64, derrors.Error)
+}
+
+// Types to indicate what a provider supports
+type QueryProviderFeature string
+const (
+	FeaturePlatformStats QueryProviderFeature = "platformstats"
+	FeatureSystemStats QueryProviderFeature = "systemstats"
+)
+
+type QueryProviderSupport []QueryProviderFeature
+func (q QueryProviderSupport) Supports(f QueryProviderFeature) bool {
+	for _, supported := range(q) {
+		if supported == f {
+			return true
+		}
+	}
+	return false
 }
 
 // Query descriptor

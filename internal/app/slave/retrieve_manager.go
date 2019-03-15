@@ -21,19 +21,24 @@ import (
 
 type RetrieveManager struct {
 	providers query.QueryProviders
-	defaultProvider query.QueryProviderType
+	featureProviders map[query.QueryProviderFeature]query.QueryProvider
 }
 
 // Create a new query manager.
-func NewRetrieveManager(providers query.QueryProviders, defaultProvider query.QueryProviderType) (*RetrieveManager, derrors.Error) {
-	manager := &RetrieveManager{
-		providers: providers,
-		defaultProvider: defaultProvider,
+func NewRetrieveManager(providers query.QueryProviders) (*RetrieveManager, derrors.Error) {
+	// Check providers for specific features
+	// NOTE: this only gives us the last provider with a certain feature,
+	// but at least we have one we can use
+	featureProviders := map[query.QueryProviderFeature]query.QueryProvider{}
+	for _, provider := range(providers) {
+		for _, feature := range(provider.Supported()) {
+			featureProviders[feature] = provider
+		}
 	}
 
-	_, found := providers[defaultProvider]
-	if !found {
-		return nil, derrors.NewUnavailableError("default provider not available")
+	manager := &RetrieveManager{
+		providers: providers,
+		featureProviders: featureProviders,
 	}
 
 	return manager, nil
@@ -41,6 +46,12 @@ func NewRetrieveManager(providers query.QueryProviders, defaultProvider query.Qu
 
 // Retrieve a summary of high level cluster resource availability
 func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error) {
+	// Get right provider
+	provider, found := m.featureProviders[query.FeatureSystemStats]
+	if !found {
+		return nil, derrors.NewUnavailableError("no query provider for system statistics")
+	}
+
 	vars := &query.TemplateVars{
 		AvgSeconds: request.GetRangeMinutes() * 60,
 	}
@@ -59,11 +70,11 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 	}
 
 	for name, stat := range(resultMap) {
-		available, derr := m.templateQuery(ctx, name + query.TemplateName_Available, vars)
+		available, derr := provider.ExecuteTemplate(ctx, name + query.TemplateName_Available, vars)
 		if derr != nil {
 			return nil, derr
 		}
-		total, derr := m.templateQuery(ctx, name + query.TemplateName_Total, vars)
+		total, derr := provider.ExecuteTemplate(ctx, name + query.TemplateName_Total, vars)
 		if derr != nil {
 			return nil, derr
 		}
@@ -81,15 +92,6 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 func (m *RetrieveManager) GetClusterStats(context.Context, *grpc.ClusterStatsRequest) (*grpc.ClusterStats, derrors.Error) {
 	return nil, nil
 
-}
-
-func (m *RetrieveManager) templateQuery(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
-	val, derr := m.providers[m.defaultProvider].ExecuteTemplate(ctx, name, vars)
-	if derr != nil {
-		return 0, derr
-	}
-
-	return val, nil
 }
 
 // Execute a query directly on the monitoring storage backend

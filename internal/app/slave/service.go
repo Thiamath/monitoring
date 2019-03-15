@@ -150,7 +150,6 @@ func (s *Service) startRetrieve(errChan chan<- error) (*grpc.Server, derrors.Err
 
 	// Create query providers
 	queryProviders := query.QueryProviders{}
-	var defaultProvider query.QueryProviderType
 	for queryProviderType, queryProviderConfig := range(s.Configuration.QueryProviders) {
 		if queryProviderConfig.Enabled() {
 			queryProvider, derr := queryProviderConfig.NewProvider()
@@ -158,14 +157,11 @@ func (s *Service) startRetrieve(errChan chan<- error) (*grpc.Server, derrors.Err
 				return nil, derr
 			}
 			queryProviders[queryProviderType] = queryProvider
-			if defaultProvider == "" {
-				defaultProvider = queryProviderType
-			}
 		}
 	}
 
 	// Create manager and handler for gRPC endpoints
-	retrieveManager, derr := NewRetrieveManager(queryProviders, defaultProvider)
+	retrieveManager, derr := NewRetrieveManager(queryProviders)
 	if derr != nil {
 		return nil, derr
 	}
