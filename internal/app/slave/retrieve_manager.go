@@ -14,6 +14,7 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve/translators"
+	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
 
 	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
@@ -89,9 +90,73 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 }
 
 // Retrieve statistics on cluster with respect to platform resources
-func (m *RetrieveManager) GetClusterStats(context.Context, *grpc.ClusterStatsRequest) (*grpc.ClusterStats, derrors.Error) {
-	return nil, nil
+func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.ClusterStatsRequest) (*grpc.ClusterStats, derrors.Error) {
+	// Get right provider
+	provider, found := m.featureProviders[query.FeaturePlatformStats]
+	if !found {
+		return nil, derrors.NewUnavailableError("no query provider for platform statistics")
+	}
 
+	vars := &query.TemplateVars{
+		AvgSeconds: request.GetRangeMinutes() * 60,
+	}
+
+	var stats = map[int32]*grpc.PlatformStat{}
+
+	// TODO: use request fields
+	for _, metric := range(metrics.AllMetrics) {
+		stat := &grpc.PlatformStat{}
+		// Create mapping to fill
+		resultMap := map[metrics.MetricCounter]*int64{
+			metrics.MetricCreated: &stat.Created,
+			metrics.MetricDeleted: &stat.Deleted,
+			metrics.MetricErrors: &stat.Errors,
+			metrics.MetricRunning: &stat.Running,
+		}
+
+		for counter, valPtr := range(resultMap) {
+			// Determine template based on value type (counter, gauge)
+			var templateName query.TemplateName
+			valType, found := metrics.CounterMap[counter]
+			if !found {
+				return nil, derrors.NewUnavailableError("no appropriate statistic available")
+			}
+
+			// Specific statistic
+			vars.StatName = fmt.Sprintf("%s_%s", metric.String(), counter.String())
+
+			switch valType {
+			case metrics.ValueCounter:
+				templateName = query.TemplateName_PlatformStatsCounter
+				vars.StatName = vars.StatName + "_total" // TODO: fix
+			case metrics.ValueGauge:
+				templateName = query.TemplateName_PlatformStatsGauge
+			default:
+				return nil, derrors.NewUnavailableError("no appropriate query template available")
+			}
+
+			val, derr := provider.ExecuteTemplate(ctx, templateName, vars)
+			if derr != nil {
+				return nil, derr
+			}
+			*valPtr = val
+		}
+
+		statsFieldNumber, found := grpc.PlatformStatsField_value[metric.ToAPI()]
+		if !found {
+			return nil, derrors.NewUnavailableError("no mapping between statistic and API result message")
+		}
+		stats[statsFieldNumber] = stat
+	}
+
+	// Create result
+	res := &grpc.ClusterStats{
+		OrganizationId: request.GetOrganizationId(),
+		ClusterId: request.GetClusterId(),
+		Stats: stats,
+	}
+
+	return res, nil
 }
 
 // Execute a query directly on the monitoring storage backend

@@ -74,23 +74,25 @@ scalar(sum(node_filesystem_size))
 {{- end -}}
 `,
 
-	// For counters, we return the average change-per-minute over
-	// the requested period.
+	// For counters, we return the increase over the requested period,
+	// or the increase over the last minute if no period requested
+	// (Alternatively, we could do the average change-per-minute)
+	// scalar(rate({{ .StatName }}[{{ .AvgSeconds }}s]) * 60)
 	TemplateName_PlatformStatsCounter:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(rate({{ .StatsName }}[{{ .AvgSeconds }}s]) * 60)
+scalar(increase({{ .StatName }}[{{ .AvgSeconds }}s]))
 {{- else -}}
-scalar(irate({{ .StatsName }}[2m]) * 60)
+scalar(irate({{ .StatName }}[2m]) * 60)
 {{- end -}}
 `,
 
 	TemplateName_PlatformStatsGauge:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(avg_over_time({{ .StatsName }}[{{ .AvgSeconds }}s])))
+scalar(avg_over_time({{ .StatName }}[{{ .AvgSeconds }}s]))
 {{- else -}}
-scalar({{ .StatsName }})
+scalar({{ .StatName }})
 {{- end -}}
 `,
 }

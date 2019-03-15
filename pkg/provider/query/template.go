@@ -21,7 +21,7 @@ func (t TemplateName) String() string {
 
 type TemplateVars struct {
 	AvgSeconds int32
-	StatsName string
+	StatName string
 }
 
 const (
