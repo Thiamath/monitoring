@@ -6,10 +6,6 @@
 
 package metrics
 
-import (
-	"strings"
-)
-
 // List of available metrics
 type MetricType string
 const (
@@ -18,20 +14,9 @@ const (
 	MetricFragments MetricType = "fragments"
 	MetricEndpoints MetricType = "endpoints"
 )
-// Convert to all-caps as used in our APIs
-func (m MetricType) ToAPI() string {
-	return strings.ToUpper(string(m))
-}
 
 func (m MetricType) String() string {
 	return string(m)
-}
-
-var AllMetrics = []MetricType{
-	MetricServices,
-	MetricVolumes,
-	MetricFragments,
-	MetricEndpoints,
 }
 
 // String references for the counters in a metric

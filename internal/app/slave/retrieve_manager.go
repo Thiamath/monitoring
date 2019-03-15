@@ -101,12 +101,18 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 		AvgSeconds: request.GetRangeMinutes() * 60,
 	}
 
-	var stats = map[int32]*grpc.PlatformStat{}
+	// If no specific fields are requested, get all
+	fields := request.GetFields()
+	if len(fields) == 0 {
+		fields = AllGRPCStatsFields()
+	}
 
-	// TODO: use request fields
 	// TODO: parallel queries
-	for _, metric := range(metrics.AllMetrics) {
+	var stats = map[int32]*grpc.PlatformStat{}
+	for _, field := range(fields) {
+		metric := GRPCStatsFieldToMetric(field)
 		stat := &grpc.PlatformStat{}
+
 		// Create mapping to fill
 		resultMap := map[metrics.MetricCounter]*int64{
 			metrics.MetricCreated: &stat.Created,
@@ -118,22 +124,12 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 		vars.MetricName = metric.String()
 		for counter, valPtr := range(resultMap) {
 			// Determine template based on value type (counter, gauge)
-			var templateName query.TemplateName
-			valType, found := metrics.CounterMap[counter]
-			if !found {
-				return nil, derrors.NewUnavailableError("no appropriate statistic available")
+			templateName, derr := query.GetPlatformTemplateName(counter)
+			if derr != nil {
+				return nil, derr
 			}
 
 			vars.StatName = counter.String()
-			switch valType {
-			case metrics.ValueCounter:
-				templateName = query.TemplateName_PlatformStatsCounter
-			case metrics.ValueGauge:
-				templateName = query.TemplateName_PlatformStatsGauge
-			default:
-				return nil, derrors.NewUnavailableError("no appropriate query template available")
-			}
-
 			val, derr := provider.ExecuteTemplate(ctx, templateName, vars)
 			if derr != nil {
 				return nil, derr
@@ -141,11 +137,7 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 			*valPtr = val
 		}
 
-		statsFieldNumber, found := grpc.PlatformStatsField_value[metric.ToAPI()]
-		if !found {
-			return nil, derrors.NewUnavailableError("no mapping between statistic and API result message")
-		}
-		stats[statsFieldNumber] = stat
+		stats[int32(field)] = stat
 	}
 
 	// Create result

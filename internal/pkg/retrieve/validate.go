@@ -69,8 +69,5 @@ func validateClusterSummary(request *grpc.ClusterSummaryRequest) derrors.Error {
 }
 
 func validateClusterStats(request *grpc.ClusterStatsRequest) derrors.Error {
-	if len(request.GetFields()) > 0 {
-		return derrors.NewUnimplementedError("field filtering for GetClusterStats is not implemented")
-	}
 	return validate(request)
 }
