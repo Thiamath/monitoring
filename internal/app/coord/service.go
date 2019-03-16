@@ -11,6 +11,9 @@ import (
 	"github.com/nalej/derrors"
 
         "github.com/nalej/grpc-infrastructure-go"
+        "github.com/nalej/grpc-infrastructure-monitor-go"
+
+	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -44,7 +47,7 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create clients
-	_ = grpc_infrastructure_go.NewClustersClient(smConn)
+	clustersClient := grpc_infrastructure_go.NewClustersClient(smConn)
 
 	// Start listening
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
@@ -53,11 +56,26 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create managers and handler
-	// TBD
+	params := &AppClusterConnectParams{
+		AppClusterPrefix: s.Configuration.AppClusterPrefix,
+		AppClusterPort: s.Configuration.AppClusterPort,
+		UseTLS: s.Configuration.UseTLS,
+		CACert: s.Configuration.CACert,
+		Insecure: s.Configuration.Insecure,
+	}
+
+	coordManager, derr := NewCoordManager(clustersClient, params)
+	if derr != nil {
+		return derr
+	}
+	handler, derr := retrieve.NewHandler(coordManager)
+	if derr != nil {
+		return derr
+	}
 
 	// Create server and register handler
 	server := grpc.NewServer()
-	// TODO register handler
+	grpc_infrastructure_monitor_go.RegisterCoordinatorServer(server, handler)
 
 	reflection.Register(server)
 	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")
