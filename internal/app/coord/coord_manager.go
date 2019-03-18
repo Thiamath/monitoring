@@ -141,13 +141,13 @@ func (m *CoordManager) GetClusterSummary(ctx context.Context, request *grpc_infr
 	if derr != nil {
 		return nil, derr
 	}
+	defer client.Close()
 
 	res, err := client.GetClusterSummary(ctx, request)
 	if err != nil {
 		return nil, derrors.NewUnavailableError("error executing GetClusterSummary on cluster", err)
 	}
 
-	client.Close()
 	return res, nil
 }
 
@@ -157,13 +157,13 @@ func (m *CoordManager) GetClusterStats(ctx context.Context, request *grpc_infras
 	if derr != nil {
 		return nil, derr
 	}
+	defer client.Close()
 
 	res, err := client.GetClusterStats(ctx, request)
 	if err != nil {
 		return nil, derrors.NewUnavailableError("error executing GetClusterStats on cluster", err)
 	}
 
-	client.Close()
 	return res, nil
 }
 
@@ -173,12 +173,12 @@ func (m *CoordManager) Query(ctx context.Context, request *grpc_infrastructure_m
 	if derr != nil {
 		return nil, derr
 	}
+	defer client.Close()
 
 	res, err := client.Query(ctx, request)
 	if err != nil {
 		return nil, derrors.NewUnavailableError("error executing Query on cluster", err)
 	}
 
-	client.Close()
 	return res, nil
 }
