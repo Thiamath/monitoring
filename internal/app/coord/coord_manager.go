@@ -51,7 +51,7 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 	log.Debug().Str("address", address).Interface("params", params).Msg("creating app cluster client")
 
 	if params.AppClusterPrefix != "" {
-		address = fmt.Sprintf("%s.%s", params, address)
+		address = fmt.Sprintf("%s.%s", params.AppClusterPrefix, address)
 	}
 
 	if params.UseTLS {
