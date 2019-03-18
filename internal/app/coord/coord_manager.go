@@ -8,6 +8,10 @@ package coord
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"io/ioutil"
 
 	"github.com/nalej/derrors"
 
@@ -18,6 +22,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type CoordManager struct {
@@ -38,8 +43,48 @@ type clusterClient struct {
 	conn *grpc.ClientConn
 }
 
+// TODO: If we want to test this, we can create a client factory and implement
+// one that creates stub clients
 func NewClusterClient(address string, params *AppClusterConnectParams) (*clusterClient, derrors.Error) {
-	return nil, nil
+	var options []grpc.DialOption
+
+	log.Debug().Str("address", address).Interface("params", params).Msg("creating app cluster client")
+
+	if params.AppClusterPrefix != "" {
+		address = fmt.Sprintf("%s.%s", params, address)
+	}
+
+	if params.UseTLS {
+		rootCAs := x509.NewCertPool()
+		if params.CACert != "" {
+			derr := addCert(rootCAs, params.CACert)
+			if derr != nil {
+				return nil, derr
+			}
+		}
+
+		tlsConfig := &tls.Config{
+			RootCAs: rootCAs,
+			ServerName: address,
+			InsecureSkipVerify: params.Insecure,
+		}
+
+		creds := credentials.NewTLS(tlsConfig)
+		log.Debug().Interface("creds", creds.Info()).Msg("Secure credentials")
+		options = append(options, grpc.WithTransportCredentials(creds))
+	} else {
+		options = append(options, grpc.WithInsecure())
+	}
+
+	options = append(options, grpc.WithBlock())
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", address, params.AppClusterPort), options...)
+	if err != nil {
+		return nil, derrors.NewInternalError("unable to create client connection", err)
+	}
+
+	client := grpc_app_cluster_api_go.NewInfrastructureMonitorClient(conn)
+
+	return &clusterClient{client, conn}, nil
 }
 
 func (c *clusterClient) Close() error {
@@ -49,6 +94,21 @@ func (c *clusterClient) Close() error {
 	}
 
 	return err
+}
+
+// Add X509 certificate from a file to a pool
+func addCert(pool *x509.CertPool, cert string) derrors.Error {
+	caCert, err := ioutil.ReadFile(cert)
+	if err != nil {
+		return derrors.NewInternalError("unable to read certificate", err)
+	}
+
+	added := pool.AppendCertsFromPEM(caCert)
+	if !added {
+		return derrors.NewInternalError(fmt.Sprintf("Failed to add certificate from %s", cert))
+	}
+
+	return nil
 }
 
 // Create a new query manager.
@@ -61,18 +121,18 @@ func NewCoordManager(clustersClient grpc_infrastructure_go.ClustersClient, param
 	return manager, nil
 }
 
-// TODO:
-// For all:
-// - find cluster - check org id
-//     rpc GetCluster(ClusterId) returns (Cluster) {}
-
-// - make client
-// - connect
-// - forward request
-// - close connection
-
 func (m *CoordManager) getClusterClient(organizationId, clusterId string) (*clusterClient, derrors.Error) {
-	return nil, nil
+	getClusterRequest := &grpc_infrastructure_go.ClusterId{
+		OrganizationId: organizationId,
+		ClusterId: clusterId,
+	}
+
+	cluster, err := m.clustersClient.GetCluster(context.Background(), getClusterRequest)
+	if err != nil || cluster == nil {
+		return nil, derrors.NewUnavailableError("unable to retrieve cluster", err)
+	}
+
+	return NewClusterClient(cluster.GetHostname(), m.params)
 }
 
 // Retrieve a summary of high level cluster resource availability

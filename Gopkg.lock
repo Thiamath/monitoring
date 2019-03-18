@@ -166,12 +166,12 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:c5f22458eb54feb47d45f1cfab7501e26195508e832df74646c2f48717d6072a"
+  digest = "1:8c9a6a0df21ab83fdcc5f34a2b32ff864b01c6c4b402ceb1fdb73b9f216f13e8"
   name = "github.com/nalej/grpc-app-cluster-api-go"
   packages = ["."]
   pruneopts = ""
-  revision = "2cbd26303129b258a903566caa9402b1fb1ed536"
-  version = "v0.0.13"
+  revision = "33ed7f25cfb4b8afefea1e7bac149e8c8e15e800"
+  version = "v0.0.14"
 
 [[projects]]
   digest = "1:b20160f99a5c5f3070a73868e35eb2e381054f4b0a13c503be2567b472a1335c"
@@ -601,6 +601,7 @@
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/reflection",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
