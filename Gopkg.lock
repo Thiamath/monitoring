@@ -166,12 +166,44 @@
   version = "v2.0.0"
 
 [[projects]]
+  digest = "1:8c9a6a0df21ab83fdcc5f34a2b32ff864b01c6c4b402ceb1fdb73b9f216f13e8"
+  name = "github.com/nalej/grpc-app-cluster-api-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "33ed7f25cfb4b8afefea1e7bac149e8c8e15e800"
+  version = "v0.0.14"
+
+[[projects]]
+  digest = "1:b20160f99a5c5f3070a73868e35eb2e381054f4b0a13c503be2567b472a1335c"
+  name = "github.com/nalej/grpc-application-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "d46e5ee54f16d25d8adc2cefa1ae3635b0937059"
+  version = "v0.0.63"
+
+[[projects]]
   digest = "1:44f7426538411ea9f774f96e3b102decc9f549b188e55e29ecc15be69542a96b"
   name = "github.com/nalej/grpc-common-go"
   packages = ["."]
   pruneopts = ""
   revision = "e1513decc4192934536180d456748a4c3dec0245"
   version = "v0.0.30"
+
+[[projects]]
+  digest = "1:fc00ad606e86b3ef82ed233808936d0138a84c4f11d17e55c9ee0e0613343b98"
+  name = "github.com/nalej/grpc-conductor-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "8b67c6639581af49477ef01a8a8959a305c72d68"
+  version = "v0.0.86"
+
+[[projects]]
+  digest = "1:a024155847c1b3c1cac3c9295c840eefb71f6bdcc0943fdd92cca102ef443af4"
+  name = "github.com/nalej/grpc-deployment-manager-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "50e92c023d6ce62c2b0f36affdc2d7c3f8257501"
+  version = "v0.0.49"
 
 [[projects]]
   digest = "1:6973c345abcc2530f5ae4ddaa179521470a37b9cc8a2b7568227190df7f381e2"
@@ -196,6 +228,14 @@
   pruneopts = ""
   revision = "c571882666c05213df408ae9da8ab08f71a7a7bb"
   version = "v0.0.28"
+
+[[projects]]
+  digest = "1:e179c2d070921679d6497c5df13b3ccb5812a57258b0871efd8cd484f5cdd2a6"
+  name = "github.com/nalej/grpc-unified-logging-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "60f3e95c13426997010080b7170dfcde1fd6a0b2"
+  version = "v0.0.2"
 
 [[projects]]
   branch = "master"
@@ -548,6 +588,7 @@
   input-imports = [
     "github.com/golang/protobuf/ptypes/timestamp",
     "github.com/nalej/derrors",
+    "github.com/nalej/grpc-app-cluster-api-go",
     "github.com/nalej/grpc-infrastructure-go",
     "github.com/nalej/grpc-infrastructure-monitor-go",
     "github.com/prometheus/client_golang/api",
@@ -560,6 +601,7 @@
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/reflection",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
