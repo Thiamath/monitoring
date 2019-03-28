@@ -14,7 +14,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -39,7 +39,7 @@ type DispatchFuncs interface {
 }
 
 // Function type for the SupportedKinds of a DispatchFuncs collection
-type DispatchFunc func(interface{}, EventAction)
+type DispatchFunc func(oldObj, newObj interface{}, action EventAction)
 
 // Dispatcher implements k8s.io/client-go/tools/cache.ResourceEventHandler
 // so it can be used directly in the informer.
@@ -64,7 +64,7 @@ func NewDispatcher(funcs DispatchFuncs) (*Dispatcher, derrors.Error) {
 		if !fValue.IsValid() {
 			return nil, derrors.NewInternalError(fmt.Sprintf("function %s not defined in dispatchfuncs", fName))
 		}
-		dispatcher.funcMap[kind] = fValue.Interface().(func(interface{}, EventAction))
+		dispatcher.funcMap[kind] = fValue.Interface().(func(interface{}, interface{}, EventAction))
 	}
 
 	return dispatcher, nil
@@ -80,22 +80,22 @@ func (d *Dispatcher) Dispatchable() KindList {
 }
 
 func (d *Dispatcher) OnAdd(obj interface{}) {
-	d.dispatch(obj, EventAdd)
+	d.dispatch(nil, obj, EventAdd)
 }
 
 func (d *Dispatcher) OnUpdate(oldObj, newObj interface{}) {
-	d.dispatch(newObj, EventUpdate)
+	d.dispatch(oldObj, newObj, EventUpdate)
 }
 
 func (d *Dispatcher) OnDelete(obj interface{}) {
-	d.dispatch(obj, EventDelete)
+	d.dispatch(nil, obj, EventDelete)
 }
 
-func (d *Dispatcher) dispatch(obj interface{}, action EventAction) {
-	// We should be able to cast every object to meta
-	meta, ok := obj.(meta_v1.Object)
-	if !ok {
-		log.Error().Msg("non-kubernetes object received")
+func (d *Dispatcher) dispatch(oldObj, obj interface{}, action EventAction) {
+	// We should have proper metadata
+	meta, err := meta.Accessor(obj)
+	if err != nil {
+		log.Error().Err(err).Msg("non-kubernetes object received")
 		return
 	}
 	l := log.With().Str("action", string(action)).Str("resource", meta.GetSelfLink()).Logger()
@@ -123,6 +123,7 @@ func (d *Dispatcher) dispatch(obj interface{}, action EventAction) {
 		l.Warn().Msg("no translator function found")
 		return
 	}
+
 	l.Debug().Msg("dispatching")
-	f(obj, action)
+	f(oldObj, obj, action)
 }

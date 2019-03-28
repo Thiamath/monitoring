@@ -89,7 +89,8 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string, 
 func (p *EventsProvider) Start() (derrors.Error) {
 	log.Info().Msg("starting kubernetes events listener")
 
-	dispatcher, derr := NewDispatcher(NewTranslateFuncs(p.collector))
+	translator := NewTranslateFuncs(p.collector)
+	dispatcher, derr := NewDispatcher(translator)
 	if derr != nil {
 		return derr
 	}
@@ -126,6 +127,14 @@ func (p *EventsProvider) Start() (derrors.Error) {
 		if derr != nil {
 			p.Stop()
 			return derr
+		}
+
+		// Link the client resource store to the translator for
+		// cross-referencing objects
+		err = translator.SetStore(kind, watcher.GetStore())
+		if err != nil {
+			p.Stop()
+			return derrors.NewAlreadyExistsError("store already set", err)
 		}
 
 		watcher.Start(p.stopChan)

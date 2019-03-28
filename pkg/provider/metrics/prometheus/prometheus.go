@@ -76,6 +76,13 @@ func (p *MetricsProvider) Delete(t metrics.MetricType) {
 	subsystem.Running.Dec()
 }
 
+func (p *MetricsProvider) Error(t metrics.MetricType) {
+	log.Debug().Str("metric", string(t)).Msg("error")
+	subsystem := p.getSubsystem(t)
+
+	subsystem.Errors.Inc()
+}
+
 func (p *MetricsProvider) GetMetrics(types ...metrics.MetricType) (metrics.Metrics, derrors.Error) {
 	pMetrics, err := p.registry.Gather()
 	if err != nil {

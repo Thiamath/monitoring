@@ -21,6 +21,8 @@ type Collector interface {
 	Existing(t MetricType)
 	// A resource for a metric has been deleted
 	Delete(t MetricType)
+	// A resource for a metric has encountered an error
+	Error(t MetricType)
 	// Get all current metrics
 	GetMetrics(types ...MetricType) (Metrics, derrors.Error)
 }
