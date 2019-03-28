@@ -160,17 +160,22 @@ func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventAction) {
 		if e.InvolvedObject.FieldPath == "spec.containers{zt-sidecar}" {
 			return
 		}
+		fallthrough
+	case "Deployment":
 		t.collector.Error(metrics.MetricServices)
+
 	case "Service":
 		s := ref.(*core_v1.Service)
 		if s.Spec.Type != core_v1.ServiceTypeLoadBalancer {
 			return
 		}
-		t.collector.Error(metrics.MetricEndpoints)
+		fallthrough
 	case "Ingress":
 		t.collector.Error(metrics.MetricEndpoints)
+
 	case "PersistentVolumeClaim":
 		t.collector.Error(metrics.MetricVolumes)
+
 	case "Namespace":
 		t.collector.Error(metrics.MetricFragments)
 	}
