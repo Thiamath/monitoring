@@ -76,7 +76,6 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 		options = append(options, grpc.WithInsecure())
 	}
 
-	options = append(options, grpc.WithBlock())
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", address, params.AppClusterPort), options...)
 	if err != nil {
 		return nil, derrors.NewInternalError("unable to create client connection", err)
