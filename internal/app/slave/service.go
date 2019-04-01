@@ -17,6 +17,7 @@ import (
 
 	"github.com/nalej/grpc-infrastructure-monitor-go"
 
+	"github.com/nalej/deployment-manager/pkg/utils"
 	"github.com/nalej/infrastructure-monitor/internal/pkg/collect"
 	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/events/kubernetes"
@@ -95,7 +96,7 @@ func (s *Service) startCollect(errChan chan<- error) (*http.Server, derrors.Erro
 	}
 
 	// Create Kubernetes event collector provider
-	labelSelector := "nalej-organization" // only get events relevant for user applications
+	labelSelector := utils.NALEJ_ANNOTATION_ORGANIZATION // only get events relevant for user applications
 	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster,
 		labelSelector, promMetrics.GetCollector())
 	if derr != nil {

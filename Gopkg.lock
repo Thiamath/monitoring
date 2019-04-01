@@ -158,6 +158,14 @@
   version = "1.0.1"
 
 [[projects]]
+  digest = "1:d1355e6db506eb3c27de7e001c5725606b60d60d2dce4a58421b4bd2e8783796"
+  name = "github.com/nalej/deployment-manager"
+  packages = ["pkg/utils"]
+  pruneopts = ""
+  revision = "934dac7df61e33053c47299a835388874d063654"
+  version = "release-v0.2.0-sprint9"
+
+[[projects]]
   digest = "1:0cc441f3dfe124dd74f44dd7e466dfc17cc7edff468094fbc3847a96b5ebf6f7"
   name = "github.com/nalej/derrors"
   packages = ["."]
@@ -587,6 +595,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/golang/protobuf/ptypes/timestamp",
+    "github.com/nalej/deployment-manager/pkg/utils",
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-app-cluster-api-go",
     "github.com/nalej/grpc-infrastructure-go",

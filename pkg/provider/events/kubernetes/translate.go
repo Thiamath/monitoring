@@ -9,6 +9,7 @@ package kubernetes
 import (
 	"fmt"
 
+	"github.com/nalej/deployment-manager/pkg/utils"
 	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 
 	apps_v1 "k8s.io/api/apps/v1"
@@ -21,6 +22,21 @@ import (
 
 	"github.com/rs/zerolog/log"
 )
+
+var (
+	DeploymentKind = apps_v1.SchemeGroupVersion.WithKind("Deployment")
+	NamespaceKind = core_v1.SchemeGroupVersion.WithKind("Namespace")
+	PVCKind = core_v1.SchemeGroupVersion.WithKind("PersistentVolumeClaim")
+	PodKind = core_v1.SchemeGroupVersion.WithKind("Pod")
+	ServiceKind = core_v1.SchemeGroupVersion.WithKind("Service")
+	EventKind = core_v1.SchemeGroupVersion.WithKind("Event")
+	IngressKind = extensions_v1beta1.SchemeGroupVersion.WithKind("Ingress")
+)
+
+// We'll filter out these labels
+var FilterLabelSet = map[string]string{
+	"agent": "zt-agent",
+}
 
 type TranslateFuncs struct {
 	// Collect metrics based on events
@@ -57,14 +73,14 @@ func (t *TranslateFuncs) SetStore(kind schema.GroupVersionKind, store cache.Stor
 
 func (t *TranslateFuncs) SupportedKinds() KindList {
 	return KindList{
-		apps_v1.SchemeGroupVersion.WithKind("Deployment"),
-		core_v1.SchemeGroupVersion.WithKind("Namespace"),
-		core_v1.SchemeGroupVersion.WithKind("PersistentVolumeClaim"),
+		DeploymentKind,
+		NamespaceKind,
+		PVCKind,
 		// We only watch this so we have the resource store
-		core_v1.SchemeGroupVersion.WithKind("Pod"),
-		core_v1.SchemeGroupVersion.WithKind("Service"),
-		core_v1.SchemeGroupVersion.WithKind("Event"),
-		extensions_v1beta1.SchemeGroupVersion.WithKind("Ingress"),
+		PodKind,
+		ServiceKind,
+		EventKind,
+		IngressKind,
 	}
 }
 
@@ -155,28 +171,28 @@ func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventAction) {
 		Int32("count", e.Count).Str("reason", e.Reason).Str("message", e.Message).Msg("event")
 
 	switch kind {
-	case "Pod":
+	case PodKind.Kind:
 		// Filter out references to zt container
 		if e.InvolvedObject.FieldPath == "spec.containers{zt-sidecar}" {
 			return
 		}
 		fallthrough
-	case "Deployment":
+	case DeploymentKind.Kind:
 		t.collector.Error(metrics.MetricServices)
 
-	case "Service":
+	case ServiceKind.Kind:
 		s := ref.(*core_v1.Service)
 		if s.Spec.Type != core_v1.ServiceTypeLoadBalancer {
 			return
 		}
 		fallthrough
-	case "Ingress":
+	case IngressKind.Kind:
 		t.collector.Error(metrics.MetricEndpoints)
 
-	case "PersistentVolumeClaim":
+	case PVCKind.Kind:
 		t.collector.Error(metrics.MetricVolumes)
 
-	case "Namespace":
+	case NamespaceKind.Kind:
 		t.collector.Error(metrics.MetricFragments)
 	}
 }
@@ -230,15 +246,18 @@ func isAppInstance(obj interface{}) bool {
 		return false
 	}
 	labels := metaobj.GetLabels()
-	_, found := labels["nalej-organization"]
+	_, found := labels[utils.NALEJ_ANNOTATION_ORGANIZATION]
 	if !found {
 		log.Debug().Msg("no nalej-organization")
 		return false
 	}
-	// filter out zt-agent deployment
-	agentLabel, found := labels["agent"]
-	if found && agentLabel == "zt-agent" {
-		return false
+
+	// filter out unwanted instances
+	for k, v := range FilterLabelSet {
+		label, found := labels[k]
+		if found && label == v {
+			return false
+		}
 	}
 
 	return true
