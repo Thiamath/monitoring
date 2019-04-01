@@ -30,6 +30,8 @@ type Watcher struct {
 	gvk *schema.GroupVersionKind
 	// The informer controller
 	controller cache.Controller
+	// The data store for client resource objects
+	store cache.Store
 }
 
 func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource string, handler cache.ResourceEventHandler, labelSelector string) (*Watcher, derrors.Error) {
@@ -39,6 +41,13 @@ func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource st
 	objType, err := scheme.Scheme.New(*gvk)
 	if err != nil {
 		return nil, derrors.NewInternalError(fmt.Sprintf("failed creating object for %s", gvk.String()), err)
+	}
+
+	// Don't filter for Events - they never have labels. If we want to
+	// listen to these, we probably want to listen to all of them and
+	// match them manually in the translator
+	if gvk.Kind == "Event" {
+		labelSelector = ""
 	}
 
 	// Check selectors
@@ -56,11 +65,12 @@ func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource st
 	watchlist := cache.NewFilteredListWatchFromClient(client, resource, meta_v1.NamespaceAll, optionsModifier)
 
 	// Create an informer
-	_ /* store */, controller := cache.NewInformer(watchlist, objType, 0 /* No resync */, handler)
+	store, controller := cache.NewInformer(watchlist, objType, 0 /* No resync */, handler)
 
 	watcher := &Watcher{
 		gvk: gvk,
 		controller: controller,
+		store: store,
 	}
 
 	return watcher, nil
@@ -76,3 +86,6 @@ func (w *Watcher) Start(stopChan <-chan struct{}) {
 	// if !cache.WaitForSync
 }
 
+func (w *Watcher) GetStore() cache.Store {
+	return w.store
+}

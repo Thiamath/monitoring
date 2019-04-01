@@ -14,6 +14,7 @@ type countMetric struct {
 	m MetricType
 	c int64
 	e bool
+	err bool
 }
 
 // Simple Collector implementation that stores the platform metrics in a
@@ -44,13 +45,17 @@ func (c *SimpleCollector) collect() {
 			metric = &Metric{}
 		}
 
-		metric.Running = metric.Running + count.c
-		if count.c > 0 {
-			if !count.e {
-				metric.Created = metric.Created + count.c
-			}
+		if count.err {
+			metric.Errors = metric.Errors + count.c
 		} else {
-			metric.Deleted = metric.Deleted - count.c
+			metric.Running = metric.Running + count.c
+			if count.c > 0 {
+				if !count.e {
+					metric.Created = metric.Created + count.c
+				}
+			} else {
+				metric.Deleted = metric.Deleted - count.c
+			}
 		}
 
 		c.metrics[count.m] = metric
@@ -80,6 +85,15 @@ func (c *SimpleCollector) Delete(t MetricType) {
 		c: -1,
 	}
 
+	c.countChan <- count
+}
+
+func (c *SimpleCollector) Errors(t MetricType) {
+	count := countMetric{
+		m: t,
+		c: 1,
+		err: true,
+	}
 	c.countChan <- count
 }
 
