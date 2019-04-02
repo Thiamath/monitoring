@@ -29,5 +29,5 @@ func GoTime(ts *timestamp.Timestamp) time.Time {
 		var t time.Time // Uninitialized time is zero
 		return t
 	}
-	return time.Unix(ts.GetSeconds(), int64(ts.GetNanos()))
+	return time.Unix(ts.GetSeconds(), int64(ts.GetNanos())).UTC()
 }
