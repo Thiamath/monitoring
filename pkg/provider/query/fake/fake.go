@@ -47,25 +47,23 @@ func (p *FakeProvider) Supported() query.QueryProviderSupport {
 
 // Execute query q.
 func (p *FakeProvider) Query(ctx context.Context, q *query.Query) (query.QueryResult, derrors.Error) {
-	for k, v := range(p.queries) {
-		if k == *q {
-			return v, nil
-		}
+	res, found := p.queries[*q]
+	if !found {
+		return nil, derrors.NewNotFoundError("fake provider received unexpected query").WithParams(q)
 	}
-
-	return nil, derrors.NewNotFoundError("fake provider received unexpected query").WithParams(q)
+	return res, nil
 }
 
 func (p *FakeProvider) ExecuteTemplate(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
-	for k, v := range(p.templates) {
-		if k == name {
-			for kv, res := range(v) {
-				if kv == *vars {
-					return res, nil
-				}
-			}
-		}
+	knownvars, found := p.templates[name]
+	if !found {
+		return 0, derrors.NewNotFoundError("fake provider received unexpected template request").WithParams(name, *vars)
 	}
 
-	return 0, derrors.NewNotFoundError("fake provider received unexpected template request").WithParams(name, *vars)
+	res, found := knownvars[*vars]
+	if !found {
+		return 0, derrors.NewNotFoundError("fake provider received unexpected template request").WithParams(name, *vars)
+	}
+
+	return res, nil
 }
