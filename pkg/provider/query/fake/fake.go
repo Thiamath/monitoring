@@ -57,12 +57,12 @@ func (p *FakeProvider) Query(ctx context.Context, q *query.Query) (query.QueryRe
 func (p *FakeProvider) ExecuteTemplate(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
 	knownvars, found := p.templates[name]
 	if !found {
-		return 0, derrors.NewNotFoundError("fake provider received unexpected template request").WithParams(name, *vars)
+		return 0, derrors.NewNotFoundError("fake provider received unexpected template name").WithParams(name)
 	}
 
 	res, found := knownvars[*vars]
 	if !found {
-		return 0, derrors.NewNotFoundError("fake provider received unexpected template request").WithParams(name, *vars)
+		return 0, derrors.NewNotFoundError("fake provider received unexpected template vars").WithParams(name, *vars)
 	}
 
 	return res, nil
