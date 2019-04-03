@@ -84,6 +84,10 @@ func (t TemplateMap) GetTemplateQuery(name TemplateName, vars *TemplateVars) (*Q
 		return nil, derrors.NewNotFoundError(fmt.Sprintf("template %s not found", name))
 	}
 
+	if vars == nil {
+		vars = &TemplateVars{}
+	}
+
 	var buf strings.Builder
 	err := tmpl.Execute(&buf, vars)
 	if err != nil {
