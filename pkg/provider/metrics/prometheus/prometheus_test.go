@@ -18,15 +18,18 @@ import (
 var _ = ginkgo.Describe("prometheus", func() {
 
 	var provider *MetricsProvider
+	var collector metrics.Collector
 
 	ginkgo.BeforeSuite(func() {
 		var derr derrors.Error
 		provider, derr = NewMetricsProvider()
 		gomega.Expect(derr).To(gomega.Succeed())
+
+		collector = provider.GetCollector()
 	})
 
 	ginkgo.It("should count metrics correctly", func() {
-		provider.Existing(metrics.MetricVolumes)
+		collector.Existing(metrics.MetricVolumes)
 		gomega.Expect(provider.GetMetrics()).To(gomega.Equal(metrics.Metrics{
 			metrics.MetricVolumes: &metrics.Metric{
 				Created: 0,
@@ -36,7 +39,7 @@ var _ = ginkgo.Describe("prometheus", func() {
 			},
 		}))
 
-		provider.Create(metrics.MetricVolumes)
+		collector.Create(metrics.MetricVolumes)
 		gomega.Expect(provider.GetMetrics()).To(gomega.Equal(metrics.Metrics{
 			metrics.MetricVolumes: &metrics.Metric{
 				Created: 1,
@@ -46,7 +49,7 @@ var _ = ginkgo.Describe("prometheus", func() {
 			},
 		}))
 
-		provider.Delete(metrics.MetricVolumes)
+		collector.Delete(metrics.MetricVolumes)
 		gomega.Expect(provider.GetMetrics()).To(gomega.Equal(metrics.Metrics{
 			metrics.MetricVolumes: &metrics.Metric{
 				Created: 1,
@@ -56,7 +59,7 @@ var _ = ginkgo.Describe("prometheus", func() {
 			},
 		}))
 
-		provider.Error(metrics.MetricVolumes)
+		collector.Error(metrics.MetricVolumes)
 		gomega.Expect(provider.GetMetrics()).To(gomega.Equal(metrics.Metrics{
 			metrics.MetricVolumes: &metrics.Metric{
 				Created: 1,
@@ -67,7 +70,3 @@ var _ = ginkgo.Describe("prometheus", func() {
 		}))
 	})
 })
-
-/*
-count a few things, get metrics
-*/
