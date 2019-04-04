@@ -13,6 +13,8 @@ import (
 
 	"github.com/nalej/derrors"
 
+	"github.com/nalej/grpc-utils/pkg/conversions"
+
 	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve/translators"
 	"github.com/nalej/infrastructure-monitor/pkg/metrics"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
@@ -164,8 +166,8 @@ func (m *RetrieveManager) Query(ctx context.Context, request *grpc.QueryRequest)
 	q := &query.Query{
 		QueryString: request.GetQuery(),
 		Range: query.QueryRange{
-			Start: translators.GoTime(queryRange.GetStart()),
-			End: translators.GoTime(queryRange.GetEnd()),
+			Start: conversions.GoTime(queryRange.GetStart()),
+			End: conversions.GoTime(queryRange.GetEnd()),
 			// Step is a float32 in seconds, convert to int64 in nanos
 			Step: time.Duration(queryRange.GetStep() * float32(1000 * 1000 * 1000)),
 		},

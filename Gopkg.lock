@@ -246,6 +246,14 @@
   version = "v0.0.2"
 
 [[projects]]
+  digest = "1:347aace88c837e2b1b65a7c603e1b74066e3ad9c26343a2001649e3a2354591b"
+  name = "github.com/nalej/grpc-utils"
+  packages = ["pkg/conversions"]
+  pruneopts = ""
+  revision = "926e5152669ee71c0e6904055ebe6cfb5492b599"
+  version = "v1.4.0"
+
+[[projects]]
   branch = "master"
   digest = "1:c24598ffeadd2762552269271b3b1510df2d83ee6696c1e543a0ff653af494bc"
   name = "github.com/petar/GoLLRB"
@@ -408,7 +416,10 @@
   branch = "master"
   digest = "1:388835fd2da2db630c360c9d2b17bc4de248fcb5ea3e2961d654dbb6fc26acc2"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/rpc/status"]
+  packages = [
+    "googleapis/rpc/errdetails",
+    "googleapis/rpc/status",
+  ]
   pruneopts = ""
   revision = "e79c0c59cdb5e117ef82a6f885294df3d74065d5"
 
@@ -594,12 +605,12 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/golang/protobuf/ptypes/timestamp",
     "github.com/nalej/deployment-manager/pkg/utils",
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-app-cluster-api-go",
     "github.com/nalej/grpc-infrastructure-go",
     "github.com/nalej/grpc-infrastructure-monitor-go",
+    "github.com/nalej/grpc-utils/pkg/conversions",
     "github.com/prometheus/client_golang/api",
     "github.com/prometheus/client_golang/api/prometheus/v1",
     "github.com/prometheus/client_golang/prometheus",
