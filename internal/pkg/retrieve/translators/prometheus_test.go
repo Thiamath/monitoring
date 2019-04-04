@@ -117,6 +117,3 @@ var _ = ginkgo.Describe("prometheus", func() {
 		})
 	})
 })
-/*
-test few prometheus responses and results
-*/
