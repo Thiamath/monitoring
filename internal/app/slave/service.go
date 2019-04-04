@@ -52,15 +52,27 @@ func (s *Service) Run() derrors.Error {
 	// Channel to signal errors from starting the servers
 	errChan := make(chan error, 1)
 
-	httpServer, err := s.startCollect(errChan)
+	// Listen on metrics port
+	httpListener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.MetricsPort))
 	if err != nil {
-		return err
+		return derrors.NewUnavailableError("failed to listen", err)
+	}
+
+	// Start listening on API port
+	grpcListener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
+	if err != nil {
+		return derrors.NewUnavailableError("failed to listen", err)
+	}
+
+	httpServer, derr := s.startCollect(httpListener, errChan)
+	if derr != nil {
+		return derr
 	}
 	defer httpServer.Shutdown(context.TODO()) // Add timeout in context
 
-	grpcServer, err := s.startRetrieve(errChan)
-	if err != nil {
-		return err
+	grpcServer, derr := s.startRetrieve(grpcListener, errChan)
+	if derr != nil {
+		return derr
 	}
 	defer grpcServer.GracefulStop()
 
@@ -82,13 +94,7 @@ func (s *Service) Run() derrors.Error {
 
 // Initialize and start the collecting of metrics through events
 // This starts the HTTP server providing the "/metrics" endpoint.
-func (s *Service) startCollect(errChan chan<- error) (*http.Server, derrors.Error) {
-	// Listen on metrics port
-	httpListener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.MetricsPort))
-	if err != nil {
-		return nil, derrors.NewUnavailableError("failed to listen", err)
-	}
-
+func (s *Service) startCollect(httpListener net.Listener, errChan chan<- error) (*http.Server, derrors.Error) {
 	// Create metrics endpoint provider
 	promMetrics, derr := metrics_prometheus.NewMetricsProvider()
 	if derr != nil {
@@ -142,13 +148,7 @@ func (s *Service) startCollect(errChan chan<- error) (*http.Server, derrors.Erro
 
 // Initialize and start the retrieval/query API.
 // This starts the gRPC server.
-func (s *Service) startRetrieve(errChan chan<- error) (*grpc.Server, derrors.Error) {
-	// Start listening on API port
-	grpcListener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
-	if err != nil {
-		return nil, derrors.NewUnavailableError("failed to listen", err)
-	}
-
+func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error) (*grpc.Server, derrors.Error) {
 	// Create query providers
 	queryProviders := query.QueryProviders{}
 	for queryProviderType, queryProviderConfig := range(s.Configuration.QueryProviders) {

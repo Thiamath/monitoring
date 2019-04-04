@@ -57,3 +57,7 @@
 [[constraint]]
   name = "github.com/nalej/deployment-manager"
   version = "release-v0.2.0-sprint9"
+
+[[constraint]]
+  name = "github.com/nalej/grpc-utils"
+  version = "v1.3.1"
