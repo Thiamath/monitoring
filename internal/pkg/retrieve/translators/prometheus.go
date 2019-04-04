@@ -9,6 +9,8 @@ package translators
 import (
 	"github.com/nalej/derrors"
 
+	"github.com/nalej/grpc-utils/pkg/conversions"
+
 	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query/prometheus"
@@ -33,7 +35,7 @@ func PrometheusTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Err
 		grpcValues := make([]*grpc.QueryResponse_PrometheusResponse_ResultValue_Value, 0, len(resVal.Values))
 		for _, val := range(resVal.Values) {
 			grpcVal := &grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
-				Timestamp: GRPCTime(val.Timestamp),
+				Timestamp: conversions.GRPCTime(val.Timestamp),
 				Value: val.Value,
 			}
 			grpcValues = append(grpcValues, grpcVal)

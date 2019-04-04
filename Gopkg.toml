@@ -60,4 +60,4 @@
 
 [[constraint]]
   name = "github.com/nalej/grpc-utils"
-  version = "v1.3.1"
+  version = "v1.4.0"
