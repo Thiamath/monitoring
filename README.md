@@ -61,3 +61,15 @@ Global Flags:
       --consoleLogging   Pretty print logging
       --debug            Set debug level
 ```
+
+## Integration tests
+
+The following table contains the variables that activate the integration tests
+
+ | Variable  | Example Value | Description |
+ | ------------- | ------------- |------------- |
+ | `RUN_INTEGRATION_TEST`  | `true` | Run integration tests |
+ | `IT_PROMETHEUS_ADDRESS`  | `http://localhost:9090` | Prometheus Address |
+
+To run Prometheus: `docker run --rm -p 9090:9090 prom/prometheus:v2.8.0`
+

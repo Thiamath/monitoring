@@ -158,7 +158,7 @@ func stringResult(val model.Value) *PrometheusResult {
 
 func value(ts time.Time, s string) *PrometheusValue {
 	return &PrometheusValue{
-		Timestamp: ts,
+		Timestamp: ts.UTC(),
 		Value: s,
 	}
 }
