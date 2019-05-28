@@ -1,11 +1,11 @@
 {
-    "language": "golang",
-    "application_list": [
-        "infrastructure-monitor-coord infrastructure-manager-slave"
-    ],
-    "tools": [
-        "azure",
-        "k8s",
-        "docker"
-    ]
+  "language": "golang",
+  "application_list": [
+    "infrastructure-monitor-coord infrastructure-manager-slave"
+  ],
+  "tools": [
+    "azure",
+    "k8s",
+    "docker"
+  ]
 }
