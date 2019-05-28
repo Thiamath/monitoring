@@ -1,7 +1,8 @@
 {
   "language": "golang",
   "application_list": [
-    "infrastructure-monitor-coord infrastructure-manager-slave"
+    "infrastructure-monitor-coord",
+    "infrastructure-manager-slave"
   ],
   "tools": [
     "azure",
