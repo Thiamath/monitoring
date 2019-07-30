@@ -4,7 +4,7 @@
 
 // Handler for both slave and coord, implementing ExecQuery, GetClusterSummary
 // and GetClusterStats.
-// Implements grpc-infrastructure-monitor-go.SlaveServer and CoordinatorServer
+// Implements grpc-monitoring-go.MetricsCollectorServer and MonitoringManagerServer
 
 package retrieve
 
@@ -13,7 +13,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-        grpc "github.com/nalej/grpc-infrastructure-monitor-go"
+        grpc "github.com/nalej/grpc-monitoring-go"
 
 	"github.com/rs/zerolog/log"
 )

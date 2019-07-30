@@ -13,8 +13,8 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/infrastructure-monitor/pkg/provider/events"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/metrics"
+	"github.com/nalej/monitoring/pkg/provider/events"
+	"github.com/nalej/monitoring/pkg/provider/metrics"
 
 	"github.com/rs/zerolog/log"
 )

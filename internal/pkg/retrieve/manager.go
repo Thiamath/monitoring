@@ -11,7 +11,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-        grpc "github.com/nalej/grpc-infrastructure-monitor-go"
+        grpc "github.com/nalej/grpc-monitoring-go"
 )
 
 type RetrieveManager interface {

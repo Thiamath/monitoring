@@ -9,10 +9,10 @@ package translators
 import (
 	"time"
 
-	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
+	grpc "github.com/nalej/grpc-monitoring-go"
 	"github.com/golang/protobuf/ptypes/timestamp"
 
-	. "github.com/nalej/infrastructure-monitor/pkg/provider/query/prometheus"
+	. "github.com/nalej/monitoring/pkg/provider/query/prometheus"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"

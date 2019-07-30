@@ -11,9 +11,9 @@ import (
 
 	"github.com/nalej/grpc-utils/pkg/conversions"
 
-	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query/prometheus"
+	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/monitoring/pkg/provider/query"
+	"github.com/nalej/monitoring/pkg/provider/query/prometheus"
 )
 
 func init() {
