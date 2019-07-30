@@ -3,27 +3,27 @@ apiVersion: apps/v1
 metadata:
   labels:
     cluster: application
-    component: infrastructure-monitor
-    service: infrastructure-monitor-slave
-  name: infrastructure-monitor-slave
+    component: monitoring
+    service: metrics-collector
+  name: metrics-collector
   namespace: __NPH_NAMESPACE
 spec:
   replicas: 1
   selector:
     matchLabels:
       cluster: application
-      component: infrastructure-monitor
-      service: infrastructure-monitor-slave
+      component: monitoring
+      service: metrics-collector
   template:
     metadata:
       labels:
         cluster: application
-        component: infrastructure-monitor
-        service: infrastructure-monitor-slave
+        component: monitoring
+        service: metrics-collector
     spec:
       containers:
-      - name: infrastructure-monitor-slave
-        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/infrastructure-monitor-slave:__NPH_VERSION
+      - name: metrics-collector
+        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/metrics-collector:__NPH_VERSION
         imagePullPolicy: Always
         securityContext:
           runAsUser: 2000

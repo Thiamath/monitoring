@@ -16,6 +16,6 @@ RUN wget https://letsencrypt.org/certs/letsencryptauthorityx3.pem.txt -O /nalej/
 	ln -s /nalej/STAGING.pem /nalej/DEVELOPMENT.pem
 
 # Now just add the binary
-COPY infrastructure-monitor-coord /nalej/
+COPY monitoring-manager /nalej/
 
-ENTRYPOINT ["./nalej/infrastructure-monitor-coord"]
+ENTRYPOINT ["./nalej/monitoring-manager"]

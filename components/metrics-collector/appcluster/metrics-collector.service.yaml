@@ -1,17 +1,17 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: infrastructure-monitor-slave
+  name: metrics-collector
   namespace: __NPH_NAMESPACE
   labels:
     cluster: application
-    component: infrastructure-monitor
-    service: infrastructure-monitor-slave
+    component: monitoring
+    service: metrics-collector
 spec:
   selector:
       cluster: application
-      component: infrastructure-monitor
-      service: infrastructure-monitor-slave
+      component: monitoring
+      service: metrics-collector
   type: ClusterIP
   ports:
   - name: api

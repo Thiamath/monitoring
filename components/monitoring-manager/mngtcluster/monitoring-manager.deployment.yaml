@@ -3,27 +3,27 @@ apiVersion: apps/v1
 metadata:
   labels:
     cluster: management
-    component: infrastructure-monitor
-    service: infrastructure-monitor-coord
-  name: infrastructure-monitor-coord
+    component: monitoring
+    service: monitoring-manager
+  name: monitoring-manager
   namespace: __NPH_NAMESPACE
 spec:
   replicas: 1
   selector:
     matchLabels:
       cluster: management
-      component: infrastructure-monitor
-      service: infrastructure-monitor-coord
+      component: monitoring
+      service: monitoring-manager
   template:
     metadata:
       labels:
         cluster: management
-        component: infrastructure-monitor
-        service: infrastructure-monitor-coord
+        component: monitoring
+        service: monitoring-manager
     spec:
       containers:
-      - name: infrastructure-monitor-coord
-        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/infrastructure-monitor-coord:__NPH_VERSION
+      - name: monitoring-manager
+        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/monitoring-manager:__NPH_VERSION
         imagePullPolicy: Always
         securityContext:
           runAsUser: 2000

@@ -8,6 +8,6 @@ FROM iron/go
 RUN mkdir /nalej
 
 # Now just add the binary
-COPY infrastructure-monitor-slave /nalej/
+COPY metrics-collector /nalej/
 
-ENTRYPOINT ["./nalej/infrastructure-monitor-slave"]
+ENTRYPOINT ["./nalej/metrics-collector"]

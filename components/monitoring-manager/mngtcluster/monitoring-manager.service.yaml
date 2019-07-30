@@ -1,17 +1,17 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: infrastructure-monitor-coord
+  name: monitoring-manager
   namespace: __NPH_NAMESPACE
   labels:
     cluster: management
-    component: infrastructure-monitor
-    service: infrastructure-monitor-coord
+    component: monitoring
+    service: monitoring-manager
 spec:
   selector:
       cluster: management
-      component: infrastructure-monitor
-      service: infrastructure-monitor-coord
+      component: monitoring
+      service: monitoring-manager
   type: ClusterIP
   ports:
   - protocol: TCP
