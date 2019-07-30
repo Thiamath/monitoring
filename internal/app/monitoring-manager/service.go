@@ -2,7 +2,7 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-package coord
+package monitoring_manager
 
 import (
 	"fmt"
@@ -11,9 +11,9 @@ import (
 	"github.com/nalej/derrors"
 
         "github.com/nalej/grpc-infrastructure-go"
-        "github.com/nalej/grpc-infrastructure-monitor-go"
+        "github.com/nalej/grpc-monitoring-go"
 
-	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve"
+	"github.com/nalej/monitoring/internal/pkg/retrieve"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -64,18 +64,18 @@ func (s *Service) Run() derrors.Error {
 		Insecure: s.Configuration.Insecure,
 	}
 
-	coordManager, derr := NewCoordManager(clustersClient, params)
+	manager, derr := NewManager(clustersClient, params)
 	if derr != nil {
 		return derr
 	}
-	handler, derr := retrieve.NewHandler(coordManager)
+	handler, derr := retrieve.NewHandler(manager)
 	if derr != nil {
 		return derr
 	}
 
 	// Create server and register handler
 	server := grpc.NewServer()
-	grpc_infrastructure_monitor_go.RegisterCoordinatorServer(server, handler)
+	grpc_monitoring_go.RegisterMonitoringManagerServer(server, handler)
 
 	reflection.Register(server)
 	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")

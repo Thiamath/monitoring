@@ -4,11 +4,11 @@
 
 // Wrapper for the configuration properties.
 
-package coord
+package monitoring_manager
 
 import (
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/version"
+	"github.com/nalej/monitoring/version"
 	"github.com/rs/zerolog/log"
 )
 

@@ -2,9 +2,9 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-// Coord implementation for CoordManager
+// Manager implementation for Monitoring
 
-package coord
+package monitoring_manager
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 
 	"github.com/nalej/grpc-app-cluster-api-go"
 	"github.com/nalej/grpc-infrastructure-go"
-	"github.com/nalej/grpc-infrastructure-monitor-go"
+	"github.com/nalej/grpc-monitoring-go"
 
 	"github.com/rs/zerolog/log"
 
@@ -25,7 +25,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-type CoordManager struct {
+type Manager struct {
 	clustersClient grpc_infrastructure_go.ClustersClient
 	params *AppClusterConnectParams
 }
@@ -39,7 +39,7 @@ type AppClusterConnectParams struct {
 }
 
 type clusterClient struct {
-	grpc_app_cluster_api_go.InfrastructureMonitorClient
+	grpc_app_cluster_api_go.MetricsCollectorClient
 	conn *grpc.ClientConn
 }
 
@@ -81,7 +81,7 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 		return nil, derrors.NewInternalError("unable to create client connection", err)
 	}
 
-	client := grpc_app_cluster_api_go.NewInfrastructureMonitorClient(conn)
+	client := grpc_app_cluster_api_go.NewMetricsCollectorClient(conn)
 
 	return &clusterClient{client, conn}, nil
 }
@@ -111,8 +111,8 @@ func addCert(pool *x509.CertPool, cert string) derrors.Error {
 }
 
 // Create a new query manager.
-func NewCoordManager(clustersClient grpc_infrastructure_go.ClustersClient, params *AppClusterConnectParams) (*CoordManager, derrors.Error) {
-	manager := &CoordManager{
+func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *AppClusterConnectParams) (*Manager, derrors.Error) {
+	manager := &Manager{
 		clustersClient: clustersClient,
 		params: params,
 	}
@@ -120,7 +120,7 @@ func NewCoordManager(clustersClient grpc_infrastructure_go.ClustersClient, param
 	return manager, nil
 }
 
-func (m *CoordManager) getClusterClient(organizationId, clusterId string) (*clusterClient, derrors.Error) {
+func (m *Manager) getClusterClient(organizationId, clusterId string) (*clusterClient, derrors.Error) {
 	getClusterRequest := &grpc_infrastructure_go.ClusterId{
 		OrganizationId: organizationId,
 		ClusterId: clusterId,
@@ -135,7 +135,7 @@ func (m *CoordManager) getClusterClient(organizationId, clusterId string) (*clus
 }
 
 // Retrieve a summary of high level cluster resource availability
-func (m *CoordManager) GetClusterSummary(ctx context.Context, request *grpc_infrastructure_monitor_go.ClusterSummaryRequest) (*grpc_infrastructure_monitor_go.ClusterSummary, derrors.Error) {
+func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitoring_go.ClusterSummaryRequest) (*grpc_monitoring_go.ClusterSummary, derrors.Error) {
 	client, derr := m.getClusterClient(request.GetOrganizationId(), request.GetClusterId())
 	if derr != nil {
 		return nil, derr
@@ -151,7 +151,7 @@ func (m *CoordManager) GetClusterSummary(ctx context.Context, request *grpc_infr
 }
 
 // Retrieve statistics on cluster with respect to platform resources
-func (m *CoordManager) GetClusterStats(ctx context.Context, request *grpc_infrastructure_monitor_go.ClusterStatsRequest) (*grpc_infrastructure_monitor_go.ClusterStats, derrors.Error) {
+func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_go.ClusterStatsRequest) (*grpc_monitoring_go.ClusterStats, derrors.Error) {
 	client, derr := m.getClusterClient(request.GetOrganizationId(), request.GetClusterId())
 	if derr != nil {
 		return nil, derr
@@ -167,7 +167,7 @@ func (m *CoordManager) GetClusterStats(ctx context.Context, request *grpc_infras
 }
 
 // Execute a query directly on the monitoring storage backend
-func (m *CoordManager) Query(ctx context.Context, request *grpc_infrastructure_monitor_go.QueryRequest) (*grpc_infrastructure_monitor_go.QueryResponse, derrors.Error) {
+func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRequest) (*grpc_monitoring_go.QueryResponse, derrors.Error) {
 	client, derr := m.getClusterClient(request.GetOrganizationId(), request.GetClusterId())
 	if derr != nil {
 		return nil, derr
