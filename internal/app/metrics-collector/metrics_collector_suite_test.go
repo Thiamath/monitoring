@@ -2,7 +2,7 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-package slave
+package metrics_collector
 
 import (
 	"os"
@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/nalej/grpc-utils/pkg/test"
-	"github.com/nalej/grpc-infrastructure-monitor-go"
+	"github.com/nalej/grpc-monitoring-go"
 
-	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve/translators"
-	"github.com/nalej/infrastructure-monitor/internal/pkg/utils"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query/fake"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query/prometheus"
+	"github.com/nalej/monitoring/internal/pkg/retrieve/translators"
+	"github.com/nalej/monitoring/internal/pkg/utils"
+	"github.com/nalej/monitoring/pkg/provider/query"
+	"github.com/nalej/monitoring/pkg/provider/query/fake"
+	"github.com/nalej/monitoring/pkg/provider/query/prometheus"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -27,13 +27,13 @@ import (
 
 func TestHandlerPackage(t *testing.T) {
 	gomega.RegisterFailHandler(ginkgo.Fail)
-	ginkgo.RunSpecs(t, "internal/app/slave package suite")
+	ginkgo.RunSpecs(t, "internal/app/metrics-collector package suite")
 }
 
 var listener *bufconn.Listener
 var grpcServer *grpc.Server
 
-var client grpc_infrastructure_monitor_go.SlaveClient
+var client grpc_monitoring_go.MetricsCollectorClient
 
 var manager *RetrieveManager
 
@@ -88,7 +88,7 @@ func beforeSuiteIntegrationTests() {
 	conn, err := test.GetConn(*listener)
 	gomega.Expect(err).To(gomega.Succeed())
 
-	client = grpc_infrastructure_monitor_go.NewSlaveClient(conn)
+	client = grpc_monitoring_go.NewMetricsCollectorClient(conn)
 }
 
 func beforeSuiteRetrieveManager() {
@@ -185,8 +185,8 @@ func beforeSuiteRetrieveManager() {
 	gomega.Expect(derr).To(gomega.Succeed())
 
 	/* Insert fake provider */
-	grpc_infrastructure_monitor_go.QueryType_name[-1] = provider.ProviderType().String()
-	grpc_infrastructure_monitor_go.QueryType_value[provider.ProviderType().String()] = -1
+	grpc_monitoring_go.QueryType_name[-1] = provider.ProviderType().String()
+	grpc_monitoring_go.QueryType_value[provider.ProviderType().String()] = -1
 
 	/* We use the fake translator */
 	translators.Register(provider.ProviderType(), translators.FakeTranslator)

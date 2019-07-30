@@ -2,16 +2,14 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-// Slave implementation for RetrieveManager
-
-package slave
+package metrics_collector
 
 import (
 	"strings"
 
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/metrics"
 
-	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
+	grpc "github.com/nalej/grpc-monitoring-go"
 )
 
 func GRPCStatsFieldToMetric(g grpc.PlatformStatsField) metrics.MetricType {

@@ -2,9 +2,9 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-// Slave implementation for RetrieveManager
+// RetrieveManager handles metrics queries
 
-package slave
+package metrics_collector
 
 import (
 	"context"
@@ -15,11 +15,11 @@ import (
 
 	"github.com/nalej/grpc-utils/pkg/conversions"
 
-	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve/translators"
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	"github.com/nalej/monitoring/internal/pkg/retrieve/translators"
+	"github.com/nalej/monitoring/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/provider/query"
 
-	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
+	grpc "github.com/nalej/grpc-monitoring-go"
 )
 
 type RetrieveManager struct {

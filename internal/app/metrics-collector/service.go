@@ -2,7 +2,7 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-package slave
+package metrics_collector
 
 import (
 	"context"
@@ -15,12 +15,12 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/grpc-infrastructure-monitor-go"
+	"github.com/nalej/grpc-monitoring-go"
 
 	"github.com/nalej/deployment-manager/pkg/utils"
-	"github.com/nalej/infrastructure-monitor/internal/pkg/collect"
-	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/events/kubernetes"
+	"github.com/nalej/monitoring/internal/pkg/collect"
+	"github.com/nalej/monitoring/internal/pkg/retrieve"
+	"github.com/nalej/monitoring/pkg/provider/events/kubernetes"
 	metrics_prometheus "github.com/nalej/infrastructure-monitor/pkg/provider/metrics/prometheus"
 	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
 
@@ -173,7 +173,7 @@ func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error)
 
 	// Create server and register handler
 	grpcServer := grpc.NewServer()
-	grpc_infrastructure_monitor_go.RegisterSlaveServer(grpcServer, retrieveHandler)
+	grpc_infrastructure_monitor_go.RegisterMetricsCollectorServer(grpcServer, retrieveHandler)
 
 	// Start gRPC server
 	reflection.Register(grpcServer)

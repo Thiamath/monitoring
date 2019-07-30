@@ -4,15 +4,15 @@
 
 // Wrapper for the configuration properties.
 
-package slave
+package metrics_collector
 
 import (
 	"fmt"
 	"os"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/version"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	"github.com/nalej/monitoring/version"
+	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/rs/zerolog/log"
 )
 

@@ -4,14 +4,14 @@
 
 // RetrieveManager tests
 
-package slave
+package metrics_collector
 
 import (
 	"context"
 
-	"github.com/nalej/infrastructure-monitor/internal/pkg/retrieve/translators"
+	"github.com/nalej/monitoring/internal/pkg/retrieve/translators"
 
-	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
+	grpc "github.com/nalej/grpc-monitoring-go"
 	"github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/onsi/ginkgo"

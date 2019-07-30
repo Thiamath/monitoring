@@ -2,17 +2,17 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-// Slave integration test
+// Collector integration test
 
 // Currently only test queries - not metrics (needs k8s)
 
-package slave
+package metrics_collector
 
 import (
 	"context"
 
-	"github.com/nalej/grpc-infrastructure-monitor-go"
-	"github.com/nalej/infrastructure-monitor/internal/pkg/utils"
+	"github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/monitoring/internal/pkg/utils"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -32,13 +32,13 @@ var _ = ginkgo.Describe("integration tests", func() {
 
 	ginkgo.Context("GetClusterSummary", func(){
 		ginkgo.It("should return error on invalid request", func(){
-			req := &grpc_infrastructure_monitor_go.ClusterSummaryRequest{
+			req := &grpc_monitoring_go.ClusterSummaryRequest{
 				// Empty request
 			}
 			_, err := client.GetClusterSummary(context.Background(), req)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
-			req = &grpc_infrastructure_monitor_go.ClusterSummaryRequest{
+			req = &grpc_monitoring_go.ClusterSummaryRequest{
 				OrganizationId: "org-id-1",
 			}
 			_, err = client.GetClusterSummary(context.Background(), req)
@@ -46,7 +46,7 @@ var _ = ginkgo.Describe("integration tests", func() {
 		})
 
 		ginkgo.It("should succeed on request without range", func(){
-			req := &grpc_infrastructure_monitor_go.ClusterSummaryRequest{
+			req := &grpc_monitoring_go.ClusterSummaryRequest{
 				OrganizationId: "org-id-1",
 				ClusterId: "cluster-id-1",
 			}
@@ -55,7 +55,7 @@ var _ = ginkgo.Describe("integration tests", func() {
 		})
 
 		ginkgo.It("should succeed on request with range", func(){
-			req := &grpc_infrastructure_monitor_go.ClusterSummaryRequest{
+			req := &grpc_monitoring_go.ClusterSummaryRequest{
 				OrganizationId: "org-id-1",
 				ClusterId: "cluster-id-1",
 				RangeMinutes: 10,
@@ -67,13 +67,13 @@ var _ = ginkgo.Describe("integration tests", func() {
 
 	ginkgo.Context("GetClusterStats", func(){
 		ginkgo.It("should return error on invalid request", func(){
-			req := &grpc_infrastructure_monitor_go.ClusterStatsRequest{
+			req := &grpc_monitoring_go.ClusterStatsRequest{
 				// Empty request
 			}
 			_, err := client.GetClusterStats(context.Background(), req)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
-			req = &grpc_infrastructure_monitor_go.ClusterStatsRequest{
+			req = &grpc_monitoring_go.ClusterStatsRequest{
 				OrganizationId: "org-id-1",
 			}
 			_, err = client.GetClusterStats(context.Background(), req)
@@ -81,7 +81,7 @@ var _ = ginkgo.Describe("integration tests", func() {
 		})
 
 		ginkgo.It("should succeed on request without range", func(){
-			req := &grpc_infrastructure_monitor_go.ClusterStatsRequest{
+			req := &grpc_monitoring_go.ClusterStatsRequest{
 				OrganizationId: "org-id-1",
 				ClusterId: "cluster-id-1",
 			}
@@ -90,7 +90,7 @@ var _ = ginkgo.Describe("integration tests", func() {
 		})
 
 		ginkgo.It("should succeed on request with range", func(){
-			req := &grpc_infrastructure_monitor_go.ClusterStatsRequest{
+			req := &grpc_monitoring_go.ClusterStatsRequest{
 				OrganizationId: "org-id-1",
 				ClusterId: "cluster-id-1",
 				RangeMinutes: 10,
@@ -100,12 +100,12 @@ var _ = ginkgo.Describe("integration tests", func() {
 		})
 
 		ginkgo.It("should succeed on request with field selector", func(){
-			req := &grpc_infrastructure_monitor_go.ClusterStatsRequest{
+			req := &grpc_monitoring_go.ClusterStatsRequest{
 				OrganizationId: "org-id-1",
 				ClusterId: "cluster-id-1",
-				Fields: []grpc_infrastructure_monitor_go.PlatformStatsField{
-					grpc_infrastructure_monitor_go.PlatformStatsField_VOLUMES,
-					grpc_infrastructure_monitor_go.PlatformStatsField_SERVICES,
+				Fields: []grpc_monitoring_go.PlatformStatsField{
+					grpc_monitoring_go.PlatformStatsField_VOLUMES,
+					grpc_monitoring_go.PlatformStatsField_SERVICES,
 				},
 			}
 			_, err := client.GetClusterStats(context.Background(), req)
@@ -115,19 +115,19 @@ var _ = ginkgo.Describe("integration tests", func() {
 
 	ginkgo.Context("Query", func(){
 		ginkgo.It("should return error on invalid request", func(){
-			req := &grpc_infrastructure_monitor_go.QueryRequest{
+			req := &grpc_monitoring_go.QueryRequest{
 				// Empty request
 			}
 			_, err := client.Query(context.Background(), req)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
-			req = &grpc_infrastructure_monitor_go.QueryRequest{
+			req = &grpc_monitoring_go.QueryRequest{
 				OrganizationId: "org-id-1",
 			}
 			_, err = client.Query(context.Background(), req)
 			gomega.Expect(err).To(gomega.HaveOccurred())
 
-			req = &grpc_infrastructure_monitor_go.QueryRequest{
+			req = &grpc_monitoring_go.QueryRequest{
 				OrganizationId: "org-id-1",
 				ClusterId: "cluster-id-1",
 			}
@@ -136,10 +136,10 @@ var _ = ginkgo.Describe("integration tests", func() {
 		})
 
 		ginkgo.It("should succeed on valid query", func(){
-			req := &grpc_infrastructure_monitor_go.QueryRequest{
+			req := &grpc_monitoring_go.QueryRequest{
 				OrganizationId: "org-id-1",
 				ClusterId: "cluster-id-1",
-				Type: grpc_infrastructure_monitor_go.QueryType_PROMETHEUS,
+				Type: grpc_monitoring_go.QueryType_PROMETHEUS,
 				Query: `{job=~".+"}`,
 			}
 			_, err := client.Query(context.Background(), req)
