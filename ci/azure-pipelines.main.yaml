@@ -13,9 +13,9 @@ variables:
   - name: modulePath
     value: '$(GOPATH)/src/github.com/$(Build.Repository.Name)'
   - name: appList
-    value: 'infrastructure-monitor-coord infrastructure-monitor-slave'
+    value: 'monitoring-manager metrics-collector'
   - name: imageList
-    value: 'infrastructure-monitor-coord infrastructure-monitor-slave'
+    value: 'monitoring-manager metrics-collector'
   - name: authorName
     value: ""
 
