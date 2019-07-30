@@ -5,7 +5,7 @@
 package commands
 
 import (
-	"github.com/nalej/infrastructure-monitor/internal/app/coord"
+	"github.com/nalej/monitoring/internal/app/monitoring-manager"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -23,7 +23,7 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	runCmd.Flags().IntVar(&config.Port, "port", 8423, "Port for Infrastructure Monitor Coordinator gRPC API")
+	runCmd.Flags().IntVar(&config.Port, "port", 8423, "Port for Monitoring Manager gRPC API")
 	runCmd.PersistentFlags().StringVar(&config.SystemModelAddress, "systemModelAddress", "localhost:8800", "System Model address (host:port)")
 	runCmd.PersistentFlags().StringVar(&config.AppClusterPrefix, "appClusterPrefix", "appcluster", "Prefix for application cluster hostnames")
 	runCmd.PersistentFlags().IntVar(&config.AppClusterPort, "appClusterPort", 443, "Port used by app-cluster-api")
@@ -34,9 +34,9 @@ func init() {
 }
 
 func Run() {
-	log.Info().Msg("Launching Infrastructure Monitor Coordinator service")
+	log.Info().Msg("Launching Monitoring Manager service")
 
-	server, err := coord.NewService(&config)
+	server, err := monitoring_manager.NewService(&config)
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err)
 		panic(err.Error())

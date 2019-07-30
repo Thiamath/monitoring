@@ -5,7 +5,7 @@
 package commands
 
 import (
-	"github.com/nalej/infrastructure-monitor/version"
+	"github.com/nalej/monitoring/version"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -18,9 +18,9 @@ var debugLevel bool
 var consoleLogging bool
 
 var rootCmd = &cobra.Command{
-	Use:   "infrastructure-monitor-coord",
-	Short: "Infrastructure Monitor Management Cluster component",
-	Long:  `Infrastructure Monitor component on Management Cluster forwards queries to Application Clusters`,
+	Use:   "monitoring-manager",
+	Short: "Monitoring Manager",
+	Long:  `Monitoring Manager on Management Cluster forwards queries to Application Clusters`,
 	Version: "unknown-version",
 
 	Run: func(cmd *cobra.Command, args []string) {

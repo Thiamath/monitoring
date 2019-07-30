@@ -2,14 +2,14 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-// Infrastructure monitor component for management clusters.
+// Monitoring manager component for management clusters.
 // Forward all queries to requested application cluster.
 
 package main
 
 import (
-	"github.com/nalej/infrastructure-monitor/cmd/infrastructure-monitor-coord/commands"
-	"github.com/nalej/infrastructure-monitor/version"
+	"github.com/nalej/monitoring/cmd/monitoring-manager/commands"
+	"github.com/nalej/monitoring/version"
 )
 
 var MainVersion string

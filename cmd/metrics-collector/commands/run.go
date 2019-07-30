@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nalej/infrastructure-monitor/internal/app/slave"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	"github.com/nalej/monitoring/internal/app/metrics-collector"
+	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +27,7 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	runCmd.Flags().IntVar(&config.Port, "port", 8422, "Port for Infrastructure Monitor Slave gRPC API")
+	runCmd.Flags().IntVar(&config.Port, "port", 8422, "Port for Metrics Collector gRPC API")
 	runCmd.Flags().IntVar(&config.MetricsPort, "metricsPort", 8424, "Port for HTTP metrics endpoint")
 	// By default, we read ~/.kube/config if it's available. Alternative
 	// config can be specified on command line; or we can run inside
@@ -49,9 +49,9 @@ func init() {
 }
 
 func Run() {
-	log.Info().Msg("Launching Infrastructure Monitor Slave service")
+	log.Info().Msg("Launching Metrics Collector service")
 
-	server, err := slave.NewService(&config)
+	server, err := metrics_collector.NewService(&config)
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to create service")
 	}

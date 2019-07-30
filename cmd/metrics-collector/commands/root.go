@@ -5,7 +5,7 @@
 package commands
 
 import (
-	"github.com/nalej/infrastructure-monitor/version"
+	"github.com/nalej/monitoring/version"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -18,9 +18,9 @@ var debugLevel bool
 var consoleLogging bool
 
 var rootCmd = &cobra.Command{
-	Use:   "infrastructure-monitor-slave",
-	Short: "Infrastructure Monitor Application Cluster component",
-	Long:  `Infrastructure Monitor component on Application Cluster stores Kubernetes events in Prometheus`,
+	Use:   "metrics-collector",
+	Short: "Metrics Collector",
+	Long:  `Metrics COllector on Application Cluster stores Kubernetes events in Prometheus`,
 	Version: "unknown-version",
 
 	Run: func(cmd *cobra.Command, args []string) {
