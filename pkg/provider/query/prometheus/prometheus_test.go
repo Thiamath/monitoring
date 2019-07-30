@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	"github.com/nalej/monitoring/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/provider/query"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"

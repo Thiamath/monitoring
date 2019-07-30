@@ -7,7 +7,7 @@
 package prometheus
 
 import (
-	. "github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	. "github.com/nalej/monitoring/pkg/provider/query"
 )
 
 // We check if we ask for an average or for the latest number with

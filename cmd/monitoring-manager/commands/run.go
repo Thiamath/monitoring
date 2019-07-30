@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var config = coord.Config{}
+var config = monitoring_manager.Config{}
 
 var runCmd = &cobra.Command{
 	Use:   "run",

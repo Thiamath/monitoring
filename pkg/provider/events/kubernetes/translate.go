@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/nalej/deployment-manager/pkg/utils"
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/metrics"
 
 	apps_v1 "k8s.io/api/apps/v1"
 	core_v1 "k8s.io/api/core/v1"
@@ -246,7 +246,7 @@ func isAppInstance(obj interface{}) bool {
 		return false
 	}
 	labels := metaobj.GetLabels()
-	_, found := labels[utils.NALEJ_ANNOTATION_ORGANIZATION]
+	_, found := labels[utils.NALEJ_ANNOTATION_ORGANIZATION_ID]
 	if !found {
 		log.Debug().Msg("no nalej-organization")
 		return false

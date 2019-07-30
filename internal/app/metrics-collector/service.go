@@ -21,8 +21,8 @@ import (
 	"github.com/nalej/monitoring/internal/pkg/collect"
 	"github.com/nalej/monitoring/internal/pkg/retrieve"
 	"github.com/nalej/monitoring/pkg/provider/events/kubernetes"
-	metrics_prometheus "github.com/nalej/infrastructure-monitor/pkg/provider/metrics/prometheus"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	metrics_prometheus "github.com/nalej/monitoring/pkg/provider/metrics/prometheus"
+	"github.com/nalej/monitoring/pkg/provider/query"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -102,7 +102,7 @@ func (s *Service) startCollect(httpListener net.Listener, errChan chan<- error) 
 	}
 
 	// Create Kubernetes event collector provider
-	labelSelector := utils.NALEJ_ANNOTATION_ORGANIZATION // only get events relevant for user applications
+	labelSelector := utils.NALEJ_ANNOTATION_ORGANIZATION_ID // only get events relevant for user applications
 	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster,
 		labelSelector, promMetrics.GetCollector())
 	if derr != nil {
@@ -173,7 +173,7 @@ func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error)
 
 	// Create server and register handler
 	grpcServer := grpc.NewServer()
-	grpc_infrastructure_monitor_go.RegisterMetricsCollectorServer(grpcServer, retrieveHandler)
+	grpc_monitoring_go.RegisterMetricsCollectorServer(grpcServer, retrieveHandler)
 
 	// Start gRPC server
 	reflection.Register(grpcServer)

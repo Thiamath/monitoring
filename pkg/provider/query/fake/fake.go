@@ -11,7 +11,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	"github.com/nalej/monitoring/pkg/provider/query"
 )
 
 const FakeProviderType query.QueryProviderType = "FAKE"

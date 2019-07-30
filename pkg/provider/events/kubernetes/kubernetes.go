@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/metrics"
 
 	"github.com/rs/zerolog/log"
 

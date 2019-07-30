@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var config = slave.Config{}
+var config = metrics_collector.Config{}
 
 var runCmd = &cobra.Command{
 	Use:   "run",

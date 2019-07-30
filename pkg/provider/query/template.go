@@ -13,7 +13,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/metrics"
 )
 
 type TemplateName string
