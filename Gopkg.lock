@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:0d3deb8a6da8ffba5635d6fb1d2144662200def6c9d82a35a6d05d6c2d4a48f9"
+  digest = "1:ac2a05be7167c495fe8aaf8aaf62ecf81e78d2180ecb04e16778dc6c185c96a5"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   pruneopts = ""
-  revision = "4b2b341e8d7715fae06375aa633dbb6e91b3fb46"
-  version = "v1.0.0"
+  revision = "37c8de3658fcb183f997c4e13e8337516ab753e6"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
@@ -188,12 +188,12 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:f49883f12b5034edaa162f957261fc2b31bcca4fd0d006d5466e059677c0f30e"
+  digest = "1:2906626216a7128dcbc73cc28682afbd34eafa448207f48493808432d30ce0fb"
   name = "github.com/nalej/grpc-app-cluster-api-go"
   packages = ["."]
   pruneopts = ""
-  revision = "0e9abb31d78dec5e8e2abfba379bd91e18ac1740"
-  version = "v0.0.19"
+  revision = "4c35c9d24f1efe7f8683eecaebe5fd264a01ff06"
+  version = "v0.0.20"
 
 [[projects]]
   digest = "1:68d84b15d67868fa490659de39b2d14f5d68674b9ad22406ee21f249d7a3ae04"
@@ -236,12 +236,12 @@
   version = "v0.0.38"
 
 [[projects]]
-  digest = "1:6bbca7d893e45448d94e677f49b6dddd710afc2866408f8109a7313f36ed221d"
-  name = "github.com/nalej/grpc-infrastructure-monitor-go"
+  digest = "1:9c4948fc5141c6c3e5287e5a7c60b06e1465751012c5451dc5d9ee8b045d2c7c"
+  name = "github.com/nalej/grpc-monitoring-go"
   packages = ["."]
   pruneopts = ""
-  revision = "f0b2679383393f4de772889420b1e5ab6ee77447"
-  version = "v0.0.3"
+  revision = "0004501b8eb8a1fac8a69f1fa8e36c845ee33783"
+  version = "v0.0.4"
 
 [[projects]]
   digest = "1:f41783cc6d03c6734fe9bb8b42ca4aa87651430e98cd8fe0ad5c72ca30da2efa"
@@ -277,33 +277,6 @@
   pruneopts = ""
   revision = "926e5152669ee71c0e6904055ebe6cfb5492b599"
   version = "v1.4.0"
-
-[[projects]]
-  branch = "feature/Fix_deployment_manager_vendor_version"
-  digest = "1:49362e32f3b788ea9e84bbf9b54770ccc4d44ec6c9c02eb0e6c5e220f1c0a97d"
-  name = "github.com/nalej/infrastructure-monitor"
-  packages = [
-    "cmd/infrastructure-monitor-coord/commands",
-    "cmd/infrastructure-monitor-slave/commands",
-    "internal/app/coord",
-    "internal/app/slave",
-    "internal/pkg/collect",
-    "internal/pkg/retrieve",
-    "internal/pkg/retrieve/translators",
-    "internal/pkg/utils",
-    "pkg/metrics",
-    "pkg/provider/events",
-    "pkg/provider/events/kubernetes",
-    "pkg/provider/metrics",
-    "pkg/provider/metrics/prometheus",
-    "pkg/provider/query",
-    "pkg/provider/query/fake",
-    "pkg/provider/query/prometheus",
-    "pkg/utils",
-    "version",
-  ]
-  pruneopts = ""
-  revision = "d52fcf5bacc5a36afffb503cdd5bb991c5090bbc"
 
 [[projects]]
   digest = "1:a3735b0978a8b53fc2ac97a6f46ca1189f0712a00df86d6ec4cf26c1a25e6d77"
@@ -472,14 +445,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:99cdf3e6a8e8b44d680573992c2a19192f47da37a05eccf205cd16add40de159"
+  digest = "1:73d6ce4026bb0d6f74095f87134087d3009861558e7f0213e581276dd35cabd7"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = ""
-  revision = "fc99dfbffb4e5ed5758a37e31dd861afe285406b"
+  revision = "1393eb0183657fb29200106b17a5042ec6e48dbe"
 
 [[projects]]
   digest = "1:740b51a55815493a8d0f2b1e0d0ae48fe48953bf7eaf3fcc4198823bf67768c0"
@@ -744,27 +717,9 @@
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-app-cluster-api-go",
     "github.com/nalej/grpc-infrastructure-go",
-    "github.com/nalej/grpc-infrastructure-monitor-go",
+    "github.com/nalej/grpc-monitoring-go",
     "github.com/nalej/grpc-utils/pkg/conversions",
     "github.com/nalej/grpc-utils/pkg/test",
-    "github.com/nalej/infrastructure-monitor/cmd/infrastructure-monitor-coord/commands",
-    "github.com/nalej/infrastructure-monitor/cmd/infrastructure-monitor-slave/commands",
-    "github.com/nalej/infrastructure-monitor/internal/app/coord",
-    "github.com/nalej/infrastructure-monitor/internal/app/slave",
-    "github.com/nalej/infrastructure-monitor/internal/pkg/collect",
-    "github.com/nalej/infrastructure-monitor/internal/pkg/retrieve",
-    "github.com/nalej/infrastructure-monitor/internal/pkg/retrieve/translators",
-    "github.com/nalej/infrastructure-monitor/internal/pkg/utils",
-    "github.com/nalej/infrastructure-monitor/pkg/metrics",
-    "github.com/nalej/infrastructure-monitor/pkg/provider/events",
-    "github.com/nalej/infrastructure-monitor/pkg/provider/events/kubernetes",
-    "github.com/nalej/infrastructure-monitor/pkg/provider/metrics",
-    "github.com/nalej/infrastructure-monitor/pkg/provider/metrics/prometheus",
-    "github.com/nalej/infrastructure-monitor/pkg/provider/query",
-    "github.com/nalej/infrastructure-monitor/pkg/provider/query/fake",
-    "github.com/nalej/infrastructure-monitor/pkg/provider/query/prometheus",
-    "github.com/nalej/infrastructure-monitor/pkg/utils",
-    "github.com/nalej/infrastructure-monitor/version",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/prometheus/client_golang/api",
