@@ -10,7 +10,7 @@ import (
 	"net/http"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/metrics"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

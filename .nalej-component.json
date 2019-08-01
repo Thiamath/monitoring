@@ -1,8 +1,8 @@
 {
   "language": "golang",
   "application_list": [
-    "infrastructure-monitor-coord",
-    "infrastructure-monitor-slave"
+    "monitoring-manager",
+    "metrics-collector"
   ],
   "tools": [
     "azure",

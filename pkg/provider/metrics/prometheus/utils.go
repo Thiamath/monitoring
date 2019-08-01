@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
-	"github.com/nalej/infrastructure-monitor/pkg/utils"
+	"github.com/nalej/monitoring/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/utils"
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"

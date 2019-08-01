@@ -10,7 +10,7 @@ import (
 	"net/url"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/spf13/cobra"
 	"github.com/rs/zerolog"
 )

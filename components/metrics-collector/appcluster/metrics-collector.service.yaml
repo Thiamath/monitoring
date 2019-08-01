@@ -1,0 +1,24 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: metrics-collector
+  namespace: __NPH_NAMESPACE
+  labels:
+    cluster: application
+    component: monitoring
+    service: metrics-collector
+spec:
+  selector:
+      cluster: application
+      component: monitoring
+      service: metrics-collector
+  type: ClusterIP
+  ports:
+  - name: api
+    protocol: TCP
+    port: 8422
+    targetPort: 8422
+  - name: metrics
+    protocol: TCP
+    port: 8424
+    targetPort: 8424

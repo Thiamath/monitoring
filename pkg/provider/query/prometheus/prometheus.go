@@ -11,7 +11,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	"github.com/nalej/monitoring/pkg/provider/query"
 
 	"github.com/prometheus/client_golang/api"
 	prometheus_v1 "github.com/prometheus/client_golang/api/prometheus/v1"

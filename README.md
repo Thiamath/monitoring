@@ -1,30 +1,30 @@
-# infrastructure-monitor
+# monitoring
 
 Monitoring the state of application clusters
 
 ## Structure
 
-On each application cluster, `infrastructure-monitor-slave` listens to Kubernetes events and translates
+On each application cluster, `metrics-collector` listens to Kubernetes events and translates
 them into Platform-relevant metrics. These are exposed on `:8424/metrics` for Prometheus to scrape.
 
-`infrastructure-monitor-slave` also exposes a gRPC API on port 8422 that provides a cluster resource
+`metrics-collector` also exposes a gRPC API on port 8422 that provides a cluster resource
 summary and platform statistics by querying Prometheus. It also allows for generic queries.
 
 Ultimately, `public-api` provides an interface to retrieve the cluster resource summary through
-`infrastructure-monitor-coord`, `app-cluster-api` and `infrastructure-monitor-slave`. `infrastructure-monitor-coord`
+`monitoring-manager`, `app-cluster-api` and `metrics-collector`. `monitoring-manager`
 also exposes the platform statistics and generic query endpoints for internal usage, which
 are routed to the requested cluster through `app-cluster-api`.
 
 ## Usage
 
-### `infrastructure-monitor-coord`
+### `monitoring-manager`
 
 ```
-$ ./bin/infrastructure-monitor-coord run --help
+$ ./bin/monitoring-manager run --help
 Launch the server API
 
 Usage:
-  infrastructure-monitor-coord run [flags]
+  monitoring-manager run [flags]
 
 Flags:
       --appClusterPort int          Port used by app-cluster-api (default 443)
@@ -41,14 +41,14 @@ Global Flags:
       --debug            Set debug level
 ```
 
-### `infrastructure-monitor-slave`
+### `metrics-collector`
 
 ```
-$ ./bin/infrastructure-monitor-slave run --help
+$ ./bin/metrics-collector run --help
 Launch the server API
 
 Usage:
-  infrastructure-monitor-slave run [flags]
+  metrics-collector run [flags]
 
 Flags:
   -h, --help                help for run

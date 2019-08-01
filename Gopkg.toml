@@ -28,7 +28,7 @@
 
 [[constraint]]
   name = "github.com/nalej/grpc-infrastructure-go"
-  version = "v0.0.32"
+  version = "v0.0.38"
 
 [[constraint]]
   name = "k8s.io/client-go"
@@ -47,16 +47,16 @@
   version = "v0.9.2"
 
 [[constraint]]
-  name = "github.com/nalej/grpc-infrastructure-monitor-go"
-  version = "v0.0.1"
+  name = "github.com/nalej/grpc-monitoring-go"
+  version = "v0.0.4"
 
 [[constraint]]
   name = "github.com/nalej/grpc-app-cluster-api-go"
-  version = "v0.0.14"
+  version = "v0.0.19"
 
 [[constraint]]
   name = "github.com/nalej/deployment-manager"
-  version = "release-v0.2.0-sprint9"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/nalej/grpc-utils"

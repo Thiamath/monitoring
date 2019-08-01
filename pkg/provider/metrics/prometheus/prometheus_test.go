@@ -9,7 +9,7 @@ package prometheus
 import (
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/metrics"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"

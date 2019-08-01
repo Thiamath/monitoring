@@ -1,0 +1,53 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    cluster: application
+    component: monitoring
+    service: metrics-collector
+  name: metrics-collector
+  namespace: __NPH_NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cluster: application
+      component: monitoring
+      service: metrics-collector
+  template:
+    metadata:
+      labels:
+        cluster: application
+        component: monitoring
+        service: metrics-collector
+    spec:
+      containers:
+      - name: metrics-collector
+        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/metrics-collector:__NPH_VERSION
+        imagePullPolicy: Always
+        securityContext:
+          runAsUser: 2000
+        args:
+        - "run"
+        - "--in-cluster"
+        - "--retrieve.prometheus.enabled"
+        - "--retrieve.prometheus.url=http://prometheus:9090"
+        - "--debug"
+        env:
+          - name: NALEJ_ORGANIZATION_ID
+            valueFrom:
+              configMapKeyRef:
+                name: cluster-config
+                key: organization_id
+          - name: NALEJ_CLUSTER_ID
+            valueFrom:
+              configMapKeyRef:
+                name: cluster-config
+                key: cluster_id
+        ports:
+        - name: api-port
+          containerPort: 8422
+        - name: metric-port
+          containerPort: 8424
+      imagePullSecrets:
+      - name: nalej-registry

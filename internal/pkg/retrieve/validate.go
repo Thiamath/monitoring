@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"github.com/nalej/derrors"
-	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
+	grpc "github.com/nalej/grpc-monitoring-go"
 
 	"github.com/rs/zerolog/log"
 )

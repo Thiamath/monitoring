@@ -1,0 +1,45 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    cluster: management
+    component: monitoring
+    service: monitoring-manager
+  name: monitoring-manager
+  namespace: __NPH_NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cluster: management
+      component: monitoring
+      service: monitoring-manager
+  template:
+    metadata:
+      labels:
+        cluster: management
+        component: monitoring
+        service: monitoring-manager
+    spec:
+      containers:
+      - name: monitoring-manager
+        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/monitoring-manager:__NPH_VERSION
+        imagePullPolicy: Always
+        securityContext:
+          runAsUser: 2000
+        env:
+          - name: ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: management-config
+                key: environment
+        args:
+        - "run"
+        - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
+        - "--caCert=/nalej/$(ENVIRONMENT).pem"
+        - "--debug"
+        ports:
+        - name: api-port
+          containerPort: 8423
+      imagePullSecrets:
+      - name: nalej-registry

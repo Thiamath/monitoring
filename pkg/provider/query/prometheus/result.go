@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
-	"github.com/nalej/infrastructure-monitor/pkg/utils"
+	"github.com/nalej/monitoring/pkg/provider/query"
+	"github.com/nalej/monitoring/pkg/utils"
 
 	"github.com/prometheus/common/model"
 )

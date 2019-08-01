@@ -9,7 +9,7 @@ package events
 import (
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/infrastructure-monitor/pkg/metrics"
+	"github.com/nalej/monitoring/pkg/metrics"
 )
 
 // An events provider listens to events that provider metrics.

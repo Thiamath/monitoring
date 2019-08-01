@@ -10,8 +10,8 @@ package translators
 import (
 	"github.com/nalej/derrors"
 
-	grpc "github.com/nalej/grpc-infrastructure-monitor-go"
-	"github.com/nalej/infrastructure-monitor/pkg/provider/query"
+	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/monitoring/pkg/provider/query"
 )
 
 type TranslatorFunc func(query.QueryResult) (*grpc.QueryResponse, derrors.Error)
