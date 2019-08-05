@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    component: monitoring
+    service: kube-state-metrics
+  name: kube-state-metrics
+  namespace: __NPH_NAMESPACE
+spec:
+  endpoints:
+  - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+    honorLabels: true
+    interval: 30s
+    port: https
+    scheme: https
+    scrapeTimeout: 30s
+    tlsConfig:
+      insecureSkipVerify: true
+  jobLabel: service
+  selector:
+    matchLabels:
+      component: monitoring
+      service: kube-state-metrics

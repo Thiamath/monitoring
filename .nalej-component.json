@@ -2,7 +2,8 @@
   "language": "golang",
   "application_list": [
     "monitoring-manager",
-    "metrics-collector"
+    "metrics-collector",
+    "prometheus"
   ],
   "tools": [
     "azure",
