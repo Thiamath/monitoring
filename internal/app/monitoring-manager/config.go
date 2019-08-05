@@ -16,8 +16,10 @@ import (
 type Config struct {
 	// Port where the API service will listen requests.
 	Port int
-	// Address with host:port of the ElasticSearch server
+	// Address with host:port of the system model component
 	SystemModelAddress string
+	// EdgeInventoryProxyAddress with host:port of the edge inventory proxy
+	EdgeInventoryProxyAddress string
 	// Prefix for application cluster hostnames
 	AppClusterPrefix string
 	// Port used by app-cluster-api
@@ -38,6 +40,9 @@ func (conf *Config) Validate() derrors.Error {
 	if conf.SystemModelAddress == "" {
 		return derrors.NewInvalidArgumentError("systemModelAddress is required")
 	}
+	if conf.EdgeInventoryProxyAddress == "" {
+		return derrors.NewInvalidArgumentError("edgeInventoryProxyAddress is required")
+	}
 	if conf.AppClusterPort <= 0 {
 		return derrors.NewInvalidArgumentError("appClusterPort is required")
 	}
@@ -49,6 +54,7 @@ func (conf *Config) Print() {
 	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
 	log.Info().Int("port", conf.Port).Msg("gRPC port")
 	log.Info().Str("URL", conf.SystemModelAddress).Msg("systemModelAddress")
+        log.Info().Str("URL", conf.EdgeInventoryProxyAddress).Msg("edgeInventoryProxyAddress")
 	log.Info().Str("prefix", conf.AppClusterPrefix).Msg("appClusterPrefix")
 	log.Info().Int("port", conf.AppClusterPort).Msg("appClusterPort")
 	log.Info().Bool("tls", conf.UseTLS).Bool("insecure", conf.Insecure).Str("cert", conf.CACert).Msg("TLS parameters")

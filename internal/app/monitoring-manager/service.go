@@ -10,9 +10,13 @@ import (
 
 	"github.com/nalej/derrors"
 
+        "github.com/nalej/grpc-edge-inventory-proxy-go"
         "github.com/nalej/grpc-infrastructure-go"
+        "github.com/nalej/grpc-inventory-go"
         "github.com/nalej/grpc-monitoring-go"
 
+	"github.com/nalej/monitoring/internal/app/monitoring-manager/asset"
+	"github.com/nalej/monitoring/internal/app/monitoring-manager/cluster"
 	"github.com/nalej/monitoring/internal/pkg/retrieve"
 
 	"google.golang.org/grpc"
@@ -46,8 +50,17 @@ func (s *Service) Run() derrors.Error {
 		return derrors.NewUnavailableError("cannot create connection with the system model", err)
 	}
 
+	// Create Edge Inventory Proxy connection
+	eipConn, err := grpc.Dial(s.Configuration.EdgeInventoryProxyAddress, grpc.WithInsecure())
+	if err != nil {
+		return derrors.NewUnavailableError("cannot create connection with the edge inventory proxy", err)
+	}
+
 	// Create clients
 	clustersClient := grpc_infrastructure_go.NewClustersClient(smConn)
+	assetsClient := grpc_inventory_go.NewAssetsClient(smConn)
+	controllersClient := grpc_inventory_go.NewControllersClient(smConn)
+	eipClient := grpc_edge_inventory_proxy_go.NewEdgeControllerProxyClient(eipConn)
 
 	// Start listening
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
@@ -56,7 +69,7 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create managers and handler
-	params := &AppClusterConnectParams{
+	params := &cluster.AppClusterConnectParams{
 		AppClusterPrefix: s.Configuration.AppClusterPrefix,
 		AppClusterPort: s.Configuration.AppClusterPort,
 		UseTLS: s.Configuration.UseTLS,
@@ -64,18 +77,27 @@ func (s *Service) Run() derrors.Error {
 		Insecure: s.Configuration.Insecure,
 	}
 
-	manager, derr := NewManager(clustersClient, params)
+	// Cluster monitoring
+	clusterManager, derr := cluster.NewManager(clustersClient, params)
 	if derr != nil {
 		return derr
 	}
-	handler, derr := retrieve.NewHandler(manager)
+	clusterHandler, derr := retrieve.NewHandler(clusterManager)
 	if derr != nil {
 		return derr
 	}
 
+	// Asset monitoring
+	assetManager, derr := asset.NewManager(eipClient, assetsClient, controllersClient)
+	if derr != nil {
+		return derr
+	}
+	assetHandler, derr := asset.NewHandler(assetManager)
+
 	// Create server and register handler
 	server := grpc.NewServer()
-	grpc_monitoring_go.RegisterMonitoringManagerServer(server, handler)
+	grpc_monitoring_go.RegisterMonitoringManagerServer(server, clusterHandler)
+	grpc_monitoring_go.RegisterAssetMonitoringServer(server, assetHandler)
 
 	reflection.Register(server)
 	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")

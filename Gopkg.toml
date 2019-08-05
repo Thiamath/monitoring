@@ -44,11 +44,15 @@
 
 [[constraint]]
   name = "github.com/prometheus/client_golang"
-  version = "v0.9.2"
+  version = "=v0.9.2"
 
 [[constraint]]
   name = "github.com/nalej/grpc-monitoring-go"
-  version = "v0.0.4"
+  version = "v0.0.5"
+
+[[constraint]]
+  name = "github.com/nalej/grpc-inventory-go"
+  version = "v0.0.30"
 
 [[constraint]]
   name = "github.com/nalej/grpc-app-cluster-api-go"
@@ -61,3 +65,11 @@
 [[constraint]]
   name = "github.com/nalej/grpc-utils"
   version = "v1.4.0"
+
+[[constraint]]
+  name = "github.com/nalej/grpc-edge-inventory-proxy-go"
+  version = "v0.0.16"
+
+[[constraint]]
+  name = "github.com/nalej/grpc-organization-go"
+  version = "v0.0.29"
