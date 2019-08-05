@@ -70,6 +70,7 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 		query.TemplateName_CPU: &res.CpuMillicores,
 		query.TemplateName_Memory: &res.MemoryBytes,
 		query.TemplateName_Storage: &res.StorageBytes,
+		query.TemplateName_UsableStorage: &res.UsableStorageBytes,
 	}
 
 	for name, stat := range(resultMap) {
