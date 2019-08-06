@@ -134,6 +134,14 @@ func beforeSuiteRetrieveManager() {
 			query.TemplateVars{AvgSeconds: 0}: 11,
 			query.TemplateVars{AvgSeconds: 600}: 12,
 		},
+		query.TemplateName_UsableStorage + query.TemplateName_Total: map[query.TemplateVars]int64{
+			query.TemplateVars{AvgSeconds: 0}: 13,
+			query.TemplateVars{AvgSeconds: 600}: 14,
+		},
+		query.TemplateName_UsableStorage + query.TemplateName_Available: map[query.TemplateVars]int64{
+			query.TemplateVars{AvgSeconds: 0}: 15,
+			query.TemplateVars{AvgSeconds: 600}: 16,
+		},
 
 		query.TemplateName_PlatformStatsCounter: map[query.TemplateVars]int64{
 			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "created"}: 13,
