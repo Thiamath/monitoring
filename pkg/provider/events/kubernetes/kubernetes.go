@@ -137,7 +137,11 @@ func (p *EventsProvider) Start() (derrors.Error) {
 			return derrors.NewAlreadyExistsError("store already set", err)
 		}
 
-		watcher.Start(p.stopChan)
+		err = watcher.Start(p.stopChan)
+		if err != nil {
+			p.Stop()
+			return derrors.NewInternalError("unable to start watcher", err)
+		}
 	}
 
 	return nil
