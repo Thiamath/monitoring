@@ -34,6 +34,7 @@ const (
 	TemplateName_CPU TemplateName = "cpu"
 	TemplateName_Memory TemplateName = "memory"
 	TemplateName_Storage TemplateName = "storage"
+	TemplateName_UsableStorage TemplateName = "usablestorage"
 
 	TemplateName_PlatformStatsCounter TemplateName = "platformcounter"
 	TemplateName_PlatformStatsGauge TemplateName = "platformgauge"
