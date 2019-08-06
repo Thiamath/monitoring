@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+        "k8s.io/client-go/tools/cache"
         "k8s.io/client-go/kubernetes/scheme"
 )
 
@@ -36,6 +37,8 @@ const (
 // method is to list the GroupVersionKinds this function collection supports.
 type DispatchFuncs interface {
 	SupportedKinds() KindList
+	// Link the client resource store to the translator for cross-referencing objects
+	SetStore(kind schema.GroupVersionKind, store cache.Store) error
 }
 
 // Function type for the SupportedKinds of a DispatchFuncs collection
@@ -44,6 +47,7 @@ type DispatchFunc func(oldObj, newObj interface{}, action EventAction)
 // Dispatcher implements k8s.io/client-go/tools/cache.ResourceEventHandler
 // so it can be used directly in the informer.
 type Dispatcher struct {
+	dispatchFuncs DispatchFuncs
 	// The mapping from kind to function pointer
 	funcMap map[schema.GroupVersionKind]DispatchFunc
 }
@@ -52,6 +56,7 @@ func NewDispatcher(funcs DispatchFuncs) (*Dispatcher, derrors.Error) {
 	kinds := funcs.SupportedKinds()
 
 	dispatcher := &Dispatcher{
+		dispatchFuncs: funcs,
 		funcMap: make(map[schema.GroupVersionKind]DispatchFunc, len(kinds)),
 	}
 
@@ -77,6 +82,10 @@ func (d *Dispatcher) Dispatchable() KindList {
 	}
 
 	return kinds
+}
+
+func (d *Dispatcher) SetStore(kind schema.GroupVersionKind, store cache.Store) error {
+	return d.dispatchFuncs.SetStore(kind, store)
 }
 
 func (d *Dispatcher) OnAdd(obj interface{}) {

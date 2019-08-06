@@ -32,7 +32,7 @@ type Watcher struct {
 	informer cache.SharedInformer
 }
 
-func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource string, handler cache.ResourceEventHandler, labelSelector string) (*Watcher, derrors.Error) {
+func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource string, labelSelector string) (*Watcher, derrors.Error) {
 	log.Debug().Str("kind", gvk.String()).Msg("new watcher")
 
 	// Create empty object
@@ -64,7 +64,6 @@ func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource st
 
 	// Create an informer
 	informer := cache.NewSharedIndexInformer(watchlist, objType, 0 /* No resync */, cache.Indexers{})
-	informer.AddEventHandler(handler)
 
 	watcher := &Watcher{
 		gvk: gvk,
@@ -72,6 +71,10 @@ func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource st
 	}
 
 	return watcher, nil
+}
+
+func (w *Watcher) AddHandler(handler cache.ResourceEventHandler) {
+	w.informer.AddEventHandler(handler)
 }
 
 func (w *Watcher) Start(stopChan <-chan struct{}) error {
