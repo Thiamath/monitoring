@@ -70,7 +70,7 @@ type EventsProvider struct {
 // An extensive description of the event mechanism can be found here:
 //   https://lairdnelson.wordpress.com/2018/01/07/understanding-kubernetes-tools-cache-package-part-0/
 
-func NewEventsProvider(configfile string, incluster bool, labelSelector string, collector metrics.Collector) (*EventsProvider, derrors.Error) {
+func NewEventsProvider(configfile string, incluster bool, labelSelector string) (*EventsProvider, derrors.Error) {
 	log.Debug().Str("config", configfile).Bool("in-cluster", incluster).Msg("creating kubernetes events provider")
 
         var kubeconfig *rest.Config
@@ -103,7 +103,6 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string, 
 		restMapper: mapper,
 		labelSelector: labelSelector,
 		stopChan: make(chan struct{}),
-		collector: collector,
 	}
 	return provider, nil
 }
@@ -113,17 +112,6 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string, 
 // Start collecting metrics
 func (p *EventsProvider) Start() (derrors.Error) {
 	log.Info().Msg("starting kubernetes events listener")
-
-	translator := NewTranslateFuncs(p.collector)
-	dispatcher, derr := NewDispatcher(translator)
-	if derr != nil {
-		return derr
-	}
-
-	derr = p.AddDispatcher(dispatcher)
-	if derr != nil {
-		return derr
-	}
 
 	p.started = true
 
@@ -237,9 +225,4 @@ func (p *EventsProvider) Stop() (derrors.Error) {
 	// Stop informers
 	close(p.stopChan)
 	return nil
-}
-
-// Get specific metrics, or all available when no specific metrics are requested
-func (p *EventsProvider) GetMetrics(types ...metrics.MetricType) (metrics.Metrics, derrors.Error) {
-	return p.collector.GetMetrics(types...)
 }
