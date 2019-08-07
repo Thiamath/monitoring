@@ -47,6 +47,10 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 					Total: 9,
 					Available: 11,
 				},
+				UsableStorageBytes: &grpc.ClusterStat{
+					Total: 13,
+					Available: 15,
+				},
 			}
 			gomega.Expect(manager.GetClusterSummary(context.Background(), request)).To(gomega.Equal(result))
 		})
@@ -72,6 +76,10 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 				StorageBytes: &grpc.ClusterStat{
 					Total: 10,
 					Available: 12,
+				},
+				UsableStorageBytes: &grpc.ClusterStat{
+					Total: 14,
+					Available: 16,
 				},
 			}
 			gomega.Expect(manager.GetClusterSummary(context.Background(), request)).To(gomega.Equal(result))

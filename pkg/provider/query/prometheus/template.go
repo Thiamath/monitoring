@@ -74,6 +74,24 @@ scalar(sum(node_filesystem_size))
 {{- end -}}
 `,
 
+	TemplateName_UsableStorage + TemplateName_Available:
+`
+{{- if (gt .AvgSeconds 120) -}}
+scalar(max(avg_over_time(node_filesystem_free[{{ .AvgSeconds }}s])))
+{{- else -}}
+scalar(max(node_filesystem_free))
+{{- end -}}
+`,
+
+	TemplateName_UsableStorage + TemplateName_Total:
+`
+{{- if (gt .AvgSeconds 120) -}}
+scalar(max(avg_over_time(node_filesystem_size[{{ .AvgSeconds }}s])))
+{{- else -}}
+scalar(max(node_filesystem_size))
+{{- end -}}
+`,
+
 	// For counters, we return the increase over the requested period,
 	// or the increase over the last minute if no period requested
 	// (Alternatively, we could do the average change-per-minute)
