@@ -18,19 +18,26 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-        "k8s.io/client-go/tools/cache"
         "k8s.io/client-go/kubernetes/scheme"
+        "k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/workqueue"
 )
 
 type KindList []schema.GroupVersionKind
 
 // Actions that a Kubernetes event can describe
-type EventAction string
+type EventType string
 const (
-	EventAdd EventAction = "add"
-	EventUpdate EventAction = "update"
-	EventDelete EventAction = "delete"
+	EventAdd EventType = "add"
+	EventUpdate EventType = "update"
+	EventDelete EventType = "delete"
 )
+
+type Event struct {
+	key string
+	oldObjKey string
+	eventType EventType
+}
 
 // Interface for a collection of dispatcher functions. As an implementation
 // can contain an arbirtary number of functions, the only interface-defined
@@ -42,22 +49,29 @@ type DispatchFuncs interface {
 }
 
 // Function type for the SupportedKinds of a DispatchFuncs collection
-type DispatchFunc func(oldObj, newObj interface{}, action EventAction)
+type DispatchFunc func(oldObj, newObj interface{}, action EventType)
 
 // Dispatcher implements k8s.io/client-go/tools/cache.ResourceEventHandler
 // so it can be used directly in the informer.
 type Dispatcher struct {
+	// Interface to the dispatcher functions struct
 	dispatchFuncs DispatchFuncs
+
 	// The mapping from kind to function pointer
 	funcMap map[schema.GroupVersionKind]DispatchFunc
+
+	// Event handling queue
+	queue workqueue.RateLimitingInterface
 }
 
 func NewDispatcher(funcs DispatchFuncs) (*Dispatcher, derrors.Error) {
+	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	kinds := funcs.SupportedKinds()
 
 	dispatcher := &Dispatcher{
 		dispatchFuncs: funcs,
 		funcMap: make(map[schema.GroupVersionKind]DispatchFunc, len(kinds)),
+		queue: queue,
 	}
 
 	funcsValue := reflect.ValueOf(funcs)
@@ -69,7 +83,7 @@ func NewDispatcher(funcs DispatchFuncs) (*Dispatcher, derrors.Error) {
 		if !fValue.IsValid() {
 			return nil, derrors.NewInternalError(fmt.Sprintf("function %s not defined in dispatchfuncs", fName))
 		}
-		dispatcher.funcMap[kind] = fValue.Interface().(func(interface{}, interface{}, EventAction))
+		dispatcher.funcMap[kind] = fValue.Interface().(func(interface{}, interface{}, EventType))
 	}
 
 	return dispatcher, nil
@@ -89,18 +103,57 @@ func (d *Dispatcher) SetStore(kind schema.GroupVersionKind, store cache.Store) e
 }
 
 func (d *Dispatcher) OnAdd(obj interface{}) {
-	d.dispatch(nil, obj, EventAdd)
+	key, err := cache.MetaNamespaceKeyFunc(obj)
+	if err != nil {
+		log.Error().Err(err).Interface("obj", obj).Msg("unable to create event key")
+		return
+	}
+
+	e := Event{
+		key: key,
+		eventType: EventAdd,
+	}
+
+	d.queue.Add(e)
 }
 
 func (d *Dispatcher) OnUpdate(oldObj, newObj interface{}) {
-	d.dispatch(oldObj, newObj, EventUpdate)
+	key, err := cache.MetaNamespaceKeyFunc(newObj)
+	if err != nil {
+		log.Error().Err(err).Interface("newObj", newObj).Msg("unable to create event key")
+		return
+	}
+	oldObjKey, err := cache.MetaNamespaceKeyFunc(oldObj)
+	if err != nil {
+		log.Error().Err(err).Interface("oldObj", oldObj).Msg("unable to create event key")
+		return
+	}
+
+	e := Event{
+		key: key,
+		oldObjKey: oldObjKey,
+		eventType: EventUpdate,
+	}
+
+	d.queue.Add(e)
 }
 
 func (d *Dispatcher) OnDelete(obj interface{}) {
-	d.dispatch(nil, obj, EventDelete)
+	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
+	if err != nil {
+		log.Error().Err(err).Interface("obj", obj).Msg("unable to create event key")
+		return
+	}
+
+	e := Event{
+		key: key,
+		eventType: EventDelete,
+	}
+
+	d.queue.Add(e)
 }
 
-func (d *Dispatcher) dispatch(oldObj, obj interface{}, action EventAction) {
+func (d *Dispatcher) dispatch(oldObj, obj interface{}, action EventType) {
 	// We should have proper metadata
 	meta, err := meta.Accessor(obj)
 	if err != nil {
