@@ -29,7 +29,7 @@ type Watcher struct {
 	// The GroupVersionKind we're creating a watcher for
 	gvk *schema.GroupVersionKind
 	// The informer, containing store and controller
-	informer cache.SharedInformer
+	informer cache.SharedIndexInformer
 }
 
 func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource string, labelSelector string) (*Watcher, derrors.Error) {
@@ -93,4 +93,8 @@ func (w *Watcher) Start(stopChan <-chan struct{}) error {
 
 func (w *Watcher) GetStore() cache.Store {
 	return w.informer.GetStore()
+}
+
+func (w *Watcher) GetIndexer() cache.Indexer {
+	return w.informer.GetIndexer()
 }

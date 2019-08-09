@@ -85,46 +85,46 @@ func (t *TranslateFuncs) SupportedKinds() KindList {
 }
 
 // Translating functions
-func (t *TranslateFuncs) OnDeployment(oldObj, obj interface{}, action EventType) {
+func (t *TranslateFuncs) OnDeployment(oldObj, obj interface{}, action EventType) error {
 	d := obj.(*apps_v1.Deployment)
 
 	// filter out zt-agent deployment
 	if !isAppInstance(d) {
-		return
+		return nil
 	}
 
-	t.translate(action, metrics.MetricServices, &d.CreationTimestamp)
+	return t.translate(action, metrics.MetricServices, &d.CreationTimestamp)
 }
 
-func (t *TranslateFuncs) OnNamespace(oldObj, obj interface{}, action EventType) {
+func (t *TranslateFuncs) OnNamespace(oldObj, obj interface{}, action EventType) error {
 	n := obj.(*core_v1.Namespace)
 
-	t.translate(action, metrics.MetricFragments, &n.CreationTimestamp)
+	return t.translate(action, metrics.MetricFragments, &n.CreationTimestamp)
 }
 
-func (t *TranslateFuncs) OnPersistentVolumeClaim(oldObj, obj interface{}, action EventType) {
+func (t *TranslateFuncs) OnPersistentVolumeClaim(oldObj, obj interface{}, action EventType) error {
 	pvc := obj.(*core_v1.PersistentVolumeClaim)
-	t.translate(action, metrics.MetricVolumes, &pvc.CreationTimestamp)
+	return t.translate(action, metrics.MetricVolumes, &pvc.CreationTimestamp)
 }
 
-func (t *TranslateFuncs) OnPod(oldObj, obj interface{}, action EventType) {
+func (t *TranslateFuncs) OnPod(oldObj, obj interface{}, action EventType) error {
 	// No action - only watched to have the resource store for reference
-	return
+	return nil
 }
 
-func (t *TranslateFuncs) OnIngress(oldObj, obj interface{}, action EventType) {
+func (t *TranslateFuncs) OnIngress(oldObj, obj interface{}, action EventType) error {
 	i := obj.(*extensions_v1beta1.Ingress)
-	t.translate(action, metrics.MetricEndpoints, &i.CreationTimestamp)
+	return t.translate(action, metrics.MetricEndpoints, &i.CreationTimestamp)
 }
 
-func (t *TranslateFuncs) OnService(oldObj, obj interface{}, action EventType) {
+func (t *TranslateFuncs) OnService(oldObj, obj interface{}, action EventType) error {
 	s := obj.(*core_v1.Service)
 
 	if s.Spec.Type != core_v1.ServiceTypeLoadBalancer {
-		return
+		return nil
 	}
 
-	t.translate(action, metrics.MetricEndpoints, &s.CreationTimestamp)
+	return t.translate(action, metrics.MetricEndpoints, &s.CreationTimestamp)
 }
 
 // NOTE: At this point we log Warning events as errors. For true errors we would
@@ -133,37 +133,37 @@ func (t *TranslateFuncs) OnService(oldObj, obj interface{}, action EventType) {
 // whether we actually care about it, etc. Then we'd need to analyze the event
 // and other resources to figure out what we're dealing with. So, for now, we
 // just count warnings.
-func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventType) {
+func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventType) error {
 	e := obj.(*core_v1.Event)
 
 	if action == EventDelete {
-		return
+		return nil
 	}
 
 	// Discard any normal events, and any events that
 	// happened before we started watching (to avoid double counting after
 	// a restart)
 	if e.Type != "Warning" || e.LastTimestamp.Before(&t.startupTime) {
-		return
+		return nil
 	}
 
 	if action == EventUpdate {
 		oldE := oldObj.(*core_v1.Event)
 		// If count increased, we log another warning
 		if oldE.Count == e.Count {
-			return
+			return nil
 		}
 	}
 
 	// Get object event references
 	ref, exists := t.getReferencedObject(&e.InvolvedObject)
 	if !exists {
-		return
+		return nil
 	}
 
 	// Check if the referred object is of interest
 	if !isAppInstance(ref) {
-		return
+		return nil
 	}
 
 	kind := e.InvolvedObject.Kind
@@ -174,7 +174,7 @@ func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventType) {
 	case PodKind.Kind:
 		// Filter out references to zt container
 		if e.InvolvedObject.FieldPath == "spec.containers{zt-sidecar}" {
-			return
+			return nil
 		}
 		fallthrough
 	case DeploymentKind.Kind:
@@ -183,7 +183,7 @@ func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventType) {
 	case ServiceKind.Kind:
 		s := ref.(*core_v1.Service)
 		if s.Spec.Type != core_v1.ServiceTypeLoadBalancer {
-			return
+			return nil
 		}
 		fallthrough
 	case IngressKind.Kind:
@@ -195,6 +195,8 @@ func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventType) {
 	case NamespaceKind.Kind:
 		t.collector.Error(metrics.MetricFragments)
 	}
+
+	return nil
 }
 
 func (t *TranslateFuncs) getReferencedObject(ref *core_v1.ObjectReference) (interface{}, bool) {
@@ -225,7 +227,7 @@ func (t *TranslateFuncs) getReferencedObject(ref *core_v1.ObjectReference) (inte
 }
 
 // Calls create function if after server startup, existing otherwise
-func (t *TranslateFuncs) translate(action EventType, metric metrics.MetricType, ts *meta_v1.Time) {
+func (t *TranslateFuncs) translate(action EventType, metric metrics.MetricType, ts *meta_v1.Time) error {
 	switch action {
 	case EventAdd:
 		if t.startupTime.Before(ts) {
@@ -236,6 +238,8 @@ func (t *TranslateFuncs) translate(action EventType, metric metrics.MetricType, 
 	case EventDelete:
 		t.collector.Delete(metric)
 	}
+
+	return nil
 }
 
 // Filter out non-application-instance objects

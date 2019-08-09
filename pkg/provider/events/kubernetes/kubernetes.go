@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/monitoring/pkg/metrics"
 
 	"github.com/rs/zerolog/log"
 
@@ -38,6 +37,9 @@ type EventsProvider struct {
 	// Cached Kubernetes informers for handler subscription
 	watchers map[schema.GroupVersionKind]*Watcher
 
+	// Registered dispatchers that need to be started and stopped
+	dispatchers []*Dispatcher
+
 	// Mapper for creating watcher for the right REST endpoints
 	restMapper meta.RESTMapper
 
@@ -46,9 +48,6 @@ type EventsProvider struct {
 
 	// Channel to stop informers. Close to stop.
 	stopChan chan struct{}
-
-	// Metrics collector
-	collector metrics.Collector
 
 	// watchers have started
 	started bool
@@ -100,6 +99,7 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string) 
 		kubeconfig: kubeconfig,
 		clients: map[schema.GroupVersion]rest.Interface{},
 		watchers: map[schema.GroupVersionKind]*Watcher{},
+		dispatchers: []*Dispatcher{},
 		restMapper: mapper,
 		labelSelector: labelSelector,
 		stopChan: make(chan struct{}),
@@ -107,20 +107,27 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string) 
 	return provider, nil
 }
 
-//TBD START IS TO START ALL WATCHERS
-
 // Start collecting metrics
 func (p *EventsProvider) Start() (derrors.Error) {
 	log.Info().Msg("starting kubernetes events listener")
 
 	p.started = true
 
-	// Start all watchers
+	// Start all watchers - this syncs the Kubernetes event caches as well
 	for _, watcher := range(p.watchers) {
 		err := watcher.Start(p.stopChan)
 		if err != nil {
 			p.Stop()
 			return derrors.NewInternalError("unable to start watcher", err)
+		}
+	}
+
+	// Start all processing queue items in dispatchers
+	for _, dispatcher := range(p.dispatchers) {
+		err := dispatcher.Start(p.stopChan)
+		if err != nil {
+			p.Stop()
+			return derrors.NewInternalError("unable to start dispatcher", err)
 		}
 	}
 
@@ -152,8 +159,17 @@ func (p *EventsProvider) AddDispatcher(dispatcher *Dispatcher) derrors.Error {
 			return derrors.NewAlreadyExistsError("store already set", err)
 		}
 
+		// Set indexer for this specific kind to be able to retrieve
+		// objects based on key
+		err = dispatcher.SetIndexer(kind, watcher.GetIndexer())
+		if err != nil {
+			return derrors.NewAlreadyExistsError("indexer already set", err)
+		}
+
 		watcher.AddHandler(dispatcher)
 	}
+
+	p.dispatchers = append(p.dispatchers, dispatcher)
 
 	return nil
 }
