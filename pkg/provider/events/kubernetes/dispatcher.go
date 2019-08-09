@@ -36,6 +36,10 @@ const (
 	EventDelete EventType = "delete"
 )
 
+func (e EventType) String() string {
+	return string(e)
+}
+
 type Event struct {
 	Key string
 	OldObjKey string
@@ -70,8 +74,11 @@ type Dispatcher struct {
 	// Communicate events from queue to dispatcher
 	eventChan chan Event
 
-	// Indexers to retrieve objects from
+	// Indexers to retrieve objects from - created by informers
 	indexers map[schema.GroupVersionKind]cache.Indexer
+
+	// Index for storing deleted objects
+	deletedIndexer cache.Indexer
 }
 
 func NewDispatcher(funcs DispatchFuncs) (*Dispatcher, derrors.Error) {
@@ -82,6 +89,8 @@ func NewDispatcher(funcs DispatchFuncs) (*Dispatcher, derrors.Error) {
 		dispatchFuncs: funcs,
 		funcMap: make(map[schema.GroupVersionKind]DispatchFunc, len(kinds)),
 		queue: queue,
+		indexers: make(map[schema.GroupVersionKind]cache.Indexer, len(kinds)),
+		deletedIndexer: cache.NewIndexer(cache.DeletionHandlingMetaNamespaceKeyFunc, cache.Indexers{}),
 	}
 
 	funcsValue := reflect.ValueOf(funcs)
@@ -140,22 +149,21 @@ func (d *Dispatcher) SetIndexer(kind schema.GroupVersionKind, indexer cache.Inde
 }
 
 func (d *Dispatcher) OnAdd(obj interface{}) {
-	e, err := createEvent(obj)
+	e, err := createEvent(obj, EventAdd)
 	if err != nil {
 		return
 	}
-
-	e.EventType = EventAdd
 
 	d.queue.Add(e)
 }
 
 func (d *Dispatcher) OnUpdate(oldObj, newObj interface{}) {
-	e, err := createEvent(newObj)
+	e, err := createEvent(newObj, EventUpdate)
 	if err != nil {
 		return
 	}
 
+	/* Store reference to original object as well */
 	oldObjKey, err := cache.MetaNamespaceKeyFunc(oldObj)
 	if err != nil {
 		log.Error().Err(err).Interface("oldObj", oldObj).Msg("unable to create event key")
@@ -163,18 +171,18 @@ func (d *Dispatcher) OnUpdate(oldObj, newObj interface{}) {
 	}
 	e.OldObjKey = oldObjKey
 
-	e.EventType = EventUpdate
-
 	d.queue.Add(e)
 }
 
 func (d *Dispatcher) OnDelete(obj interface{}) {
-	e, err := createEvent(obj)
+	e, err := createEvent(obj, EventDelete)
 	if err != nil {
 		return
 	}
 
-	e.EventType = EventDelete
+	// We store this object ourselves because it won't be available in the
+	// regular cache
+	d.deletedIndexer.Add(obj)
 
 	d.queue.Add(e)
 }
@@ -208,22 +216,9 @@ func (d *Dispatcher) worker() {
 }
 
 func (d *Dispatcher) dispatch(event Event) error {
-	indexer, found := d.indexers[event.Kind]
-	if !found {
-		return derrors.NewInvalidArgumentError("no indexer found").WithParams(event.Kind)
-	}
-
-	obj, _, err := indexer.GetByKey(event.Key)
-	if err != nil {
-		return derrors.NewInternalError("error fetching key from store", err).WithParams(event.Key)
-	}
-
-	var oldObj interface{} = nil
-	if event.OldObjKey != "" {
-		oldObj, _, err = indexer.GetByKey(event.Key)
-		if err != nil {
-			return derrors.NewInternalError("error fetching key from store", err).WithParams(event.Key)
-		}
+	oldObj, obj, derr := d.fetchObj(&event)
+	if derr != nil {
+		return derr
 	}
 
 	f, found := d.funcMap[event.Kind]
@@ -234,11 +229,47 @@ func (d *Dispatcher) dispatch(event Event) error {
 	// Get some metadata for useful logging
 	meta, err := meta.Accessor(obj)
 	if err != nil {
+		log.Debug().Interface("obj", obj).Msg("error getting object metadata")
 		return err
 	}
 
-	log.Debug().Str("resource", meta.GetSelfLink()).Msg("dispatching")
+	log.Debug().Str("resource", meta.GetSelfLink()).Str("event", event.EventType.String()).Msg("dispatching")
 	return f(oldObj, obj, event.EventType)
+}
+
+func (d *Dispatcher) fetchObj(event *Event) (interface{}, interface{}, derrors.Error) {
+	indexer, found := d.indexers[event.Kind]
+	if !found {
+		return nil, nil, derrors.NewInvalidArgumentError("no indexer found").WithParams(event.Kind)
+	}
+
+	obj, exists, err := indexer.GetByKey(event.Key)
+	if err != nil {
+		return nil, nil, derrors.NewInternalError("error fetching key from store", err).WithParams(event.Key)
+	}
+
+	// Check if deleted
+	if !exists {
+		obj, exists, err = d.deletedIndexer.GetByKey(event.Key)
+		if err != nil {
+			return nil, nil, derrors.NewInternalError("error fetching key from deleted object store", err).WithParams(event.Key)
+		}
+		if !exists {
+			return nil, nil, derrors.NewInvalidArgumentError("key does not exist in deleted object store while it should")
+		}
+		d.deletedIndexer.Delete(event.Key)
+	}
+
+	var oldObj interface{} = nil
+	if event.OldObjKey != "" {
+		oldObj, _, err = indexer.GetByKey(event.Key)
+		if err != nil {
+			return nil, nil, derrors.NewInternalError("error fetching key from store", err).WithParams(event.Key)
+		}
+		// Ok if old object does not exist and is nil
+	}
+
+	return oldObj, obj, nil
 }
 
 func getKind(obj interface{}) (schema.GroupVersionKind, error) {
@@ -270,8 +301,9 @@ func getKind(obj interface{}) (schema.GroupVersionKind, error) {
 	return kind, nil
 }
 
-func createEvent(obj interface{}) (Event, error) {
-	key, err := cache.MetaNamespaceKeyFunc(obj)
+func createEvent(obj interface{}, eventType EventType) (Event, error) {
+	// This is the key func the default Indexer uses for all events
+	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil {
 		log.Error().Err(err).Interface("obj", obj).Msg("unable to create event key")
 		return Event{}, err
@@ -286,6 +318,7 @@ func createEvent(obj interface{}) (Event, error) {
 	e := Event{
 		Key: key,
 		Kind: kind,
+		EventType: eventType,
 	}
 
 	return e, nil

@@ -135,6 +135,7 @@ func (p *EventsProvider) Start() (derrors.Error) {
 }
 
 func (p *EventsProvider) AddDispatcher(dispatcher *Dispatcher) derrors.Error {
+	log.Debug().Msg("adding dispatcher to events listener")
 	// Note - not safe under concurrency - we can add start _while_ adding
 	// a dispatcher. If we need this to be thread safe, we need to lock.
 	// Likely we just want to figure out if we can allow adding dispatchers
@@ -197,6 +198,8 @@ func (p *EventsProvider) createWatcher(gvk schema.GroupVersionKind) (*Watcher, d
 	if derr != nil {
 		return nil, derr
 	}
+
+	p.watchers[gvk] = watcher
 
 	return watcher, nil
 }
