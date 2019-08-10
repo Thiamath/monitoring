@@ -110,7 +110,7 @@ func (s *Service) startCollect(httpListener net.Listener, errChan chan<- error) 
 		return nil, derr
 	}
 
-	translator := kubernetes.NewTranslateFuncs(collector)
+	translator := kubernetes.NewMetricsTranslator(collector)
 	dispatcher, derr := kubernetes.NewDispatcher(translator)
 	if derr != nil {
 		return nil, derr

@@ -38,7 +38,7 @@ var FilterLabelSet = map[string]string{
 	"agent": "zt-agent",
 }
 
-type TranslateFuncs struct {
+type MetricsTranslator struct {
 	// Collect metrics based on events
 	collector metrics.Collector
 	// Server startup
@@ -53,15 +53,15 @@ type TranslateFuncs struct {
 // NOTE: On start, we count the incoming create/delete to update
 // total running, but created/deleted should be 0 to properly use
 // the prometheus counters
-func NewTranslateFuncs(collector metrics.Collector) *TranslateFuncs {
-	return &TranslateFuncs{
+func NewMetricsTranslator(collector metrics.Collector) *MetricsTranslator{
+	return &MetricsTranslator{
 		collector: collector,
 		startupTime: meta_v1.Now(),
 		stores: map[string]cache.Store{},
 	}
 }
 
-func (t *TranslateFuncs) SetStore(kind schema.GroupVersionKind, store cache.Store) error {
+func (t *MetricsTranslator) SetStore(kind schema.GroupVersionKind, store cache.Store) error {
 	_, found := t.stores[kind.Kind]
 	if found {
 		return fmt.Errorf("Store for %s already set", kind.Kind)
@@ -71,7 +71,7 @@ func (t *TranslateFuncs) SetStore(kind schema.GroupVersionKind, store cache.Stor
 	return nil
 }
 
-func (t *TranslateFuncs) SupportedKinds() KindList {
+func (t *MetricsTranslator) SupportedKinds() KindList {
 	return KindList{
 		DeploymentKind,
 		NamespaceKind,
@@ -85,7 +85,7 @@ func (t *TranslateFuncs) SupportedKinds() KindList {
 }
 
 // Translating functions
-func (t *TranslateFuncs) OnDeployment(oldObj, obj interface{}, action EventType) error {
+func (t *MetricsTranslator) OnDeployment(oldObj, obj interface{}, action EventType) error {
 	d := obj.(*apps_v1.Deployment)
 
 	// filter out zt-agent deployment
@@ -96,28 +96,28 @@ func (t *TranslateFuncs) OnDeployment(oldObj, obj interface{}, action EventType)
 	return t.translate(action, metrics.MetricServices, &d.CreationTimestamp)
 }
 
-func (t *TranslateFuncs) OnNamespace(oldObj, obj interface{}, action EventType) error {
+func (t *MetricsTranslator) OnNamespace(oldObj, obj interface{}, action EventType) error {
 	n := obj.(*core_v1.Namespace)
 
 	return t.translate(action, metrics.MetricFragments, &n.CreationTimestamp)
 }
 
-func (t *TranslateFuncs) OnPersistentVolumeClaim(oldObj, obj interface{}, action EventType) error {
+func (t *MetricsTranslator) OnPersistentVolumeClaim(oldObj, obj interface{}, action EventType) error {
 	pvc := obj.(*core_v1.PersistentVolumeClaim)
 	return t.translate(action, metrics.MetricVolumes, &pvc.CreationTimestamp)
 }
 
-func (t *TranslateFuncs) OnPod(oldObj, obj interface{}, action EventType) error {
+func (t *MetricsTranslator) OnPod(oldObj, obj interface{}, action EventType) error {
 	// No action - only watched to have the resource store for reference
 	return nil
 }
 
-func (t *TranslateFuncs) OnIngress(oldObj, obj interface{}, action EventType) error {
+func (t *MetricsTranslator) OnIngress(oldObj, obj interface{}, action EventType) error {
 	i := obj.(*extensions_v1beta1.Ingress)
 	return t.translate(action, metrics.MetricEndpoints, &i.CreationTimestamp)
 }
 
-func (t *TranslateFuncs) OnService(oldObj, obj interface{}, action EventType) error {
+func (t *MetricsTranslator) OnService(oldObj, obj interface{}, action EventType) error {
 	s := obj.(*core_v1.Service)
 
 	if s.Spec.Type != core_v1.ServiceTypeLoadBalancer {
@@ -133,7 +133,7 @@ func (t *TranslateFuncs) OnService(oldObj, obj interface{}, action EventType) er
 // whether we actually care about it, etc. Then we'd need to analyze the event
 // and other resources to figure out what we're dealing with. So, for now, we
 // just count warnings.
-func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventType) error {
+func (t *MetricsTranslator) OnEvent(oldObj, obj interface{}, action EventType) error {
 	e := obj.(*core_v1.Event)
 
 	if action == EventDelete {
@@ -199,7 +199,7 @@ func (t *TranslateFuncs) OnEvent(oldObj, obj interface{}, action EventType) erro
 	return nil
 }
 
-func (t *TranslateFuncs) getReferencedObject(ref *core_v1.ObjectReference) (interface{}, bool) {
+func (t *MetricsTranslator) getReferencedObject(ref *core_v1.ObjectReference) (interface{}, bool) {
 	// If we don't have a store for this kind, we are not intereseted in
 	// the object - we also cannot easily retrieve it.
 	store, found := t.stores[ref.Kind]
@@ -227,7 +227,7 @@ func (t *TranslateFuncs) getReferencedObject(ref *core_v1.ObjectReference) (inte
 }
 
 // Calls create function if after server startup, existing otherwise
-func (t *TranslateFuncs) translate(action EventType, metric metrics.MetricType, ts *meta_v1.Time) error {
+func (t *MetricsTranslator) translate(action EventType, metric metrics.MetricType, ts *meta_v1.Time) error {
 	switch action {
 	case EventAdd:
 		if t.startupTime.Before(ts) {
