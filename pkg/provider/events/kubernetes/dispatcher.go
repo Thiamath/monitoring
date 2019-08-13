@@ -205,7 +205,6 @@ func (d *Dispatcher) worker() {
 		} else {
 			log.Error().Err(err).Interface("event", event).Msg("Error processing event. Giving up.")
 			d.queue.Forget(event)
-			// TBD Handle error
 		}
 
 		// Tell the queue that we are done with processing this key. This unblocks the key for other workers
