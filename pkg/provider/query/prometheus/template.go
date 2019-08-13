@@ -23,54 +23,54 @@ var queryTemplates = TemplateStringMap{
 	TemplateName_CPU + TemplateName_Available:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(sum (rate(node_cpu{mode='idle'}[{{ .AvgSeconds }}s])) * 1000)
+scalar(sum (rate(node_cpu_seconds_total{mode='idle'}[{{ .AvgSeconds }}s])) * 1000)
 {{- else -}}
-scalar(sum (irate(node_cpu{mode='idle'}[2m])) * 1000)
+scalar(sum (irate(node_cpu_seconds_total{mode='idle'}[2m])) * 1000)
 {{- end -}}
 `,
 
 	TemplateName_CPU + TemplateName_Total:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(avg_over_time(count(node_cpu{mode='idle'})[{{ .AvgSeconds }}s:60s]) * 1000)
+scalar(avg_over_time(count(node_cpu_seconds_total{mode='idle'})[{{ .AvgSeconds }}s:60s]) * 1000)
 {{- else -}}
-scalar(count(node_cpu{mode='idle'}) * 1000)
+scalar(count(node_cpu_seconds_total{mode='idle'}) * 1000)
 {{- end -}}
 `,
 
 	TemplateName_Memory + TemplateName_Available:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(sum(avg_over_time(node_memory_MemAvailable[{{ .AvgSeconds }}s])))
+scalar(sum(avg_over_time(node_memory_MemAvailable_bytes[{{ .AvgSeconds }}s])))
 {{- else -}}
-scalar(sum(node_memory_MemAvailable))
+scalar(sum(node_memory_MemAvailable_bytes))
 {{- end -}}
 `,
 
 	TemplateName_Memory + TemplateName_Total:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(sum(avg_over_time(node_memory_MemTotal[{{ .AvgSeconds }}s])))
+scalar(sum(avg_over_time(node_memory_MemTotal_bytes[{{ .AvgSeconds }}s])))
 {{- else -}}
-scalar(sum(node_memory_MemTotal))
+scalar(sum(node_memory_MemTotal_bytes))
 {{- end -}}
 `,
 
 	TemplateName_Storage + TemplateName_Available:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(sum(avg_over_time(node_filesystem_free[{{ .AvgSeconds }}s])))
+scalar(sum(avg_over_time(node_filesystem_free_bytes[{{ .AvgSeconds }}s])))
 {{- else -}}
-scalar(sum(node_filesystem_free))
+scalar(sum(node_filesystem_free_bytes))
 {{- end -}}
 `,
 
 	TemplateName_Storage + TemplateName_Total:
 `
 {{- if (gt .AvgSeconds 120) -}}
-scalar(sum(avg_over_time(node_filesystem_size[{{ .AvgSeconds }}s])))
+scalar(sum(avg_over_time(node_filesystem_size_bytes[{{ .AvgSeconds }}s])))
 {{- else -}}
-scalar(sum(node_filesystem_size))
+scalar(sum(node_filesystem_size_bytes))
 {{- end -}}
 `,
 

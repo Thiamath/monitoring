@@ -31,7 +31,7 @@ spec:
         - "run"
         - "--in-cluster"
         - "--retrieve.prometheus.enabled"
-        - "--retrieve.prometheus.url=http://prometheus:9090"
+        - "--retrieve.prometheus.url=http://prometheus-k8s:9090"
         - "--debug"
         env:
           - name: NALEJ_ORGANIZATION_ID

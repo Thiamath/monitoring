@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: monitoring
+    service: prometheus-operator
+  name: prometheus-operator
+  namespace: __NPH_NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: monitoring
+      service: prometheus-operator
+  template:
+    metadata:
+      labels:
+        component: monitoring
+        service: prometheus-operator
+    spec:
+      containers:
+      - args:
+        - --kubelet-service=kube-system/kubelet
+        - --logtostderr=true
+        - --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
+        - --prometheus-config-reloader=quay.io/coreos/prometheus-config-reloader:v0.31.1
+        image: quay.io/coreos/prometheus-operator:v0.31.1
+        name: prometheus-operator
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      serviceAccountName: prometheus-operator

@@ -124,7 +124,7 @@ func (qr *queryResult) UnmarshalJSON(b []byte) error {
 }
 
 const (
-	queryTest1 = `rate(node_cpu{mode="idle"}[120s])`
+	queryTest1 = `rate(node_cpu_seconds_total{mode="idle"}[120s])`
 )
 
 var (
@@ -152,10 +152,10 @@ var queryResults = map[string]map[v1.Range][]byte{
 {"resultType": "matrix", "result": [{"metric": {"cpu": "cpu0", "instance": "10.240.0.4:9100", "mode": "idle"}, "values": [[1553901000, "0.9064999999997477"], [1553902200, "0.9094999999996314"], [1553903400, "0.908833333333314"]]}, {"metric": {"cpu": "cpu0", "instance": "10.240.0.5:9100", "mode": "idle"}, "values": [[1553901000, "0.8698333333333721"], [1553902200, "0.8754999999999806"], [1553903400, "0.8701666666665309"]]}, {"metric": {"cpu": "cpu1", "instance": "10.240.0.4:9100", "mode": "idle"}, "values": [[1553901000, "0.9223333333332752"], [1553902200, "0.9155000000003687"], [1553903400, "0.9121666666668413"]]}, {"metric": {"cpu": "cpu1", "instance": "10.240.0.5:9100", "mode": "idle"}, "values": [[1553901000, "0.8965000000001359"], [1553902200, "0.8935000000002522"], [1553903400, "0.8916666666666667"]]}]}
 		`),
 	},
-	"scalar(sum(node_memory_MemAvailable))": map[v1.Range][]byte{
+	"scalar(sum(node_memory_MemAvailable_bytes))": map[v1.Range][]byte{
 		v1.Range{}: []byte(`{"resultType":"scalar","result":[1554037344.922,"18893152256"]}`),
 	},
-	"scalar(sum(avg_over_time(node_filesystem_free[600s])))": map[v1.Range][]byte{
+	"scalar(sum(avg_over_time(node_filesystem_free_bytes[600s])))": map[v1.Range][]byte{
 		v1.Range{}: []byte(`{"resultType":"scalar","result":[1554037344.922,"294341394022.4"]}`),
 	},
 	"scalar(irate(services_created_total[2m]) * 60)": map[v1.Range][]byte{

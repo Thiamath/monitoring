@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: monitoring
+    service: node-exporter
+  name: node-exporter
+  namespace: nalej
+spec:
+  clusterIP: None
+  ports:
+  - name: https
+    port: 9101
+    targetPort: https
+  selector:
+    component: monitoring
+    service: node-exporter
