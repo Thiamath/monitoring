@@ -10,10 +10,10 @@ import (
 	"fmt"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/monitoring/pkg/metrics"
 
 	"github.com/rs/zerolog/log"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 
@@ -34,14 +34,23 @@ type EventsProvider struct {
 	// Cached Kubernetes clients for event subscription
 	clients map[schema.GroupVersion]rest.Interface
 
+	// Cached Kubernetes informers for handler subscription
+	watchers map[schema.GroupVersionKind]*Watcher
+
+	// Registered dispatchers that need to be started and stopped
+	dispatchers []*Dispatcher
+
+	// Mapper for creating watcher for the right REST endpoints
+	restMapper meta.RESTMapper
+
 	// Filters for the watchers
 	labelSelector string
 
 	// Channel to stop informers. Close to stop.
 	stopChan chan struct{}
 
-	// Metrics collector
-	collector metrics.Collector
+	// watchers have started
+	started bool
 }
 
 // NOTE: There is a simple example on how to deal with Kubernetes events here:
@@ -60,7 +69,7 @@ type EventsProvider struct {
 // An extensive description of the event mechanism can be found here:
 //   https://lairdnelson.wordpress.com/2018/01/07/understanding-kubernetes-tools-cache-package-part-0/
 
-func NewEventsProvider(configfile string, incluster bool, labelSelector string, collector metrics.Collector) (*EventsProvider, derrors.Error) {
+func NewEventsProvider(configfile string, incluster bool, labelSelector string) (*EventsProvider, derrors.Error) {
 	log.Debug().Str("config", configfile).Bool("in-cluster", incluster).Msg("creating kubernetes events provider")
 
         var kubeconfig *rest.Config
@@ -75,12 +84,25 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string, 
 	}
         log.Info().Str("host", kubeconfig.Host).Msg("created kubeconfig")
 
+	// Create discovery client
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeconfig)
+	if err != nil {
+		return nil, derrors.NewInternalError("failed to create discovery client", err)
+	}
+	resources, err := restmapper.GetAPIGroupResources(discoveryClient)
+	if err != nil {
+		return nil, derrors.NewInternalError("failed to get api group resources", err)
+	}
+	mapper := restmapper.NewDiscoveryRESTMapper(resources)
+
 	provider := &EventsProvider{
 		kubeconfig: kubeconfig,
 		clients: map[schema.GroupVersion]rest.Interface{},
+		watchers: map[schema.GroupVersionKind]*Watcher{},
+		dispatchers: []*Dispatcher{},
+		restMapper: mapper,
 		labelSelector: labelSelector,
 		stopChan: make(chan struct{}),
-		collector: collector,
 	}
 	return provider, nil
 }
@@ -89,58 +111,97 @@ func NewEventsProvider(configfile string, incluster bool, labelSelector string, 
 func (p *EventsProvider) Start() (derrors.Error) {
 	log.Info().Msg("starting kubernetes events listener")
 
-	translator := NewTranslateFuncs(p.collector)
-	dispatcher, derr := NewDispatcher(translator)
-	if derr != nil {
-		return derr
+	p.started = true
+
+	// Start all watchers - this syncs the Kubernetes event caches as well
+	for _, watcher := range(p.watchers) {
+		err := watcher.Start(p.stopChan)
+		if err != nil {
+			p.Stop()
+			return derrors.NewInternalError("unable to start watcher", err)
+		}
 	}
 
-	// Create discovery client
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(p.kubeconfig)
-	if err != nil {
-		return derrors.NewInternalError("failed to create discovery client", err)
+	// Start all processing queue items in dispatchers
+	for _, dispatcher := range(p.dispatchers) {
+		err := dispatcher.Start(p.stopChan)
+		if err != nil {
+			p.Stop()
+			return derrors.NewInternalError("unable to start dispatcher", err)
+		}
 	}
-	resources, err := restmapper.GetAPIGroupResources(discoveryClient)
-	if err != nil {
-		return derrors.NewInternalError("failed to get api group resources", err)
+
+	return nil
+}
+
+func (p *EventsProvider) AddDispatcher(dispatcher *Dispatcher) derrors.Error {
+	log.Debug().Msg("adding dispatcher to events listener")
+	// Note - not safe under concurrency - we can add start _while_ adding
+	// a dispatcher. If we need this to be thread safe, we need to lock.
+	// Likely we just want to figure out if we can allow adding dispatchers
+	// at any time - this is now more of a fail safe because I don't want
+	// to think about how this would work.
+	if p.started {
+		return derrors.NewInvalidArgumentError("cannot add dispatchers after event provider has started")
 	}
-	mapper := restmapper.NewDiscoveryRESTMapper(resources)
 
 	// Set up watchers
 	for _, kind := range(dispatcher.Dispatchable()) {
-		// Create cached client
-		client, derr := p.createClient(kind.GroupVersion())
+		// Get watcher
+		watcher, derr := p.createWatcher(kind)
 		if derr != nil {
-			p.Stop()
-			return derr
-		}
-
-		// Figure out resource with RESTMapper
-		mapping, err := mapper.RESTMapping(kind.GroupKind(), kind.Version)
-		if err != nil {
-			p.Stop()
-			return derrors.NewInternalError("unable to get rest mapping", err)
-		}
-		resource := mapping.Resource.Resource
-
-		watcher, derr := NewWatcher(client, &kind, resource, dispatcher, p.labelSelector)
-		if derr != nil {
-			p.Stop()
 			return derr
 		}
 
 		// Link the client resource store to the translator for
 		// cross-referencing objects
-		err = translator.SetStore(kind, watcher.GetStore())
+		err := dispatcher.SetStore(kind, watcher.GetStore())
 		if err != nil {
-			p.Stop()
 			return derrors.NewAlreadyExistsError("store already set", err)
 		}
 
-		watcher.Start(p.stopChan)
+		// Set indexer for this specific kind to be able to retrieve
+		// objects based on key
+		err = dispatcher.SetIndexer(kind, watcher.GetIndexer())
+		if err != nil {
+			return derrors.NewAlreadyExistsError("indexer already set", err)
+		}
+
+		watcher.AddHandler(dispatcher)
 	}
 
+	p.dispatchers = append(p.dispatchers, dispatcher)
+
 	return nil
+}
+
+func (p *EventsProvider) createWatcher(gvk schema.GroupVersionKind) (*Watcher, derrors.Error) {
+	watcher, found := p.watchers[gvk]
+	if found {
+		return watcher, nil
+	}
+
+	// Create cached client
+	client, derr := p.createClient(gvk.GroupVersion())
+	if derr != nil {
+		return nil, derr
+	}
+
+	// Figure out resource with RESTMapper
+	mapping, err := p.restMapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return nil, derrors.NewInternalError("unable to get rest mapping", err)
+	}
+	resource := mapping.Resource.Resource
+
+	watcher, derr = NewWatcher(client, &gvk, resource, p.labelSelector)
+	if derr != nil {
+		return nil, derr
+	}
+
+	p.watchers[gvk] = watcher
+
+	return watcher, nil
 }
 
 func (p *EventsProvider) createClient(gv schema.GroupVersion) (rest.Interface, derrors.Error) {
@@ -179,13 +240,8 @@ func (p *EventsProvider) createClient(gv schema.GroupVersion) (rest.Interface, d
 
 // Stop collecting metrics
 func (p *EventsProvider) Stop() (derrors.Error) {
-	log.Info().Msg("stopping kubernetes collector")
+	log.Info().Msg("stopping kubernetes event provider")
 	// Stop informers
 	close(p.stopChan)
 	return nil
-}
-
-// Get specific metrics, or all available when no specific metrics are requested
-func (p *EventsProvider) GetMetrics(types ...metrics.MetricType) (metrics.Metrics, derrors.Error) {
-	return p.collector.GetMetrics(types...)
 }

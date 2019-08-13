@@ -28,13 +28,11 @@ import (
 type Watcher struct {
 	// The GroupVersionKind we're creating a watcher for
 	gvk *schema.GroupVersionKind
-	// The informer controller
-	controller cache.Controller
-	// The data store for client resource objects
-	store cache.Store
+	// The informer, containing store and controller
+	informer cache.SharedIndexInformer
 }
 
-func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource string, handler cache.ResourceEventHandler, labelSelector string) (*Watcher, derrors.Error) {
+func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource string, labelSelector string) (*Watcher, derrors.Error) {
 	log.Debug().Str("kind", gvk.String()).Msg("new watcher")
 
 	// Create empty object
@@ -65,27 +63,38 @@ func NewWatcher(client rest.Interface, gvk *schema.GroupVersionKind, resource st
 	watchlist := cache.NewFilteredListWatchFromClient(client, resource, meta_v1.NamespaceAll, optionsModifier)
 
 	// Create an informer
-	store, controller := cache.NewInformer(watchlist, objType, 0 /* No resync */, handler)
+	informer := cache.NewSharedIndexInformer(watchlist, objType, 0 /* No resync */, cache.Indexers{})
 
 	watcher := &Watcher{
 		gvk: gvk,
-		controller: controller,
-		store: store,
+		informer: informer,
 	}
 
 	return watcher, nil
 }
 
-func (w *Watcher) Start(stopChan <-chan struct{}) {
-	log.Debug().Str("resource", w.gvk.String()).Msg("starting watcher")
-	go w.controller.Run(stopChan)
+func (w *Watcher) AddHandler(handler cache.ResourceEventHandler) {
+	w.informer.AddEventHandler(handler)
+}
 
-	// TODO: do we need to wait for sync even if we don't have a queue
-	// and index? Seems to me we want all events anyway, and we have
-	// no queue to start after we synced.
-	// if !cache.WaitForSync
+func (w *Watcher) Start(stopChan <-chan struct{}) error {
+	log.Debug().Str("resource", w.gvk.String()).Msg("starting watcher")
+	go w.informer.Run(stopChan)
+
+	// Wait for the caches to be synced
+	if !cache.WaitForCacheSync(stopChan, w.informer.HasSynced) {
+		return fmt.Errorf("Timed out waiting for Kubernetes event caches to sync")
+	}
+
+	log.Debug().Str("resource", w.gvk.String()).Msg("watcher synced and ready")
+
+	return nil
 }
 
 func (w *Watcher) GetStore() cache.Store {
-	return w.store
+	return w.informer.GetStore()
+}
+
+func (w *Watcher) GetIndexer() cache.Indexer {
+	return w.informer.GetIndexer()
 }

@@ -100,18 +100,30 @@ func (s *Service) startCollect(httpListener net.Listener, errChan chan<- error) 
 	if derr != nil {
 		return nil, derr
 	}
+	collector := promMetrics.GetCollector()
 
 	// Create Kubernetes event collector provider
 	labelSelector := utils.NALEJ_ANNOTATION_ORGANIZATION_ID // only get events relevant for user applications
 	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster,
-		labelSelector, promMetrics.GetCollector())
+		labelSelector)
+	if derr != nil {
+		return nil, derr
+	}
+
+	translator := kubernetes.NewMetricsTranslator(collector)
+	dispatcher, derr := kubernetes.NewDispatcher(translator)
+	if derr != nil {
+		return nil, derr
+	}
+
+	derr = kubeEvents.AddDispatcher(dispatcher)
 	if derr != nil {
 		return nil, derr
 	}
 
 	// Create managers and handler
 	// Events collector and Metrics HTTP endpoint
-	collectManager, derr := collect.NewManager(kubeEvents, promMetrics)
+	collectManager, derr := collect.NewManager(kubeEvents, promMetrics, collector)
 	if derr != nil {
 		return nil, derr
 	}

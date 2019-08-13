@@ -8,14 +8,9 @@ package events
 
 import (
 	"github.com/nalej/derrors"
-
-	"github.com/nalej/monitoring/pkg/metrics"
 )
 
-// An events provider listens to events that provider metrics.
-// Depending on the provider, it stores those events internally or in
-// a Collector. Useful metrics may be retrieved through GetMetrics
-// or through the Collector if used.
+// An events provider listens to events that provide metrics.
 // NOTE: If we use a collector, do not assume it is thread safe and do not
 // call concurrently
 type EventsProvider interface {
@@ -23,8 +18,4 @@ type EventsProvider interface {
 	Start() (derrors.Error)
 	// Stop collecting metrics
 	Stop() (derrors.Error)
-
-	// Get specific metrics, or all available when no specific metrics
-	// are requested
-	GetMetrics(types ...metrics.MetricType) (metrics.Metrics, derrors.Error)
 }

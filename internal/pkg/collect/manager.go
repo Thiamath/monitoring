@@ -13,6 +13,7 @@ import (
 
 	"github.com/nalej/derrors"
 
+	entities "github.com/nalej/monitoring/pkg/metrics"
 	"github.com/nalej/monitoring/pkg/provider/events"
 	"github.com/nalej/monitoring/pkg/provider/metrics"
 
@@ -22,12 +23,14 @@ import (
 type Manager struct {
 	eventsProvider events.EventsProvider
 	metricsProvider metrics.MetricsProvider
+	collector entities.Collector
 }
 
-func NewManager(eventsProvider events.EventsProvider, metricsProvider metrics.MetricsProvider) (*Manager, derrors.Error) {
+func NewManager(eventsProvider events.EventsProvider, metricsProvider metrics.MetricsProvider, collector entities.Collector) (*Manager, derrors.Error) {
 	manager := &Manager{
 		eventsProvider: eventsProvider,
 		metricsProvider: metricsProvider,
+		collector: collector,
 	}
 
 	return manager, nil
@@ -56,7 +59,7 @@ func (m *Manager) Metrics(w http.ResponseWriter, r *http.Request) {
 func (m *Manager) tickerLogger(c <-chan time.Time) {
 	for {
 		<-c
-		metrics, _ := m.eventsProvider.GetMetrics()
+		metrics, _ := m.collector.GetMetrics()
 		for t, m := range(metrics) {
 			log.Debug().
 				Int64("created", m.Created).
