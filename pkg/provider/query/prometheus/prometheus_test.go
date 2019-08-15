@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/monitoring/pkg/metrics"
 	"github.com/nalej/monitoring/pkg/provider/query"
 
 	"github.com/onsi/ginkgo"
@@ -491,7 +490,7 @@ var _ = ginkgo.Describe("prometheus", func() {
 		})
 
 		ginkgo.It("should execute counter template", func() {
-			tname, err := query.GetPlatformTemplateName(metrics.MetricCreated)
+			tname, err := query.GetPlatformTemplateName(query.MetricCreated)
 			gomega.Expect(err).To(gomega.Succeed())
 
 			gomega.Expect(

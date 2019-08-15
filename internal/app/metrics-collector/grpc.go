@@ -7,13 +7,11 @@ package metrics_collector
 import (
 	"strings"
 
-	"github.com/nalej/monitoring/pkg/metrics"
-
 	grpc "github.com/nalej/grpc-monitoring-go"
 )
 
-func GRPCStatsFieldToMetric(g grpc.PlatformStatsField) metrics.MetricType {
-	return metrics.MetricType(strings.ToLower(g.String()))
+func GRPCStatsFieldToMetric(g grpc.PlatformStatsField) string {
+	return strings.ToLower(g.String())
 }
 
 func AllGRPCStatsFields() []grpc.PlatformStatsField {

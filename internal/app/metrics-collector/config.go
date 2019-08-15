@@ -20,8 +20,6 @@ import (
 type Config struct {
 	// Port where the API service will listen requests.
 	Port int
-	// Port where the metrics endpoint is served over HTTP
-	MetricsPort int
 	// Path to kubeconfig
 	Kubeconfig string
 	// Running inside Kubernetes cluster
@@ -35,10 +33,6 @@ type Config struct {
 func (conf *Config) Validate() derrors.Error {
 	if conf.Port <= 0 {
 		return derrors.NewInvalidArgumentError("port must be specified")
-	}
-
-	if conf.MetricsPort <= 0 {
-		return derrors.NewInvalidArgumentError("metricsPort must be specified")
 	}
 
 	// Retrieval backends validation
@@ -73,7 +67,6 @@ func (conf *Config) Validate() derrors.Error {
 func (conf *Config) Print() {
 	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
 	log.Info().Int("port", conf.Port).Msg("gRPC port")
-	log.Info().Int("port", conf.MetricsPort).Msg("metrics port")
 	log.Info().Str("file", conf.Kubeconfig).Bool("in-cluster", conf.InCluster).Msg("kubeconfig")
 
 	// Retrieval backends

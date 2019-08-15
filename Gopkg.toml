@@ -59,10 +59,6 @@
   version = "v0.0.19"
 
 [[constraint]]
-  name = "github.com/nalej/deployment-manager"
-  branch = "master"
-
-[[constraint]]
   name = "github.com/nalej/grpc-utils"
   version = "v1.4.0"
 

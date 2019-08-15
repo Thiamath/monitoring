@@ -69,7 +69,6 @@ func beforeSuiteIntegrationTests() {
 
 	conf := &Config{
 		Port: 8423,
-		MetricsPort: 8424,
 		InCluster: true, // We won't actually connect to K8s, but this passes validation
 
 		QueryProviders: query.QueryProviderConfigs{

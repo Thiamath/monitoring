@@ -12,7 +12,6 @@ import (
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/monitoring/pkg/provider/query"
-	"github.com/nalej/monitoring/pkg/utils"
 
 	"github.com/prometheus/common/model"
 )
@@ -83,7 +82,7 @@ func (r *PrometheusResult) GetScalarInt() (val int64, derr derrors.Error) {
                 return 0, derrors.NewInternalError("invalid query result", err)
         }
 
-	ival, err := utils.Ftoi(fval)
+	ival, err := Ftoi(fval)
 	if err != nil {
                 return 0, derrors.NewInternalError("error converting query result", err)
 	}

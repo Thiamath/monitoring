@@ -5,10 +5,8 @@
 package metrics_collector
 
 import (
-	"context"
 	"fmt"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -17,11 +15,7 @@ import (
 
 	"github.com/nalej/grpc-monitoring-go"
 
-	"github.com/nalej/deployment-manager/pkg/utils"
-	"github.com/nalej/monitoring/internal/pkg/collect"
 	"github.com/nalej/monitoring/internal/pkg/retrieve"
-	"github.com/nalej/monitoring/pkg/provider/events/kubernetes"
-	metrics_prometheus "github.com/nalej/monitoring/pkg/provider/metrics/prometheus"
 	"github.com/nalej/monitoring/pkg/provider/query"
 
 	"google.golang.org/grpc"
@@ -52,23 +46,11 @@ func (s *Service) Run() derrors.Error {
 	// Channel to signal errors from starting the servers
 	errChan := make(chan error, 1)
 
-	// Listen on metrics port
-	httpListener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.MetricsPort))
-	if err != nil {
-		return derrors.NewUnavailableError("failed to listen", err)
-	}
-
 	// Start listening on API port
 	grpcListener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
 	if err != nil {
 		return derrors.NewUnavailableError("failed to listen", err)
 	}
-
-	httpServer, derr := s.startCollect(httpListener, errChan)
-	if derr != nil {
-		return derr
-	}
-	defer httpServer.Shutdown(context.TODO()) // Add timeout in context
 
 	grpcServer, derr := s.startRetrieve(grpcListener, errChan)
 	if derr != nil {
@@ -90,72 +72,6 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	return nil
-}
-
-// Initialize and start the collecting of metrics through events
-// This starts the HTTP server providing the "/metrics" endpoint.
-func (s *Service) startCollect(httpListener net.Listener, errChan chan<- error) (*http.Server, derrors.Error) {
-	// Create metrics endpoint provider
-	promMetrics, derr := metrics_prometheus.NewMetricsProvider()
-	if derr != nil {
-		return nil, derr
-	}
-	collector := promMetrics.GetCollector()
-
-	// Create Kubernetes event collector provider
-	labelSelector := utils.NALEJ_ANNOTATION_ORGANIZATION_ID // only get events relevant for user applications
-	kubeEvents, derr := kubernetes.NewEventsProvider(s.Configuration.Kubeconfig, s.Configuration.InCluster,
-		labelSelector)
-	if derr != nil {
-		return nil, derr
-	}
-
-	translator := kubernetes.NewMetricsTranslator(collector)
-	dispatcher, derr := kubernetes.NewDispatcher(translator)
-	if derr != nil {
-		return nil, derr
-	}
-
-	derr = kubeEvents.AddDispatcher(dispatcher)
-	if derr != nil {
-		return nil, derr
-	}
-
-	// Create managers and handler
-	// Events collector and Metrics HTTP endpoint
-	collectManager, derr := collect.NewManager(kubeEvents, promMetrics, collector)
-	if derr != nil {
-		return nil, derr
-	}
-	collectHandler, derr := collect.NewHandler(collectManager)
-	if derr != nil {
-		return nil, derr
-	}
-
-	// Create server with metrics handler
-	httpServer := &http.Server{
-		Handler: collectHandler,
-	}
-
-	// Start manager
-	derr = collectManager.Start()
-	if derr != nil {
-		return nil, derr
-	}
-
-	// Start HTTP server
-	log.Info().Int("port", s.Configuration.MetricsPort).Msg("Launching HTTP server")
-	go func() {
-		err := httpServer.Serve(httpListener)
-		if err == http.ErrServerClosed {
-			log.Info().Err(err).Msg("closed http server")
-		} else if err != nil {
-			log.Error().Err(err).Msg("failed to serve http")
-			errChan <- err
-		}
-	}()
-
-	return httpServer, nil
 }
 
 // Initialize and start the retrieval/query API.
