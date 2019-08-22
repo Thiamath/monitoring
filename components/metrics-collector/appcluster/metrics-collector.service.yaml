@@ -18,7 +18,3 @@ spec:
     protocol: TCP
     port: 8422
     targetPort: 8422
-  - name: metrics
-    protocol: TCP
-    port: 8424
-    targetPort: 8424

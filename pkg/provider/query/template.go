@@ -12,8 +12,6 @@ import (
 	"text/template"
 
 	"github.com/nalej/derrors"
-
-	"github.com/nalej/monitoring/pkg/metrics"
 )
 
 type TemplateName string
@@ -40,18 +38,18 @@ const (
 	TemplateName_PlatformStatsGauge TemplateName = "platformgauge"
 )
 
-func GetPlatformTemplateName(m metrics.MetricCounter) (TemplateName, derrors.Error) {
+func GetPlatformTemplateName(m MetricCounter) (TemplateName, derrors.Error) {
 	// Determine template based on value type (counter, gauge)
 	var templateName TemplateName
-	valType, found := metrics.CounterMap[m]
+	valType, found := CounterMap[m]
 	if !found {
 		return "", derrors.NewUnavailableError("no appropriate statistic available")
 	}
 
 	switch valType {
-	case metrics.ValueCounter:
+	case ValueCounter:
 		templateName = TemplateName_PlatformStatsCounter
-	case metrics.ValueGauge:
+	case ValueGauge:
 		templateName = TemplateName_PlatformStatsGauge
 	default:
 		return "", derrors.NewUnavailableError("no appropriate query template available")
