@@ -31,18 +31,6 @@
   version = "v0.0.38"
 
 [[constraint]]
-  name = "k8s.io/client-go"
-  version = "^v8.0.0"
-
-[[constraint]]
-  name = "k8s.io/api"
-  version = "kubernetes-1.11.7"
-
-[[constraint]]
-  name = "k8s.io/apimachinery"
-  version = "kubernetes-1.11.7"
-
-[[constraint]]
   name = "github.com/prometheus/client_golang"
   version = "=v0.9.2"
 
@@ -69,3 +57,7 @@
 [[constraint]]
   name = "github.com/nalej/grpc-organization-go"
   version = "v0.0.29"
+
+[[constraint]]
+  name = "github.com/fsnotify/fsnotify"
+  version = "v1.4.7"
