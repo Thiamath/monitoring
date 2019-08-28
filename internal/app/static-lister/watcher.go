@@ -4,7 +4,14 @@
 
 package static_lister
 
-// Watcher fills the gauge vector and watches for changes in the label file
+// Watcher expects an already initialized and registered Prometheus gauge vector
+// (as defined in the Prometheus client code) and a filename. It reads the
+// lines from the file and creates a metric for each, with the (already
+// defined) label set to the value read from the file (see service.go for
+// an example). It then uses fsnotify to detect changes in the file and if
+// there are any, update the gauge vector.
+// The file can be mounted from a config map in Kubernetes. Any changes from
+// that config map will immediately be updated in the metrics.
 
 import (
 	"bufio"
@@ -67,7 +74,8 @@ func (w *Watcher) Run(errChan chan<- error) {
 			log.Debug().Interface("event", event).Msg("received event")
 			if event.Op & fsnotify.Rename == fsnotify.Rename || event.Op & fsnotify.Remove == fsnotify.Remove {
 				// Rename or delete, likely as part of saving from an editor.
-				// Set up new watcher.
+				// Both will remove the watcher, so we just set up
+				// a new one.
 				err := notifier.Add(w.labelFile)
 				if err != nil {
 					log.Error().Err(err).Str("file", w.labelFile).Msg("error watching file")

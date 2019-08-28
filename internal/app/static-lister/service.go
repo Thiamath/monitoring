@@ -8,6 +8,45 @@ package static_lister
 // a static metric series with specified name and a label with the values
 // read from label-file. We monitor label-file and change the values
 // accordingly.
+// This is needed to be able to detect that a certain component
+// does not exist anymore at all (e.g., deployment deleted); no metrics
+// would be available from kube-state-metrics, so we need a "master list"
+// of components we expect. With this static-lister, we can change the
+// master list easily by changing the label file (which is likely to be
+// a config map), and we can have different expected components per cluster.
+// Local Prometheus will scrape an instance of static-lister for each
+// resource type (deployment, daemonset, statefulset), and this information
+// will get exported to the central availability monitoring system where
+// we can compare it with component information originating from
+// kube-state-metrics.
+
+// Example:
+// $ cat /tmp/foo
+// abc
+// def
+// ghi
+// $ ./static-lister run --name deployments --label-name deployment --label-file /tmp/foo
+// $ curl http://localhost:9001/metrics
+// # HELP nalej_components_deployments nalej components deployments that should be available
+// # TYPE nalej_components_deployments gauge
+// nalej_components_deployments{deployment="abc"} 1
+// nalej_components_deployments{deployment="def"} 1
+// nalej_components_deployments{deployment="ghi"} 1
+//
+// With this information in Prometheus, we can use it in the following query:
+//
+// kube_deployment_status_replicas_available{namespace="nalej"} / kube_deployment_spec_replicas or on(deployment) (nalej_components_deployments == bool 0)
+//
+// This will calculate the ratio between available and requested replicas for a
+// deployment (anything smaller than 1 means there is some degradation). We then
+// union this with any metrics from the component list that isn't present
+// in the ratio list (that is what "or" does), adding the "== bool 0" to flip
+// the 1 into a 0. This way, non-existing deployments that we expected to exist
+// will have a ratio of availability of 0 (or, complete degradation and no
+// pods running).
+
+// We use the standard Prometheus client code and handler to create the metric
+// that results in the above output.
 
 import (
 	"context"
