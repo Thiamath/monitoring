@@ -35,10 +35,12 @@ spec:
                 key: environment
         args:
         - "run"
+        - "--debug"
         - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
         - "--edgeInventoryProxyAddress=edge-inventory-proxy.nalej:5544"
-        - "--caCert=/nalej/$(ENVIRONMENT).pem"
-        - "--debug"
+        - "--caCertPath=/nalej/tls-ca-certificate/tls.crt"
+        - "--clientCertPath=/nalej/tls-client-certificate/tls.crt"
+        - "--skipServerCertValidation=false"
         ports:
         - name: api-port
           containerPort: 8423

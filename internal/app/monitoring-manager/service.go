@@ -73,8 +73,9 @@ func (s *Service) Run() derrors.Error {
 		AppClusterPrefix: s.Configuration.AppClusterPrefix,
 		AppClusterPort: s.Configuration.AppClusterPort,
 		UseTLS: s.Configuration.UseTLS,
-		CACert: s.Configuration.CACert,
-		Insecure: s.Configuration.Insecure,
+		CACertPath: s.Configuration.CACertPath,
+		ClientCertPath: s.Configuration.ClientCertPath,
+		SkipServerCertValidation: s.Configuration.SkipServerCertValidation,
 	}
 
 	// Cluster monitoring

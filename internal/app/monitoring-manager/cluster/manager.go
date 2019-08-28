@@ -24,8 +24,9 @@ type AppClusterConnectParams struct {
 	AppClusterPrefix string
 	AppClusterPort int
 	UseTLS bool
-	CACert string
-	Insecure bool
+	CACertPath string
+	ClientCertPath string
+	SkipServerCertValidation bool
 }
 
 // Create a new query manager.

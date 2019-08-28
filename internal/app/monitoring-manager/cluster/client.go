@@ -40,17 +40,41 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 
 	if params.UseTLS {
 		rootCAs := x509.NewCertPool()
-		if params.CACert != "" {
-			derr := addCert(rootCAs, params.CACert)
-			if derr != nil {
-				return nil, derr
-			}
-		}
+		//if params.CACert != "" {
+		//	derr := addCert(rootCAs, params.CACert)
+		//	if derr != nil {
+		//		return nil, derr
+		//	}
+		//}
+		//
+		//tlsConfig := &tls.Config{
+		//	RootCAs: rootCAs,
+		//	ServerName: address,
+		//	InsecureSkipVerify: params.Insecure,
+		//}
 
 		tlsConfig := &tls.Config{
-			RootCAs: rootCAs,
-			ServerName: address,
-			InsecureSkipVerify: params.Insecure,
+			ServerName:   address,
+		}
+
+		if params.CACertPath != "" {
+			log.Debug().Str("serverCertPath", params.CACertPath).Msg("loading server certificate")
+			serverCert, err := ioutil.ReadFile(params.CACertPath)
+			if err != nil {
+				return nil, derrors.NewInternalError("Error loading server certificate")
+			}
+			added := rootCAs.AppendCertsFromPEM(serverCert)
+			if !added {
+				return nil, derrors.NewInternalError("cannot add server certificate to the pool")
+			}
+			tlsConfig.RootCAs = rootCAs
+		}
+
+		log.Debug().Str("address", address).Bool("useTLS", params.UseTLS).Str("serverCertPath", params.CACertPath).Bool("skipServerCertValidation", params.SkipServerCertValidation).Msg("creating secure connection")
+
+		if params.SkipServerCertValidation {
+			log.Debug().Msg("skipping server cert validation")
+			tlsConfig.InsecureSkipVerify = true
 		}
 
 		creds := credentials.NewTLS(tlsConfig)
