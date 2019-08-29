@@ -44,5 +44,19 @@ spec:
         ports:
         - name: api-port
           containerPort: 8423
+        volumeMounts:
+          - name: tls-ca-certificate-volume
+            readOnly: true
+            mountPath: /nalej/tls-ca-certificate
+          - name: tls-client-certificate-volume
+            readOnly: true
+            mountPath: /nalej/tls-client-certificate
       imagePullSecrets:
       - name: nalej-registry
+      volumes:
+        - name: tls-ca-certificate-volume
+          secret:
+            secretName: tls-ca-certificate
+        - name: tls-client-certificate-volume
+          secret:
+            secretName: tls-client-certificate
