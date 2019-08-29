@@ -32,6 +32,7 @@ type clusterClient struct {
 // one that creates stub clients
 func NewClusterClient(address string, params *AppClusterConnectParams) (*clusterClient, derrors.Error) {
 	var options []grpc.DialOption
+    var hostname string
 
 	log.Debug().Str("address", address).Interface("params", params).Msg("creating app cluster client")
 
@@ -41,7 +42,11 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 
 	if params.UseTLS {
 		rootCAs := x509.NewCertPool()
-		hostname := strings.Split(address, ":")[0]
+		if address != "" {
+			hostname = strings.Split(address, ":")[0]
+		} else {
+			return nil, derrors.NewInvalidArgumentError("server address must be set")
+		}
 
 		tlsConfig := &tls.Config{
 			ServerName:   hostname,
