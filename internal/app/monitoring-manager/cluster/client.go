@@ -40,18 +40,6 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 
 	if params.UseTLS {
 		rootCAs := x509.NewCertPool()
-		//if params.CACert != "" {
-		//	derr := addCert(rootCAs, params.CACert)
-		//	if derr != nil {
-		//		return nil, derr
-		//	}
-		//}
-		//
-		//tlsConfig := &tls.Config{
-		//	RootCAs: rootCAs,
-		//	ServerName: address,
-		//	InsecureSkipVerify: params.skipServerCertValidation,
-		//}
 
 		tlsConfig := &tls.Config{
 			ServerName:   address,
