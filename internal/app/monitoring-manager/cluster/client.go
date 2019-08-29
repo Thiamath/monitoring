@@ -50,7 +50,7 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 		//tlsConfig := &tls.Config{
 		//	RootCAs: rootCAs,
 		//	ServerName: address,
-		//	InsecureSkipVerify: params.Insecure,
+		//	InsecureSkipVerify: params.skipServerCertValidation,
 		//}
 
 		tlsConfig := &tls.Config{

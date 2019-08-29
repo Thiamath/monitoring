@@ -65,5 +65,5 @@ func (conf *Config) Print() {
 	log.Info().Str("URL", conf.EdgeInventoryProxyAddress).Msg("edgeInventoryProxyAddress")
 	log.Info().Str("prefix", conf.AppClusterPrefix).Msg("appClusterPrefix")
 	log.Info().Int("port", conf.AppClusterPort).Msg("appClusterPort")
-	log.Info().Bool("tls", conf.UseTLS).Bool("insecure", conf.SkipServerCertValidation).Str("cert", conf.CACertPath).Str("cert", conf.ClientCertPath).Msg("TLS parameters")
+	log.Info().Bool("tls", conf.UseTLS).Bool("skipServerCertValidation", conf.SkipServerCertValidation).Str("cert", conf.CACertPath).Str("cert", conf.ClientCertPath).Msg("TLS parameters")
 }
