@@ -3,7 +3,8 @@
   "application_list": [
     "monitoring-manager",
     "metrics-collector",
-    "prometheus"
+    "prometheus",
+    "static-lister"
   ],
   "tools": [
     "azure",
