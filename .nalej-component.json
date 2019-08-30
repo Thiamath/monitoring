@@ -4,7 +4,8 @@
     "monitoring-manager",
     "metrics-collector",
     "prometheus",
-    "static-lister"
+    "static-lister",
+    "availability-cli"
   ],
   "tools": [
     "azure",

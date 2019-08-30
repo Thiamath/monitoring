@@ -28,6 +28,7 @@ type TemplateVars struct {
 const (
 	TemplateName_Total TemplateName = "_total"
 	TemplateName_Available TemplateName = "_available"
+	TemplateName_Healthy TemplateName = "_healthy"
 
 	TemplateName_CPU TemplateName = "cpu"
 	TemplateName_Memory TemplateName = "memory"
@@ -36,6 +37,8 @@ const (
 
 	TemplateName_PlatformStatsCounter TemplateName = "platformcounter"
 	TemplateName_PlatformStatsGauge TemplateName = "platformgauge"
+
+	TemplateName_Clusters = "clusters"
 )
 
 func GetPlatformTemplateName(m MetricCounter) (TemplateName, derrors.Error) {

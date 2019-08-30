@@ -8,6 +8,7 @@ package prometheus
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/nalej/derrors"
 
@@ -31,9 +32,18 @@ var PrometheusSupports = query.QueryProviderSupport{
 
 func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) {
 	log.Debug().Str("url", config.Url).Str("type", string(ProviderType)).Msg("creating query provider")
+
 	// Create API client
+	prometheusUrl, err := url.Parse(config.Url)
+	if err != nil {
+		return nil, derrors.NewInternalError("unable to parse url", err).WithParams(config.Url)
+	}
+	if config.Username != "" && config.Password != "" {
+		prometheusUrl.User = url.UserPassword(config.Username, config.Password)
+	}
+
 	client, err := api.NewClient(api.Config{
-		Address: config.Url,
+		Address: prometheusUrl.String(),
 	})
 	if err != nil {
 		return nil, derrors.NewUnavailableError("failed creating prometheus client", err)

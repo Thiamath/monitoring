@@ -113,4 +113,15 @@ scalar(avg_over_time({{ .MetricName }}_{{ .StatName }}[{{ .AvgSeconds }}s]))
 scalar({{ .MetricName }}_{{ .StatName }})
 {{- end -}}
 `,
+
+	TemplateName_Clusters + TemplateName_Total:
+`
+scalar(count(sum by (cluster_id) (node:kube_node_status_condition:selectready)))
+`,
+
+	TemplateName_Clusters + TemplateName_Healthy:
+`
+scalar(count((job:kube_node_status_healthy:intersect == 1) and on(cluster_id) (job:nalej_components_healthy:intersect == 1)) or vector(0))
+`,
+
 }
