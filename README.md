@@ -73,3 +73,129 @@ The following table contains the variables that activate the integration tests
 
 To run Prometheus: `docker run --rm -p 9090:9090 prom/prometheus:v2.8.0`
 
+# Platform Availability Monitoring
+
+The Platform Availability Monitoring runs in Grafana Cloud.
+
+- Main dashboard: https://nalej.grafana.net.
+- Grafana Cloud admin: https://grafana.com/orgs/nalej
+- Prometheus: https://prometheus-us-central1.grafana.net
+- Prometheus data source: https://prometheus-us-central1.grafana.net/api/prom (access: `proxy`)
+- Prometheus `remote_write` endpoint: https://prometheus-us-central1.grafana.net/api/prom/push
+
+The main dashboard uses Grafana Cloud as single sign-on, so you have to have an account that is
+authorized to the Nalej organization. Prometheus uses a username and password combo that can be
+found in the admin console as API keys.
+
+## Architecture
+
+On the management and application clusters we run Prometheus, deployed with the Prometheus
+Operator (`components/prometheus`). We have a number of recording rules that pre-compute
+the information needed for our dashboards and alerting (`components/prometheus/appcluster/prometheus.prometheusrule.yaml`).
+For clusters that are monitored, we add a `remote_write` section to the configuration that
+pushes the result of the recording rules (and nothing else) to the Prometheus in Grafana Cloud.
+
+In Grafana we have a main dashboard that shows overall health and a list of nodes and components
+that are degraded. Per cluster we have a dashboard (in the "Clusters" folder) that gives readiness
+information per node, as well as component degradation and performance information. This dashboard
+includes alerts for bad situations. Alert actions are set up in Grafana itself; we just mark the
+actions that we want as "default" so they get fired whenever any of the cluster dashboards detects
+an anomaly.
+
+## Adding a cluster
+
+To add a cluster, the following needs to be done:
+
+1. Create API key for the cluster
+2. Add `remote_write` section to the Prometheus config
+3. Add a cluster-specific dashboard to Prometheus.
+
+The below describes how to do this (mostly) manually, but this will be automated.
+
+### Create API key
+
+We need a `MetricsPublisher` API key per cluster which we name with the cluster ID. This can be done
+through the Grafana Cloud admin console ("API Keys" under the "Security" heading, "Add API key" button
+in the top right) or through the (undocumented) API.
+
+To use the API, first manually create an API key with 'admin' role. We can use this key to create more
+keys programmatically:
+
+```
+$ curl -H "Authorization: Bearer <admin_api_token>" \ 
+       -H "Content-Type: application/json" \
+       -X POST \ 
+       -d '{"name": "<cluster_id>", "role": "MetricsPublisher"}' \
+       https://grafana.com/api/orgs/nalej/api-keys
+```
+
+This returns the key as the `token` field in a JSON object.
+
+## Add remote write section
+
+For this, we need to actually create a secret and then a `remote_write` section in the Prometheus
+configuration. The secret needs to contain the username (which is unique to our organization and is
+`9179` and the API key created in the previous section.
+
+```
+$ kubectl -nnalej create secret generic --from-literal=username=9179 --from-literal=password=<api_token>
+```
+
+Now, retrieve the existing Prometheus config:
+
+```
+$ kubectl -nnalej get prometheus k8s -oyaml > /tmp/p.yaml
+```
+
+Edit the resulting `p.yaml` by adding the following to the `spec` section (and adding the correct cluster and organization ids):
+
+```
+  externalLabels:
+    cluster_id: <cluster_id>
+    organization_id: <organization_id>
+  remoteWrite:
+  - basicAuth:
+      password:
+        key: password
+        name: grafana-remote-write
+      username:
+        key: username
+        name: grafana-remote-write
+    url: https://prometheus-us-central1.grafana.net/api/prom/push
+    writeRelabelConfigs:
+    - action: keep
+      regex: '[a-zA-Z_]*:[a-zA-Z_]+:[a-zA-Z_]*'
+      sourceLabels:
+      - __name__
+```
+
+Now this cluster will show up in the general dashboard.
+
+## Add cluster dashboard
+
+To enable the alerts, we need to add a cluster dashboard. We have a template for this in `scripts/grafana_cluster_alerting_dashboard_template.json`. This template contains some variables that need to be replaced:
+
+- `{{.OrganizationId}}`
+- `{{.ClusterId}}`
+- `{{.ClusterPublicHostname}}`
+- `{{.ClusterName}}` - for this we can just use the same as `ClusterPublicHostname` for now
+
+Note that we have a few variables that need to be left alone as they are for the dashboard functionality themselves: `{{node}} {{deployment}} {{statefulset}} {{daemonset}}`.
+
+This dashboard (after replacing the variables) can be added manually through the Grafana API, or by using the following API:
+
+```
+$ curl -H "Authorization: Bearer <grafana_api_token>" \
+       -H "Content-Type: application/json" \
+       -X POST -d @dashboard.json \
+       https://nalej.grafana.net/api/dashboards/db
+```
+
+The dashboard with the right values is in this example stored as `dashboard.json`. The API token in the above is a Grafana
+API token, which is different from the one we used before. This token can be created in Grafana (not the Grafana
+Cloud admin console) under "Settings" and the "API keys".
+
+Note: the template has a `folderId` which puts the dashboard in the Clusters folder. This ID is valid for the
+current instance of our Grafana Cloud. To figure out the right ID in future instances, use the
+`https://nalej.grafana.net/api/folders` endpoint (with the Grafana API token).
+
