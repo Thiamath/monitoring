@@ -41,6 +41,7 @@ spec:
         - "--caCertPath=/nalej/tls-ca-certificate/tls.crt"
         - "--clientCertPath=/nalej/tls-client-certificate/tls.crt"
         - "--skipServerCertValidation=false"
+        - "--useTLS=true"
         ports:
         - name: api-port
           containerPort: 8423
