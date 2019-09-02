@@ -5,6 +5,9 @@
 package commands
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/nalej/monitoring/internal/app/availability-cli"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -36,13 +39,20 @@ func init() {
 func onStatus() {
 	config.Prometheus.Enable = true
 
-	status, err := availability_cli.NewStatus(&config)
-	if err != nil {
-		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to initialize status retrieval")
+	retriever, derr := availability_cli.NewStatusRetriever(&config)
+	if derr != nil {
+		log.Fatal().Str("err", derr.DebugReport()).Err(derr).Msg("failed to initialize status retrieval")
 	}
 
-	err = status.GetStatus()
-	if err != nil {
-		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to retrieve status")
+	status, derr := retriever.GetStatus()
+	if derr != nil {
+		log.Fatal().Str("err", derr.DebugReport()).Err(derr).Msg("failed to retrieve status")
 	}
+
+	jsonStr, err := json.MarshalIndent(status, "", "    ")
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed converting status to json")
+	}
+
+	fmt.Printf("%s\n", string(jsonStr))
 }
