@@ -38,25 +38,25 @@ spec:
         - "--debug"
         - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
         - "--edgeInventoryProxyAddress=edge-inventory-proxy.nalej:5544"
-        - "--caCertPath=/nalej/tls-ca-certificate/tls.crt"
+        - "--caCertPath=/nalej/ca-certificate/ca.crt"
         - "--clientCertPath=/nalej/tls-client-certificate/tls.crt"
         - "--skipServerCertValidation=false"
         ports:
         - name: api-port
           containerPort: 8423
         volumeMounts:
-          - name: tls-ca-certificate-volume
+          - name: ca-certificate-volume
             readOnly: true
-            mountPath: /nalej/tls-ca-certificate
+            mountPath: /nalej/ca-certificate
           - name: tls-client-certificate-volume
             readOnly: true
             mountPath: /nalej/tls-client-certificate
       imagePullSecrets:
       - name: nalej-registry
       volumes:
-        - name: tls-ca-certificate-volume
+        - name: ca-certificate-volume
           secret:
-            secretName: tls-ca-certificate
+            secretName: ca-certificate
         - name: tls-client-certificate-volume
           secret:
             secretName: tls-client-certificate
