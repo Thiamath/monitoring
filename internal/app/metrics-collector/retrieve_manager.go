@@ -16,7 +16,6 @@ import (
 	"github.com/nalej/grpc-utils/pkg/conversions"
 
 	"github.com/nalej/monitoring/internal/pkg/retrieve/translators"
-	"github.com/nalej/monitoring/pkg/metrics"
 	"github.com/nalej/monitoring/pkg/provider/query"
 
 	grpc "github.com/nalej/grpc-monitoring-go"
@@ -113,18 +112,17 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 	// TODO: parallel queries
 	var stats = map[int32]*grpc.PlatformStat{}
 	for _, field := range(fields) {
-		metric := GRPCStatsFieldToMetric(field)
 		stat := &grpc.PlatformStat{}
 
 		// Create mapping to fill
-		resultMap := map[metrics.MetricCounter]*int64{
-			metrics.MetricCreated: &stat.Created,
-			metrics.MetricDeleted: &stat.Deleted,
-			metrics.MetricErrors: &stat.Errors,
-			metrics.MetricRunning: &stat.Running,
+		resultMap := map[query.MetricCounter]*int64{
+			query.MetricCreated: &stat.Created,
+			query.MetricDeleted: &stat.Deleted,
+			query.MetricErrors: &stat.Errors,
+			query.MetricRunning: &stat.Running,
 		}
 
-		vars.MetricName = metric.String()
+		vars.MetricName = GRPCStatsFieldToMetric(field)
 		for counter, valPtr := range(resultMap) {
 			// Determine template based on value type (counter, gauge)
 			templateName, derr := query.GetPlatformTemplateName(counter)

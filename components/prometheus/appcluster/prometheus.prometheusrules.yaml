@@ -1,0 +1,68 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: k8s
+    role: recording-rules
+  name: prometheus-k8s-rules
+  namespace: nalej
+spec:
+  groups:
+  - name: components-availability
+    rules:
+    - expr: sum by (pod, container) (rate(kube_pod_container_status_restarts_total{namespace="nalej"}[5m]))
+      record: pod_container:kube_pod_container_status_restarts:rate5m
+    - expr: sum by (deployment) ((kube_deployment_status_replicas_available{namespace="nalej"}
+        / kube_deployment_spec_replicas) or on(deployment) (nalej_components_deployments == bool 0))
+      record: deployment:kube_deployment_status_replicas_available_per_spec:union_ratio
+    - expr: (count(deployment:kube_deployment_status_replicas_available_per_spec:union_ratio == 1) /
+        count(deployment:kube_deployment_status_replicas_available_per_spec:union_ratio))
+        or (vector(0))
+      record: job:kube_deployment_status_replicas_available_per_spec:ratio
+    - expr: sum by (daemonset) ((kube_daemonset_status_number_available{namespace="nalej"}
+        / kube_daemonset_status_desired_number_scheduled) or on(daemonset) (nalej_components_daemonsets == bool 0))
+      record: daemonset:kube_daemonset_status_number_available_per_desired:union_ratio
+    - expr: (count(daemonset:kube_daemonset_status_number_available_per_desired:union_ratio == 1) /
+        count(daemonset:kube_daemonset_status_number_available_per_desired:union_ratio))
+        or (vector(0))
+      record: job:kube_daemonset_status_number_available_per_desired:ratio
+    - expr: sum by (statefulset) ((kube_statefulset_status_replicas_ready{namespace="nalej"}
+        / kube_statefulset_replicas) or on(statefulset) (nalej_components_statefulsets == bool 0))
+      record: statefulset:kube_statefulset_status_replicas_ready:union_ratio
+    - expr: (count(statefulset:kube_statefulset_status_replicas_ready:union_ratio == 1) /
+        count(statefulset:kube_statefulset_status_replicas_ready:union_ratio))
+        or (vector(0))
+      record: job:kube_statefulset_status_replicas_ready:ratio
+    - expr: ((job:kube_deployment_status_replicas_available_per_spec:ratio == 1) and
+        (job:kube_daemonset_status_number_available_per_desired:ratio == 1) and
+        (job:kube_statefulset_status_replicas_ready:ratio == 1))
+        or (vector(0))
+      record: job:nalej_components_healthy:intersect
+  - name: cluster-availability
+    rules:
+    - expr: sum by (node) (kube_node_status_condition{condition="Ready",status="true"})
+      record: node:kube_node_status_condition:selectready
+    - expr: (count(node:kube_node_status_condition:selectready == 1) /
+        count(node:kube_node_status_condition:selectready))
+        or (vector(0))
+      record: job:kube_node_status_condition:ratio_selectready
+    - expr: sum by (node) (kube_node_status_condition{condition="DiskPressure",status="true"})
+      record: node:kube_node_status_condition:selectdiskpressure
+    - expr: sum by (node) (kube_node_status_condition{condition="MemoryPressure",status="true"})
+      record: node:kube_node_status_condition:selectmemorypressure
+    - expr: (job:kube_node_status_condition:ratio_selectready == 1) and
+        (absent(node:kube_node_status_condition:selectdiskpressure == 1)) and
+        (absent(node:kube_node_status_condition:selectmemorypressure == 1))
+      record: job:kube_node_status_healthy:intersect
+  - name: cluster-performance
+    rules:
+    - expr: sum by (node) (kube_node_status_capacity{resource="cpu"})
+      record: node:kube_node_status_capacity:selectcpu
+    - expr: sum by (node) (kube_node_status_capacity{resource="memory"})
+      record: node:kube_node_status_capacity:selectmemory
+    - expr: sum by (node) (kube_node_status_capacity{resource="ephemeral_storage"})
+      record: node:kube_node_status_capacity:selectstorage
+    - expr: avg by (node) (label_replace(1-rate(node_cpu_seconds_total{mode="idle"}[1m]), "node", "$1", "instance", "(.*)"))
+      record: node:node_cpu_used_seconds:avg_rate
+    - expr: sum by (node) (label_replace(1-((node_memory_MemFree_bytes + node_memory_Cached_bytes + node_memory_Buffers_bytes) / node_memory_MemTotal_bytes),"node","$1","instance","(.*)"))
+      record: node:node_memory_MemUsed_bytes:sum

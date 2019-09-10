@@ -1,0 +1,45 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  labels:
+    cluster: management
+    component: monitoring
+    service: components-lister
+  name: components-list
+  namespace: __NPH_NAMESPACE
+data:
+  deployments: |
+    application-manager
+    authx
+    broker
+    cluster-api
+    conductor
+    coredns
+    device-api
+    device-login-api
+    device-manager
+    edge-inventory-proxy
+    eic-api
+    infrasructure-manager
+    installer
+    inventory-manager
+    kube-state-metrics
+    login-api
+    monitoring-manager
+    network-manager
+    prometheus-operator
+    public-api
+    signup
+    system-model
+    unified-logging-coord
+    user-manager
+    vpn-server
+    web
+  daemonsets: |
+    node-exporter
+  statefulsets: |
+    bookie
+    dns-server-consul-server
+    prometheus-k8s
+    scylladb
+    zookeeper
