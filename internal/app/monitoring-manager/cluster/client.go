@@ -87,7 +87,6 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 			tlsConfig.InsecureSkipVerify = true
 		}
 
-		//printRelevantTLSConfig(tlsConfig)
 		creds := credentials.NewTLS(tlsConfig)
 		log.Debug().Interface("creds", creds.Info()).Msg("Secure credentials")
 		options = append(options, grpc.WithTransportCredentials(creds))
