@@ -27,9 +27,11 @@ type Config struct {
 	// Use TLS
 	UseTLS bool
 	// Don't validate TLS certificates
-	Insecure bool
+	SkipServerCertValidation bool
 	// Alternative certificate file to use for validation
-	CACert string
+	CACertPath string
+	// Client Cert Path
+	ClientCertPath string
 }
 
 // Validate the configuration.
@@ -46,6 +48,12 @@ func (conf *Config) Validate() derrors.Error {
 	if conf.AppClusterPort <= 0 {
 		return derrors.NewInvalidArgumentError("appClusterPort is required")
 	}
+	if conf.CACertPath == "" {
+		return derrors.NewInvalidArgumentError("caCertPath is required")
+	}
+	if conf.ClientCertPath == "" {
+		return derrors.NewInvalidArgumentError("clientCertPath is required")
+	}
 	return nil
 }
 
@@ -54,8 +62,8 @@ func (conf *Config) Print() {
 	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
 	log.Info().Int("port", conf.Port).Msg("gRPC port")
 	log.Info().Str("URL", conf.SystemModelAddress).Msg("systemModelAddress")
-        log.Info().Str("URL", conf.EdgeInventoryProxyAddress).Msg("edgeInventoryProxyAddress")
+	log.Info().Str("URL", conf.EdgeInventoryProxyAddress).Msg("edgeInventoryProxyAddress")
 	log.Info().Str("prefix", conf.AppClusterPrefix).Msg("appClusterPrefix")
 	log.Info().Int("port", conf.AppClusterPort).Msg("appClusterPort")
-	log.Info().Bool("tls", conf.UseTLS).Bool("insecure", conf.Insecure).Str("cert", conf.CACert).Msg("TLS parameters")
+	log.Info().Bool("tls", conf.UseTLS).Bool("skipServerCertValidation", conf.SkipServerCertValidation).Str("cert", conf.CACertPath).Str("cert", conf.ClientCertPath).Msg("TLS parameters")
 }

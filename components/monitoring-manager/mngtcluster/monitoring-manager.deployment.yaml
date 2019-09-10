@@ -35,12 +35,29 @@ spec:
                 key: environment
         args:
         - "run"
+        - "--debug"
         - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
         - "--edgeInventoryProxyAddress=edge-inventory-proxy.nalej:5544"
-        - "--caCert=/nalej/$(ENVIRONMENT).pem"
-        - "--debug"
+        - "--caCertPath=/nalej/ca-certificate/ca.crt"
+        - "--clientCertPath=/nalej/tls-client-certificate/tls.crt"
+        - "--skipServerCertValidation=false"
+        - "--useTLS=true"
         ports:
         - name: api-port
           containerPort: 8423
+        volumeMounts:
+          - name: ca-certificate-volume
+            readOnly: true
+            mountPath: /nalej/ca-certificate
+          - name: tls-client-certificate-volume
+            readOnly: true
+            mountPath: /nalej/tls-client-certificate
       imagePullSecrets:
       - name: nalej-registry
+      volumes:
+        - name: ca-certificate-volume
+          secret:
+            secretName: ca-certificate
+        - name: tls-client-certificate-volume
+          secret:
+            secretName: tls-client-certificate

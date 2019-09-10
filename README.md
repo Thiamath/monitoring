@@ -30,8 +30,8 @@ Flags:
       --appClusterPort int          Port used by app-cluster-api (default 443)
       --appClusterPrefix string     Prefix for application cluster hostnames (default "appcluster")
       --caCert string               Alternative certificate file to use for validation
-  -h, --help                        help for run
-      --insecure                    Don't validate TLS certificates
+  -h, --help                        Help for run
+      --skipServerCertValidation    Don't validate TLS certificates
       --port int                    Port for Infrastructure Monitor Coordinator gRPC API (default 8423)
       --systemModelAddress string   System Model address (host:port) (default "localhost:8800")
       --useTLS                      Use TLS to connect to application cluster (default true)
