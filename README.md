@@ -23,8 +23,41 @@ Monitoring requires the following components to be up and running:
 * Prometheus
 
 
+### Build and compile
+
+In order to build and compile this repository use the provided Makefile:
+
+```
+make all
+```
+
+This operation generates the binaries for this repo, download dependencies,
+run existing tests and generate ready-to-deploy Kubernetes files.
+
+### Run tests
+
+Tests are executed using Ginkgo. To run all the available tests:
+
+```
+make test
+```
+
+### Update dependencies
+
+Dependencies are managed using Godep. For an automatic dependencies download use:
+
+```
+make dep
+```
+
+In order to have all dependencies up-to-date run:
+
+```
+dep ensure -update -v
+```
 
 ## Usage
+
 
 ### `monitoring-manager`
 
