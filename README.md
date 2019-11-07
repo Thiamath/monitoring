@@ -1,6 +1,6 @@
 # monitoring
 
-Monitoring the state of application clusters
+Monitoring the state of application clusters.
 
 ## Structure
 
@@ -14,6 +14,15 @@ Ultimately, `public-api` provides an interface to retrieve the cluster resource 
 `monitoring-manager`, `app-cluster-api` and `metrics-collector`. `monitoring-manager`
 also exposes the platform statistics and generic query endpoints for internal usage, which
 are routed to the requested cluster through `app-cluster-api`.
+
+### Prerequisites
+
+Monitoring requires the following components to be up and running:
+
+* system-model
+* Prometheus
+
+
 
 ## Usage
 
@@ -199,3 +208,20 @@ Note: the template has a `folderId` which puts the dashboard in the Clusters fol
 current instance of our Grafana Cloud. To figure out the right ID in future instances, use the
 `https://nalej.grafana.net/api/folders` endpoint (with the Grafana API token).
 
+
+​
+## Contributing
+​
+Please read [contributing.md](contributing.md) for details on our code of conduct, and the process for submitting pull requests to us.
+​
+​
+## Versioning
+​
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/nalej/monitoring/tags). 
+​
+## Authors
+​
+See also the list of [contributors](https://github.com/nalej/monitoring/contributors) who participated in this project.
+​
+## License
+This project is licensed under the Apache 2.0 License - see the [LICENSE-2.0.txt](LICENSE-2.0.txt) file for details.
