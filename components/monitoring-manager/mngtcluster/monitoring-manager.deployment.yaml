@@ -39,7 +39,7 @@ spec:
         - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
         - "--edgeInventoryProxyAddress=edge-inventory-proxy.nalej:5544"
         - "--caCertPath=/nalej/ca-certificate/ca.crt"
-        - "--clientCertPath=/nalej/tls-client-certificate/tls.crt"
+        - "--clientCertPath=/nalej/tls-client-certificate/"
         - "--skipServerCertValidation=false"
         - "--useTLS=true"
         ports:
