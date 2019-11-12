@@ -24,7 +24,7 @@ spec:
           name: components-list
       containers:
       - name: deployments-lister
-        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/static-lister:__NPH_VERSION
+        image: __NPH_REGISTRY_NAMESPACE/static-lister:__NPH_VERSION
         imagePullPolicy: Always
         securityContext:
           runAsUser: 2000
@@ -34,7 +34,6 @@ spec:
         - "--name=deployments"
         - "--label-name=deployment"
         - "--label-file=/nalej/components/deployments"
-        - "--debug"
         ports:
         - name: deployments
           containerPort: 9000
@@ -43,7 +42,7 @@ spec:
           mountPath: "/nalej/components"
           readOnly: true
       - name: daemonsets-lister
-        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/static-lister:__NPH_VERSION
+        image: __NPH_REGISTRY_NAMESPACE/static-lister:__NPH_VERSION
         imagePullPolicy: Always
         securityContext:
           runAsUser: 2000
@@ -53,7 +52,6 @@ spec:
         - "--name=daemonsets"
         - "--label-name=daemonset"
         - "--label-file=/nalej/components/daemonsets"
-        - "--debug"
         ports:
         - name: daemonsets
           containerPort: 9001
@@ -62,7 +60,7 @@ spec:
           mountPath: "/nalej/components"
           readOnly: true
       - name: statefulset-lister
-        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/static-lister:__NPH_VERSION
+        image: __NPH_REGISTRY_NAMESPACE/static-lister:__NPH_VERSION
         imagePullPolicy: Always
         securityContext:
           runAsUser: 2000
@@ -72,7 +70,6 @@ spec:
         - "--name=statefulsets"
         - "--label-name=statefulset"
         - "--label-file=/nalej/components/statefulsets"
-        - "--debug"
         ports:
         - name: statefulsets
           containerPort: 9002
@@ -80,5 +77,3 @@ spec:
         - name: components
           mountPath: "/nalej/components"
           readOnly: true
-      imagePullSecrets:
-      - name: nalej-registry

@@ -1,13 +1,6 @@
-#
-# Copyright (C) 2019 Nalej Group - All Rights Reserved
-#
+FROM alpine:3.9.4
 
-# iron/go is the alpine image with only ca-certificates added
-FROM iron/go
-
-RUN mkdir /nalej
-
-# Now just add the binary
 COPY metrics-collector /nalej/
 
 ENTRYPOINT ["./nalej/metrics-collector"]
+

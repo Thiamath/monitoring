@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: monitoring-manager
-        image: __NPH_REGISTRY/__NPH_REGISTRY_NAMESPACE/monitoring-manager:__NPH_VERSION
+        image: __NPH_REGISTRY_NAMESPACE/monitoring-manager:__NPH_VERSION
         imagePullPolicy: Always
         securityContext:
           runAsUser: 2000
@@ -35,7 +35,6 @@ spec:
                 key: environment
         args:
         - "run"
-        - "--debug"
         - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
         - "--edgeInventoryProxyAddress=edge-inventory-proxy.nalej:5544"
         - "--caCertPath=/nalej/ca-certificate/ca.crt"
@@ -52,8 +51,6 @@ spec:
           - name: tls-client-certificate-volume
             readOnly: true
             mountPath: /nalej/tls-client-certificate
-      imagePullSecrets:
-      - name: nalej-registry
       volumes:
         - name: ca-certificate-volume
           secret:
