@@ -10,7 +10,6 @@
   "image_list": [
     "monitoring-manager",
     "metrics-collector",
-    "prometheus",
     "static-lister"
   ],
   "tools": [
