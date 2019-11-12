@@ -9,7 +9,9 @@
   ],
   "image_list": [
     "monitoring-manager",
-    "metrics-collector"
+    "metrics-collector",
+    "prometheus",
+    "static-lister"
   ],
   "tools": [
     "k8s",
