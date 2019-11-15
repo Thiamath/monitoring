@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package commands
@@ -53,7 +52,7 @@ func init() {
 
 	// Configuration for the various retrieval backends - see pkg/provider/query/*/config.go
 	config.QueryProviders = make(query.QueryProviderConfigs, query.Registry.NumEntries())
-	for queryProviderType, configFunc := range(query.Registry) {
+	for queryProviderType, configFunc := range query.Registry {
 		config.QueryProviders[queryProviderType] = configFunc(runCmd)
 	}
 

@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package asset
@@ -39,13 +38,13 @@ func ValidTimeRange(timeRange *grpc_monitoring_go.QueryMetricsRequest_TimeRange)
 		if timeRange.GetTimeStart() != 0 || timeRange.GetTimeEnd() != 0 || timeRange.GetResolution() != 0 {
 			return derrors.NewInvalidArgumentError("timestamp is set; start, end and resolution should be 0").
 				WithParams(timeRange.GetTimestamp(), timeRange.GetTimeStart(),
-				timeRange.GetTimeEnd(), timeRange.GetResolution())
+					timeRange.GetTimeEnd(), timeRange.GetResolution())
 		}
 	} else {
 		if timeRange.GetTimeStart() == 0 && timeRange.GetTimeEnd() == 0 {
 			return derrors.NewInvalidArgumentError("timestamp is not set; either start, end or both should be set").
 				WithParams(timeRange.GetTimestamp(), timeRange.GetTimeStart(),
-				timeRange.GetTimeEnd(), timeRange.GetResolution())
+					timeRange.GetTimeEnd(), timeRange.GetResolution())
 		}
 	}
 

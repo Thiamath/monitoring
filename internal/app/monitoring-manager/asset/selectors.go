@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package asset
@@ -39,9 +38,9 @@ func (s SelectorMap) AddAsset(asset *grpc_inventory_go.Asset) {
 		selector.AssetIds = append(selector.AssetIds, assetId)
 	} else {
 		s[ecId] = &grpc_inventory_go.AssetSelector{
-			OrganizationId: asset.GetOrganizationId(),
+			OrganizationId:   asset.GetOrganizationId(),
 			EdgeControllerId: ecId,
-			AssetIds: []string{assetId},
+			AssetIds:         []string{assetId},
 		}
 	}
 }
@@ -54,13 +53,13 @@ type selectorFunc func(*grpc_inventory_go.AssetSelector) (SelectorMap, derrors.E
 type SelectorMapFactory struct {
 	funcList []selectorFunc
 
-        assetsClient grpc_inventory_go.AssetsClient
-        controllersClient grpc_inventory_go.ControllersClient
+	assetsClient      grpc_inventory_go.AssetsClient
+	controllersClient grpc_inventory_go.ControllersClient
 }
 
 func NewSelectorMapFactory(assetsClient grpc_inventory_go.AssetsClient, controllersClient grpc_inventory_go.ControllersClient) *SelectorMapFactory {
 	f := &SelectorMapFactory{
-		assetsClient: assetsClient,
+		assetsClient:      assetsClient,
 		controllersClient: controllersClient,
 	}
 
@@ -91,7 +90,7 @@ func (f *SelectorMapFactory) SelectorMap(selector *grpc_inventory_go.AssetSelect
 	var selectors SelectorMap
 	var derr derrors.Error
 
-	for _, fn := range(f.funcList) {
+	for _, fn := range f.funcList {
 		selectors, derr = fn(selector)
 		if derr != nil {
 			return nil, derr
@@ -112,7 +111,7 @@ func (f *SelectorMapFactory) SelectorMap(selector *grpc_inventory_go.AssetSelect
 }
 
 // Filter out disabled and unavailable Edge Controllers
-func (f *SelectorMapFactory) filterECs(orgId string, selectors SelectorMap) (derrors.Error) {
+func (f *SelectorMapFactory) filterECs(orgId string, selectors SelectorMap) derrors.Error {
 	if selectors == nil || len(selectors) == 0 {
 		return nil
 	}
@@ -128,14 +127,14 @@ func (f *SelectorMapFactory) filterECs(orgId string, selectors SelectorMap) (der
 	if err != nil {
 		return derrors.NewUnavailableError("unable to retrieve edge controllers", err).WithParams(orgId)
 	}
-	for _, ec := range(ecList.GetControllers()) {
+	for _, ec := range ecList.GetControllers() {
 		ecId := ec.GetEdgeControllerId()
 		lastAlive := ec.GetLastAliveTimestamp()
 
 		if !ec.GetShow() {
 			log.Debug().Str("edge-controller-id", ecId).Msg("removing disabled edge controller from selectors")
 			delete(selectors, ecId)
-		} else if time.Now().UTC().Unix() - lastAlive > edgeControllerAliveTimeout {
+		} else if time.Now().UTC().Unix()-lastAlive > edgeControllerAliveTimeout {
 			log.Debug().Str("edge-controller-id", ecId).Int64("last-alive", lastAlive).Msg("removing unavailable edge controller from selectors")
 			delete(selectors, ec.GetEdgeControllerId())
 		}
@@ -158,12 +157,12 @@ func (f *SelectorMapFactory) getAssetSelectors(selector *grpc_inventory_go.Asset
 
 	selectors := make(SelectorMap)
 
-	for _, id := range(assetIds) {
+	for _, id := range assetIds {
 		ctx, cancel := InventoryContext()
 		// Calling cancel manually to avoid stacking up a lot of defers
 		asset, err := f.assetsClient.Get(ctx, &grpc_inventory_go.AssetId{
 			OrganizationId: orgId,
-			AssetId: id,
+			AssetId:        id,
 		})
 		cancel()
 		if err != nil {
@@ -207,10 +206,10 @@ func (f *SelectorMapFactory) getECSelectors(selector *grpc_inventory_go.AssetSel
 			return nil, derrors.NewUnavailableError("unable to retrieve edge controllers", err).WithParams(orgId)
 		}
 
-		for _, ec := range(ecList.GetControllers()) {
+		for _, ec := range ecList.GetControllers() {
 			id := ec.GetEdgeControllerId()
 			selectors[id] = &grpc_inventory_go.AssetSelector{
-				OrganizationId: orgId,
+				OrganizationId:   orgId,
 				EdgeControllerId: id,
 			}
 		}
@@ -245,7 +244,7 @@ func (f *SelectorMapFactory) getFilteredSelectors(selector *grpc_inventory_go.As
 	if ecId != "" {
 		// We start with all assets for an Edge Controller
 		assetList, err = f.assetsClient.ListControllerAssets(ctx, &grpc_inventory_go.EdgeControllerId{
-			OrganizationId: orgId,
+			OrganizationId:   orgId,
 			EdgeControllerId: ecId,
 		})
 		if err != nil {
@@ -262,7 +261,7 @@ func (f *SelectorMapFactory) getFilteredSelectors(selector *grpc_inventory_go.As
 		}
 	}
 
-	for _, asset := range(assetList.GetAssets()) {
+	for _, asset := range assetList.GetAssets() {
 		if selectedAsset(asset, selector) {
 			selectors.AddAsset(asset)
 		}
@@ -291,7 +290,7 @@ func selectedAsset(asset *grpc_inventory_go.Asset, selector *grpc_inventory_go.A
 		if assetLabels == nil {
 			return false
 		}
-		for k, v := range(labels) {
+		for k, v := range labels {
 			if assetLabels[k] != v {
 				return false
 			}

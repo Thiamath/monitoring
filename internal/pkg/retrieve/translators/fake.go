@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Translator for Prometheus query result
@@ -37,7 +36,7 @@ func FakeTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Error) {
 	}
 
 	grpcResponse := &grpc.QueryResponse{
-		Type: grpc.QueryType(-1), // FAKE,
+		Type:   grpc.QueryType(-1), // FAKE,
 		Result: &QueryResponse_FakeResult{Result: string(result)},
 	}
 
@@ -45,7 +44,7 @@ func FakeTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Error) {
 }
 
 type QueryResponse_FakeResult struct {
-	Result string
+	Result                              string
 	grpc.QueryResponse_PrometheusResult // to make it a valid response
 }
 

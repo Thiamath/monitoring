@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package commands
@@ -31,14 +30,14 @@ var debugLevel bool
 var consoleLogging bool
 
 var rootCmd = &cobra.Command{
-	Use:   "metrics-collector",
-	Short: "Metrics Collector",
-	Long:  `Metrics COllector on Application Cluster stores Kubernetes events in Prometheus`,
+	Use:     "metrics-collector",
+	Short:   "Metrics Collector",
+	Long:    `Metrics COllector on Application Cluster stores Kubernetes events in Prometheus`,
 	Version: "unknown-version",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		SetupLogging()
-                cmd.Help()
+		cmd.Help()
 	},
 }
 

@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Query templates for Prometheus
@@ -33,8 +32,7 @@ var queryTemplates = TemplateStringMap{
 	// two samples in a vector - so change-of-seconds-per-second is
 	// CPU usage. Multiply numbers by 1000 to return millicores.
 	// Rate gets rate-of-change per second over complete vector.
-	TemplateName_CPU + TemplateName_Available:
-`
+	TemplateName_CPU + TemplateName_Available: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(sum (rate(node_cpu_seconds_total{mode='idle'}[{{ .AvgSeconds }}s])) * 1000)
 {{- else -}}
@@ -42,8 +40,7 @@ scalar(sum (irate(node_cpu_seconds_total{mode='idle'}[2m])) * 1000)
 {{- end -}}
 `,
 
-	TemplateName_CPU + TemplateName_Total:
-`
+	TemplateName_CPU + TemplateName_Total: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(avg_over_time(count(node_cpu_seconds_total{mode='idle'})[{{ .AvgSeconds }}s:60s]) * 1000)
 {{- else -}}
@@ -51,8 +48,7 @@ scalar(count(node_cpu_seconds_total{mode='idle'}) * 1000)
 {{- end -}}
 `,
 
-	TemplateName_Memory + TemplateName_Available:
-`
+	TemplateName_Memory + TemplateName_Available: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(sum(avg_over_time(node_memory_MemAvailable_bytes[{{ .AvgSeconds }}s])))
 {{- else -}}
@@ -60,8 +56,7 @@ scalar(sum(node_memory_MemAvailable_bytes))
 {{- end -}}
 `,
 
-	TemplateName_Memory + TemplateName_Total:
-`
+	TemplateName_Memory + TemplateName_Total: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(sum(avg_over_time(node_memory_MemTotal_bytes[{{ .AvgSeconds }}s])))
 {{- else -}}
@@ -69,8 +64,7 @@ scalar(sum(node_memory_MemTotal_bytes))
 {{- end -}}
 `,
 
-	TemplateName_Storage + TemplateName_Available:
-`
+	TemplateName_Storage + TemplateName_Available: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(sum(avg_over_time(node_filesystem_free_bytes[{{ .AvgSeconds }}s])))
 {{- else -}}
@@ -78,8 +72,7 @@ scalar(sum(node_filesystem_free_bytes))
 {{- end -}}
 `,
 
-	TemplateName_Storage + TemplateName_Total:
-`
+	TemplateName_Storage + TemplateName_Total: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(sum(avg_over_time(node_filesystem_size_bytes[{{ .AvgSeconds }}s])))
 {{- else -}}
@@ -87,8 +80,7 @@ scalar(sum(node_filesystem_size_bytes))
 {{- end -}}
 `,
 
-	TemplateName_UsableStorage + TemplateName_Available:
-`
+	TemplateName_UsableStorage + TemplateName_Available: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(max(avg_over_time(node_filesystem_free[{{ .AvgSeconds }}s])))
 {{- else -}}
@@ -96,8 +88,7 @@ scalar(max(node_filesystem_free))
 {{- end -}}
 `,
 
-	TemplateName_UsableStorage + TemplateName_Total:
-`
+	TemplateName_UsableStorage + TemplateName_Total: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(max(avg_over_time(node_filesystem_size[{{ .AvgSeconds }}s])))
 {{- else -}}
@@ -109,8 +100,7 @@ scalar(max(node_filesystem_size))
 	// or the increase over the last minute if no period requested
 	// (Alternatively, we could do the average change-per-minute)
 	// scalar(rate({{ .StatName }}[{{ .AvgSeconds }}s]) * 60)
-	TemplateName_PlatformStatsCounter:
-`
+	TemplateName_PlatformStatsCounter: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(increase({{ .MetricName }}_{{ .StatName }}_total[{{ .AvgSeconds }}s]))
 {{- else -}}
@@ -118,8 +108,7 @@ scalar(irate({{ .MetricName }}_{{ .StatName }}_total[2m]) * 60)
 {{- end -}}
 `,
 
-	TemplateName_PlatformStatsGauge:
-`
+	TemplateName_PlatformStatsGauge: `
 {{- if (gt .AvgSeconds 120) -}}
 scalar(avg_over_time({{ .MetricName }}_{{ .StatName }}[{{ .AvgSeconds }}s]))
 {{- else -}}

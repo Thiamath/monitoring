@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Manager implementation for cluster monitoring
@@ -30,15 +29,15 @@ import (
 
 type Manager struct {
 	clustersClient grpc_infrastructure_go.ClustersClient
-	params *AppClusterConnectParams
+	params         *AppClusterConnectParams
 }
 
 type AppClusterConnectParams struct {
-	AppClusterPrefix string
-	AppClusterPort int
-	UseTLS bool
-	CACertPath string
-	ClientCertPath string
+	AppClusterPrefix         string
+	AppClusterPort           int
+	UseTLS                   bool
+	CACertPath               string
+	ClientCertPath           string
 	SkipServerCertValidation bool
 }
 
@@ -46,7 +45,7 @@ type AppClusterConnectParams struct {
 func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *AppClusterConnectParams) (*Manager, derrors.Error) {
 	manager := &Manager{
 		clustersClient: clustersClient,
-		params: params,
+		params:         params,
 	}
 
 	return manager, nil
@@ -55,7 +54,7 @@ func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *Ap
 func (m *Manager) getClusterClient(organizationId, clusterId string) (*clusterClient, derrors.Error) {
 	getClusterRequest := &grpc_infrastructure_go.ClusterId{
 		OrganizationId: organizationId,
-		ClusterId: clusterId,
+		ClusterId:      clusterId,
 	}
 
 	cluster, err := m.clustersClient.GetCluster(context.Background(), getClusterRequest)

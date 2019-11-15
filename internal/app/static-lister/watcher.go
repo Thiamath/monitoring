@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package static_lister
@@ -37,15 +36,15 @@ import (
 
 type Watcher struct {
 	labelFile string
-	gauge *prometheus.GaugeVec
+	gauge     *prometheus.GaugeVec
 
 	currentLabels []string
 }
 
 func NewWatcher(labelFile string, gauge *prometheus.GaugeVec) (*Watcher, error) {
 	w := &Watcher{
-		labelFile: labelFile,
-		gauge: gauge,
+		labelFile:     labelFile,
+		gauge:         gauge,
 		currentLabels: []string{},
 	}
 
@@ -85,7 +84,7 @@ func (w *Watcher) Run(errChan chan<- error) {
 			}
 
 			log.Debug().Interface("event", event).Msg("received event")
-			if event.Op & fsnotify.Rename == fsnotify.Rename || event.Op & fsnotify.Remove == fsnotify.Remove {
+			if event.Op&fsnotify.Rename == fsnotify.Rename || event.Op&fsnotify.Remove == fsnotify.Remove {
 				// Rename or delete, likely as part of saving from an editor.
 				// Both will remove the watcher, so we just set up
 				// a new one.
@@ -137,13 +136,13 @@ func (w *Watcher) updateLabels() error {
 
 	// Delete old labels
 	log.Debug().Strs("labels", w.currentLabels).Msg("deleting current labels")
-	for _, label := range(w.currentLabels) {
+	for _, label := range w.currentLabels {
 		w.gauge.DeleteLabelValues(label)
 	}
 
 	// Create new labels
 	log.Debug().Strs("labels", newLabels).Msg("adding new labels")
-	for _, label := range(newLabels) {
+	for _, label := range newLabels {
 		g, err := w.gauge.GetMetricWithLabelValues(label)
 		if err != nil {
 			return err

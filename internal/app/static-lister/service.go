@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package static_lister
@@ -140,8 +139,8 @@ func (s *Service) startMetrics(httpListener net.Listener, errChan chan<- error) 
 	gauge := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: s.Configuration.Namespace,
 		Subsystem: s.Configuration.Subsystem,
-		Name: s.Configuration.Name,
-		Help: fmt.Sprintf("%s %s %s that should be available", s.Configuration.Namespace, s.Configuration.Subsystem, s.Configuration.Name),
+		Name:      s.Configuration.Name,
+		Help:      fmt.Sprintf("%s %s %s that should be available", s.Configuration.Namespace, s.Configuration.Subsystem, s.Configuration.Name),
 	}, []string{s.Configuration.LabelName})
 	err := registry.Register(gauge)
 	if err != nil {

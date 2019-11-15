@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Query provider registry
@@ -21,11 +20,12 @@ package query
 
 import (
 	"github.com/nalej/derrors"
-	"github.com/spf13/cobra"
 	"github.com/rs/zerolog"
+	"github.com/spf13/cobra"
 )
 
 type QueryProviderType string
+
 func (t QueryProviderType) String() string {
 	return string(t)
 }

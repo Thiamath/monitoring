@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Query provider interface
@@ -45,14 +44,16 @@ type QueryProvider interface {
 
 // Types to indicate what a provider supports
 type QueryProviderFeature string
+
 const (
 	FeaturePlatformStats QueryProviderFeature = "platformstats"
-	FeatureSystemStats QueryProviderFeature = "systemstats"
+	FeatureSystemStats   QueryProviderFeature = "systemstats"
 )
 
 type QueryProviderSupport []QueryProviderFeature
+
 func (q QueryProviderSupport) Supports(f QueryProviderFeature) bool {
-	for _, supported := range(q) {
+	for _, supported := range q {
 		if supported == f {
 			return true
 		}
@@ -63,7 +64,7 @@ func (q QueryProviderSupport) Supports(f QueryProviderFeature) bool {
 // Query descriptor
 type Query struct {
 	QueryString string
-	Range QueryRange
+	Range       QueryRange
 }
 
 // Time range over which to execute the query. If only Start is provided
@@ -71,7 +72,7 @@ type Query struct {
 // in that case Step is ignored.
 type QueryRange struct {
 	Start, End time.Time
-	Step time.Duration
+	Step       time.Duration
 }
 
 // Query result interface. Type() can be used to call a handler function

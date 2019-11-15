@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // RetrieveManager interface definition
@@ -24,7 +23,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-        grpc "github.com/nalej/grpc-monitoring-go"
+	grpc "github.com/nalej/grpc-monitoring-go"
 )
 
 type RetrieveManager interface {

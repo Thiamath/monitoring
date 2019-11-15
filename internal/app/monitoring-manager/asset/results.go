@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package asset
@@ -39,7 +38,7 @@ func NewQueryResults() QueryResults {
 
 func (r QueryResults) AddResult(ecId string, result *grpc_monitoring_go.QueryMetricsResult) {
 	// Loop over all returned metrics
-	for metric, assetMetrics := range(result.GetMetrics()) {
+	for metric, assetMetrics := range result.GetMetrics() {
 		// Currently, we always have a single assetMetric
 		assetMetricList := assetMetrics.GetMetrics()
 		if len(assetMetricList) == 0 {
@@ -77,10 +76,10 @@ func (r QueryResults) AddResult(ecId string, result *grpc_monitoring_go.QueryMet
 // Unify the summed results with the timestamp-to-value map into the gRPC result.
 func (r QueryResults) GetQueryMetricsResult(aggregationType grpc_monitoring_go.AggregationType) (*grpc_monitoring_go.QueryMetricsResult, derrors.Error) {
 	metricResults := make(map[string]*grpc_monitoring_go.QueryMetricsResult_AssetMetrics, len(r))
-	for metric, valueMap := range(r) {
+	for metric, valueMap := range r {
 		// Make a list sorted timestamps
 		keys := make([]int64, 0, len(valueMap))
-		for key := range(valueMap) {
+		for key := range valueMap {
 			keys = append(keys, key)
 		}
 		// Sort int64
@@ -89,7 +88,7 @@ func (r QueryResults) GetQueryMetricsResult(aggregationType grpc_monitoring_go.A
 		log.Debug().Str("metric", metric).Int("count", len(keys)).Msg("aggregating metrics")
 		// Create final value list, applying aggregation if needed
 		values := make([]*grpc_monitoring_go.QueryMetricsResult_Value, 0, len(keys))
-		for _, key := range(keys) {
+		for _, key := range keys {
 			value := valueMap[key]
 			switch aggregationType {
 			case grpc_monitoring_go.AggregationType_SUM:
@@ -108,7 +107,7 @@ func (r QueryResults) GetQueryMetricsResult(aggregationType grpc_monitoring_go.A
 					// We don't have an asset id - if we had a single
 					// asset, we would have had a single EC, and we
 					// would have returned already.
-					Values: values,
+					Values:      values,
 					Aggregation: aggregationType,
 				},
 			},

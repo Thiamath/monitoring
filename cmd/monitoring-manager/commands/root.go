@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package commands
@@ -31,14 +30,14 @@ var debugLevel bool
 var consoleLogging bool
 
 var rootCmd = &cobra.Command{
-	Use:   "monitoring-manager",
-	Short: "Monitoring Manager",
-	Long:  `Monitoring Manager on Management Cluster forwards queries to Application Clusters`,
+	Use:     "monitoring-manager",
+	Short:   "Monitoring Manager",
+	Long:    `Monitoring Manager on Management Cluster forwards queries to Application Clusters`,
 	Version: "unknown-version",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		SetupLogging()
-                cmd.Help()
+		cmd.Help()
 	},
 }
 

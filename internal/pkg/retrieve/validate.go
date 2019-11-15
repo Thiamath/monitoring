@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Validate requests
@@ -29,11 +28,11 @@ import (
 )
 
 const (
-	emptyQueryString = "query cannot be empty"
+	emptyQueryString    = "query cannot be empty"
 	emptyOrganizationId = "organization_id cannot be empty"
-	emptyClusterId = "cluster_id cannot be empty"
-	badOrganizationId = "invalid organization_id"
-	badClusterId = "invalid cluster_id"
+	emptyClusterId      = "cluster_id cannot be empty"
+	badOrganizationId   = "invalid organization_id"
+	badClusterId        = "invalid cluster_id"
 )
 
 // This is an interface with the methods that are indentical for all requests,

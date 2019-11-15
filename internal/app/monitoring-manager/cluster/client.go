@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Manager implementation for cluster monitoring
@@ -63,7 +62,7 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 		}
 
 		tlsConfig := &tls.Config{
-			ServerName:   hostname,
+			ServerName: hostname,
 		}
 
 		if params.CACertPath != "" {
@@ -83,7 +82,7 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 
 		if params.ClientCertPath != "" {
 			log.Debug().Str("clientCertPath", params.ClientCertPath).Msg("loading client certificate")
-			clientCert, err := tls.LoadX509KeyPair(fmt.Sprintf("%s/tls.crt", params.ClientCertPath),fmt.Sprintf("%s/tls.key", params.ClientCertPath))
+			clientCert, err := tls.LoadX509KeyPair(fmt.Sprintf("%s/tls.crt", params.ClientCertPath), fmt.Sprintf("%s/tls.key", params.ClientCertPath))
 			if err != nil {
 				log.Error().Str("error", err.Error()).Msg("Error loading client certificate")
 				return nil, derrors.NewInternalError("Error loading client certificate")
@@ -128,7 +127,7 @@ func (c *clusterClient) Close() error {
 
 // printRelevantTLSConfig prints some relevant information from a TLS Config structure, namely:
 // ClientAuth, ServerName. RootCAs, Certificates and InsecureSkipVerify
-func printRelevantTLSConfig (c *tls.Config) {
+func printRelevantTLSConfig(c *tls.Config) {
 	if int(c.ClientAuth) != 0 {
 		log.Debug().Int("ClientAuth", int(c.ClientAuth)).Msg("client auth")
 	}
@@ -158,4 +157,3 @@ func addCert(pool *x509.CertPool, cert string) derrors.Error {
 
 	return nil
 }
-

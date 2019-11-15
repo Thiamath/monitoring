@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Query template constants and generic functions
@@ -28,6 +27,7 @@ import (
 )
 
 type TemplateName string
+
 func (t TemplateName) String() string {
 	return string(t)
 }
@@ -35,20 +35,20 @@ func (t TemplateName) String() string {
 type TemplateVars struct {
 	AvgSeconds int32
 	MetricName string
-	StatName string
+	StatName   string
 }
 
 const (
-	TemplateName_Total TemplateName = "_total"
+	TemplateName_Total     TemplateName = "_total"
 	TemplateName_Available TemplateName = "_available"
 
-	TemplateName_CPU TemplateName = "cpu"
-	TemplateName_Memory TemplateName = "memory"
-	TemplateName_Storage TemplateName = "storage"
+	TemplateName_CPU           TemplateName = "cpu"
+	TemplateName_Memory        TemplateName = "memory"
+	TemplateName_Storage       TemplateName = "storage"
 	TemplateName_UsableStorage TemplateName = "usablestorage"
 
 	TemplateName_PlatformStatsCounter TemplateName = "platformcounter"
-	TemplateName_PlatformStatsGauge TemplateName = "platformgauge"
+	TemplateName_PlatformStatsGauge   TemplateName = "platformgauge"
 )
 
 func GetPlatformTemplateName(m MetricCounter) (TemplateName, derrors.Error) {
@@ -74,12 +74,11 @@ func GetPlatformTemplateName(m MetricCounter) (TemplateName, derrors.Error) {
 type TemplateStringMap map[TemplateName]string
 type TemplateMap map[TemplateName]*template.Template
 
-
 func (t TemplateStringMap) ParseTemplates() (TemplateMap, derrors.Error) {
 	templates := make(TemplateMap, len(t))
 
 	// Pre-parse templates
-	for name, tmplStr := range(t) {
+	for name, tmplStr := range t {
 		parsed, err := template.New(name.String()).Parse(tmplStr)
 		if err != nil {
 			return nil, derrors.NewInternalError("failed parsing template", err)

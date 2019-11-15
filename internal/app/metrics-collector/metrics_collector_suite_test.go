@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package metrics_collector
@@ -22,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nalej/grpc-utils/pkg/test"
 	"github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-utils/pkg/test"
 
 	"github.com/nalej/monitoring/internal/pkg/retrieve/translators"
 	"github.com/nalej/monitoring/internal/pkg/utils"
@@ -77,11 +76,11 @@ func beforeSuiteIntegrationTests() {
 
 	prometheusConfig := &prometheus.PrometheusConfig{
 		Enable: true,
-		Url: prometheusAddress,
+		Url:    prometheusAddress,
 	}
 
 	conf := &Config{
-		Port: 8423,
+		Port:      8423,
 		InCluster: true, // We won't actually connect to K8s, but this passes validation
 
 		QueryProviders: query.QueryProviderConfigs{
@@ -112,8 +111,8 @@ func beforeSuiteRetrieveManager() {
 			QueryString: "this is a valid fake query",
 			Range: query.QueryRange{
 				Start: time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
-				End: time.Date(2000, time.February, 1, 0, 0, 0, 0, time.UTC),
-				Step: time.Duration(10) * time.Second,
+				End:   time.Date(2000, time.February, 1, 0, 0, 0, 0, time.UTC),
+				Step:  time.Duration(10) * time.Second,
 			},
 		}: fake.FakeResult("result 2"),
 		query.Query{
@@ -123,73 +122,73 @@ func beforeSuiteRetrieveManager() {
 
 	templates := map[query.TemplateName]map[query.TemplateVars]int64{
 		query.TemplateName_CPU + query.TemplateName_Total: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0}: 1,
+			query.TemplateVars{AvgSeconds: 0}:   1,
 			query.TemplateVars{AvgSeconds: 600}: 2,
 		},
 		query.TemplateName_CPU + query.TemplateName_Available: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0}: 3,
+			query.TemplateVars{AvgSeconds: 0}:   3,
 			query.TemplateVars{AvgSeconds: 600}: 4,
 		},
 		query.TemplateName_Memory + query.TemplateName_Total: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0}: 5,
+			query.TemplateVars{AvgSeconds: 0}:   5,
 			query.TemplateVars{AvgSeconds: 600}: 6,
 		},
 		query.TemplateName_Memory + query.TemplateName_Available: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0}: 7,
+			query.TemplateVars{AvgSeconds: 0}:   7,
 			query.TemplateVars{AvgSeconds: 600}: 8,
 		},
 		query.TemplateName_Storage + query.TemplateName_Total: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0}: 9,
+			query.TemplateVars{AvgSeconds: 0}:   9,
 			query.TemplateVars{AvgSeconds: 600}: 10,
 		},
 		query.TemplateName_Storage + query.TemplateName_Available: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0}: 11,
+			query.TemplateVars{AvgSeconds: 0}:   11,
 			query.TemplateVars{AvgSeconds: 600}: 12,
 		},
 		query.TemplateName_UsableStorage + query.TemplateName_Total: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0}: 13,
+			query.TemplateVars{AvgSeconds: 0}:   13,
 			query.TemplateVars{AvgSeconds: 600}: 14,
 		},
 		query.TemplateName_UsableStorage + query.TemplateName_Available: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0}: 15,
+			query.TemplateVars{AvgSeconds: 0}:   15,
 			query.TemplateVars{AvgSeconds: 600}: 16,
 		},
 
 		query.TemplateName_PlatformStatsCounter: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "created"}: 13,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "deleted"}: 14,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "errors"}: 15,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "created"}: 16,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "deleted"}: 17,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "errors"}: 18,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "created"}: 19,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "deleted"}: 20,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "errors"}: 21,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "volumes", StatName: "created"}: 22,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "volumes", StatName: "deleted"}: 23,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "volumes", StatName: "errors"}: 24,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "fragments", StatName: "created"}: 25,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "fragments", StatName: "deleted"}: 26,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "fragments", StatName: "errors"}: 27,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "created"}:    13,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "deleted"}:    14,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "errors"}:     15,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "created"}:  16,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "deleted"}:  17,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "errors"}:   18,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "created"}:     19,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "deleted"}:     20,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "errors"}:      21,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "volumes", StatName: "created"}:   22,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "volumes", StatName: "deleted"}:   23,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "volumes", StatName: "errors"}:    24,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "fragments", StatName: "created"}:   25,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "fragments", StatName: "deleted"}:   26,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "fragments", StatName: "errors"}:    27,
 			query.TemplateVars{AvgSeconds: 600, MetricName: "fragments", StatName: "created"}: 28,
 			query.TemplateVars{AvgSeconds: 600, MetricName: "fragments", StatName: "deleted"}: 29,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "fragments", StatName: "errors"}: 30,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "endpoints", StatName: "created"}: 31,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "endpoints", StatName: "deleted"}: 32,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "endpoints", StatName: "errors"}: 33,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "fragments", StatName: "errors"}:  30,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "endpoints", StatName: "created"}:   31,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "endpoints", StatName: "deleted"}:   32,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "endpoints", StatName: "errors"}:    33,
 			query.TemplateVars{AvgSeconds: 600, MetricName: "endpoints", StatName: "created"}: 34,
 			query.TemplateVars{AvgSeconds: 600, MetricName: "endpoints", StatName: "deleted"}: 35,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "endpoints", StatName: "errors"}: 36,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "endpoints", StatName: "errors"}:  36,
 		},
 
 		query.TemplateName_PlatformStatsGauge: map[query.TemplateVars]int64{
-			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "running"}: 37,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "running"}: 38,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "running"}: 39,
-			query.TemplateVars{AvgSeconds: 600, MetricName: "volumes", StatName: "running"}: 40,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "fragments", StatName: "running"}: 41,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "running"}:    37,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "running"}:  38,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "running"}:     39,
+			query.TemplateVars{AvgSeconds: 600, MetricName: "volumes", StatName: "running"}:   40,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "fragments", StatName: "running"}:   41,
 			query.TemplateVars{AvgSeconds: 600, MetricName: "fragments", StatName: "running"}: 42,
-			query.TemplateVars{AvgSeconds: 0, MetricName: "endpoints", StatName: "running"}: 43,
+			query.TemplateVars{AvgSeconds: 0, MetricName: "endpoints", StatName: "running"}:   43,
 			query.TemplateVars{AvgSeconds: 600, MetricName: "endpoints", StatName: "running"}: 44,
 		},
 	}

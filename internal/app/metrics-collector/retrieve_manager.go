@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // RetrieveManager handles metrics queries
@@ -35,7 +34,7 @@ import (
 )
 
 type RetrieveManager struct {
-	providers query.QueryProviders
+	providers        query.QueryProviders
 	featureProviders map[query.QueryProviderFeature]query.QueryProvider
 }
 
@@ -45,14 +44,14 @@ func NewRetrieveManager(providers query.QueryProviders) (*RetrieveManager, derro
 	// NOTE: this only gives us the last provider with a certain feature,
 	// but at least we have one we can use
 	featureProviders := map[query.QueryProviderFeature]query.QueryProvider{}
-	for _, provider := range(providers) {
-		for _, feature := range(provider.Supported()) {
+	for _, provider := range providers {
+		for _, feature := range provider.Supported() {
 			featureProviders[feature] = provider
 		}
 	}
 
 	manager := &RetrieveManager{
-		providers: providers,
+		providers:        providers,
 		featureProviders: featureProviders,
 	}
 
@@ -74,29 +73,29 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 	// Create result
 	res := &grpc.ClusterSummary{
 		OrganizationId: request.GetOrganizationId(),
-		ClusterId: request.GetClusterId(),
+		ClusterId:      request.GetClusterId(),
 	}
 
 	// Create mapping to fill
 	resultMap := map[query.TemplateName]**grpc.ClusterStat{
-		query.TemplateName_CPU: &res.CpuMillicores,
-		query.TemplateName_Memory: &res.MemoryBytes,
-		query.TemplateName_Storage: &res.StorageBytes,
+		query.TemplateName_CPU:           &res.CpuMillicores,
+		query.TemplateName_Memory:        &res.MemoryBytes,
+		query.TemplateName_Storage:       &res.StorageBytes,
 		query.TemplateName_UsableStorage: &res.UsableStorageBytes,
 	}
 
-	for name, stat := range(resultMap) {
-		available, derr := provider.ExecuteTemplate(ctx, name + query.TemplateName_Available, vars)
+	for name, stat := range resultMap {
+		available, derr := provider.ExecuteTemplate(ctx, name+query.TemplateName_Available, vars)
 		if derr != nil {
 			return nil, derr
 		}
-		total, derr := provider.ExecuteTemplate(ctx, name + query.TemplateName_Total, vars)
+		total, derr := provider.ExecuteTemplate(ctx, name+query.TemplateName_Total, vars)
 		if derr != nil {
 			return nil, derr
 		}
 
 		*stat = &grpc.ClusterStat{
-			Total: total,
+			Total:     total,
 			Available: available,
 		}
 	}
@@ -124,19 +123,19 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 
 	// TODO: parallel queries
 	var stats = map[int32]*grpc.PlatformStat{}
-	for _, field := range(fields) {
+	for _, field := range fields {
 		stat := &grpc.PlatformStat{}
 
 		// Create mapping to fill
 		resultMap := map[query.MetricCounter]*int64{
 			query.MetricCreated: &stat.Created,
 			query.MetricDeleted: &stat.Deleted,
-			query.MetricErrors: &stat.Errors,
+			query.MetricErrors:  &stat.Errors,
 			query.MetricRunning: &stat.Running,
 		}
 
 		vars.MetricName = GRPCStatsFieldToMetric(field)
-		for counter, valPtr := range(resultMap) {
+		for counter, valPtr := range resultMap {
 			// Determine template based on value type (counter, gauge)
 			templateName, derr := query.GetPlatformTemplateName(counter)
 			if derr != nil {
@@ -157,8 +156,8 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 	// Create result
 	res := &grpc.ClusterStats{
 		OrganizationId: request.GetOrganizationId(),
-		ClusterId: request.GetClusterId(),
-		Stats: stats,
+		ClusterId:      request.GetClusterId(),
+		Stats:          stats,
 	}
 
 	return res, nil
@@ -179,9 +178,9 @@ func (m *RetrieveManager) Query(ctx context.Context, request *grpc.QueryRequest)
 		QueryString: request.GetQuery(),
 		Range: query.QueryRange{
 			Start: conversions.GoTime(queryRange.GetStart()),
-			End: conversions.GoTime(queryRange.GetEnd()),
+			End:   conversions.GoTime(queryRange.GetEnd()),
 			// Step is a float32 in seconds, convert to int64 in nanos
-			Step: time.Duration(queryRange.GetStep() * float32(1000 * 1000 * 1000)),
+			Step: time.Duration(queryRange.GetStep() * float32(1000*1000*1000)),
 		},
 	}
 

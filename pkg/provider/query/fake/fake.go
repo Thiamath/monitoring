@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Fake implementation of query provider interface
@@ -30,10 +29,9 @@ import (
 const FakeProviderType query.QueryProviderType = "FAKE"
 
 type FakeProvider struct {
-	queries map[query.Query]query.QueryResult
+	queries   map[query.Query]query.QueryResult
 	templates map[query.TemplateName]map[query.TemplateVars]int64
 }
-
 
 var FakeProviderSupports = query.QueryProviderSupport{
 	query.FeaturePlatformStats,
@@ -42,7 +40,7 @@ var FakeProviderSupports = query.QueryProviderSupport{
 
 func NewFakeProvider(queries map[query.Query]query.QueryResult, templates map[query.TemplateName]map[query.TemplateVars]int64) (*FakeProvider, derrors.Error) {
 	p := &FakeProvider{
-		queries: queries,
+		queries:   queries,
 		templates: templates,
 	}
 
