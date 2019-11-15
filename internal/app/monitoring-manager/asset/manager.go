@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package asset
@@ -29,15 +28,15 @@ import (
 )
 
 type Manager struct {
-	proxyClient grpc_edge_inventory_proxy_go.EdgeControllerProxyClient
-	assetsClient grpc_inventory_go.AssetsClient
+	proxyClient       grpc_edge_inventory_proxy_go.EdgeControllerProxyClient
+	assetsClient      grpc_inventory_go.AssetsClient
 	controllersClient grpc_inventory_go.ControllersClient
 }
 
 func NewManager(proxyClient grpc_edge_inventory_proxy_go.EdgeControllerProxyClient, assetsClient grpc_inventory_go.AssetsClient, controllersClient grpc_inventory_go.ControllersClient) (*Manager, derrors.Error) {
 	m := &Manager{
-		proxyClient: proxyClient,
-		assetsClient: assetsClient,
+		proxyClient:       proxyClient,
+		assetsClient:      assetsClient,
 		controllersClient: controllersClient,
 	}
 
@@ -58,7 +57,7 @@ func (m *Manager) ListMetrics(selector *grpc_inventory_go.AssetSelector) (*grpc_
 	metrics := make(map[string]bool)
 
 	// Create a request for each Edge Controller and execute
-	for _, proxyRequest := range(selectors) {
+	for _, proxyRequest := range selectors {
 		ecId := proxyRequest.GetEdgeControllerId()
 		log.Debug().Interface("request", proxyRequest).Msg("proxy request for ListMetrics")
 		ctx, cancel := ProxyContext() // Manual calling cancel to avoid big list of defers
@@ -69,14 +68,14 @@ func (m *Manager) ListMetrics(selector *grpc_inventory_go.AssetSelector) (*grpc_
 			log.Warn().Str("edge-controller-id", ecId).Err(err).Msg("failed calling ListMetrics")
 			continue
 		}
-		for _, metric := range(list.GetMetrics()) {
+		for _, metric := range list.GetMetrics() {
 			metrics[metric] = true
 		}
 	}
 
 	// Unify the results
 	metricsList := make([]string, 0, len(metrics))
-	for metric := range(metrics) {
+	for metric := range metrics {
 		metricsList = append(metricsList, metric)
 	}
 
@@ -113,11 +112,11 @@ func (m *Manager) QueryMetrics(request *grpc_monitoring_go.QueryMetricsRequest) 
 	results := NewQueryResults()
 
 	// Request for each Edge Controller and execute
-	for _, selector := range(selectors) {
+	for _, selector := range selectors {
 		proxyRequest := &grpc_monitoring_go.QueryMetricsRequest{
-			Assets: selector,
-			Metrics: request.GetMetrics(),
-			TimeRange: request.GetTimeRange(),
+			Assets:      selector,
+			Metrics:     request.GetMetrics(),
+			TimeRange:   request.GetTimeRange(),
 			Aggregation: request.GetAggregation(),
 		}
 		ecId := selector.GetEdgeControllerId()

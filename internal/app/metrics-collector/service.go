@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package metrics_collector
@@ -31,9 +30,9 @@ import (
 	"github.com/nalej/monitoring/internal/pkg/retrieve"
 	"github.com/nalej/monitoring/pkg/provider/query"
 
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"github.com/rs/zerolog/log"
 )
 
 // Service with configuration and gRPC server
@@ -92,7 +91,7 @@ func (s *Service) Run() derrors.Error {
 func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error) (*grpc.Server, derrors.Error) {
 	// Create query providers
 	queryProviders := query.QueryProviders{}
-	for queryProviderType, queryProviderConfig := range(s.Configuration.QueryProviders) {
+	for queryProviderType, queryProviderConfig := range s.Configuration.QueryProviders {
 		if queryProviderConfig.Enabled() {
 			queryProvider, derr := queryProviderConfig.NewProvider()
 			if derr != nil {

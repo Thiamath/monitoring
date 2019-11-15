@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Translator for Prometheus query result
@@ -44,29 +43,29 @@ func PrometheusTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Err
 	}
 
 	grpcRes := make([]*grpc.QueryResponse_PrometheusResponse_ResultValue, 0, len(promResult.Values))
-	for _, resVal := range(promResult.Values) {
+	for _, resVal := range promResult.Values {
 		grpcValues := make([]*grpc.QueryResponse_PrometheusResponse_ResultValue_Value, 0, len(resVal.Values))
-		for _, val := range(resVal.Values) {
+		for _, val := range resVal.Values {
 			grpcVal := &grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
 				Timestamp: conversions.GRPCTime(val.Timestamp),
-				Value: val.Value,
+				Value:     val.Value,
 			}
 			grpcValues = append(grpcValues, grpcVal)
 		}
 		grpcResVal := &grpc.QueryResponse_PrometheusResponse_ResultValue{
 			Metric: resVal.Labels,
-			Value: grpcValues,
+			Value:  grpcValues,
 		}
 		grpcRes = append(grpcRes, grpcResVal)
 	}
 
 	grpcPromResponse := &grpc.QueryResponse_PrometheusResponse{
 		ResultType: grpc.QueryResponse_PrometheusResponse_ResultType(grpc.QueryResponse_PrometheusResponse_ResultType_value[promResult.Type.String()]),
-		Result: grpcRes,
+		Result:     grpcRes,
 	}
 
 	grpcResponse := &grpc.QueryResponse{
-		Type: grpc.QueryType_PROMETHEUS,
+		Type:   grpc.QueryType_PROMETHEUS,
 		Result: &grpc.QueryResponse_PrometheusResult{grpcPromResponse},
 	}
 

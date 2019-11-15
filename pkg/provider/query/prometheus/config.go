@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Prometheus query provider config
@@ -24,15 +23,15 @@ import (
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/monitoring/pkg/provider/query"
-	"github.com/spf13/cobra"
 	"github.com/rs/zerolog"
+	"github.com/spf13/cobra"
 )
 
 const ProviderType query.QueryProviderType = "PROMETHEUS"
 
 type PrometheusConfig struct {
 	Enable bool
-	Url string
+	Url    string
 }
 
 func NewPrometheusConfig(cmd *cobra.Command) query.QueryProviderConfig {

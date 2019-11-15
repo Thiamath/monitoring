@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Tests from Prometheus query result translation
@@ -22,8 +21,8 @@ package translators
 import (
 	"time"
 
-	grpc "github.com/nalej/grpc-monitoring-go"
 	"github.com/golang/protobuf/ptypes/timestamp"
+	grpc "github.com/nalej/grpc-monitoring-go"
 
 	. "github.com/nalej/monitoring/pkg/provider/query/prometheus"
 
@@ -44,33 +43,33 @@ var _ = ginkgo.Describe("prometheus", func() {
 				Values: []*PrometheusResultValue{
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"job": "example",
+							"job":      "example",
 							"instance": "node1",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: time.Unix(1435781430, 0).UTC(),
-								Value: "1",
+								Value:     "1",
 							},
 							&PrometheusValue{
 								Timestamp: time.Unix(1435781445, 0).UTC(),
-								Value: "2",
+								Value:     "2",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"job": "example",
+							"job":      "example",
 							"instance": "node2",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: time.Unix(1435781430, 0).UTC(),
-								Value: "3",
+								Value:     "3",
 							},
 							&PrometheusValue{
 								Timestamp: time.Unix(1435781445, 0).UTC(),
-								Value: "4",
+								Value:     "4",
 							},
 						},
 					},
@@ -85,33 +84,33 @@ var _ = ginkgo.Describe("prometheus", func() {
 						Result: []*grpc.QueryResponse_PrometheusResponse_ResultValue{
 							&grpc.QueryResponse_PrometheusResponse_ResultValue{
 								Metric: map[string]string{
-									"job": "example",
+									"job":      "example",
 									"instance": "node1",
 								},
 								Value: []*grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
 									&grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781430},
-										Value: "1",
+										Value:     "1",
 									},
 									&grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781445},
-										Value: "2",
+										Value:     "2",
 									},
 								},
 							},
 							&grpc.QueryResponse_PrometheusResponse_ResultValue{
 								Metric: map[string]string{
-									"job": "example",
+									"job":      "example",
 									"instance": "node2",
 								},
 								Value: []*grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
 									&grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781430},
-										Value: "3",
+										Value:     "3",
 									},
 									&grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781445},
-										Value: "4",
+										Value:     "4",
 									},
 								},
 							},

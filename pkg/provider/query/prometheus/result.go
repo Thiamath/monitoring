@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Prometheus query result implementation
@@ -30,7 +29,7 @@ import (
 )
 
 type PrometheusResult struct {
-	Type PrometheusResultType
+	Type   PrometheusResultType
 	Values []*PrometheusResultValue
 }
 
@@ -41,10 +40,11 @@ type PrometheusResultValue struct {
 
 type PrometheusValue struct {
 	Timestamp time.Time
-	Value string
+	Value     string
 }
 
 type PrometheusResultType string
+
 func (t PrometheusResultType) String() string {
 	return string(t)
 }
@@ -90,14 +90,14 @@ func (r *PrometheusResult) GetScalarInt() (val int64, derr derrors.Error) {
 		return 0, derrors.NewInternalError("query does not return scalar")
 	}
 
-        fval, err := strconv.ParseFloat(r.Values[0].Values[0].Value, 64)
-        if err != nil {
-                return 0, derrors.NewInternalError("invalid query result", err)
-        }
+	fval, err := strconv.ParseFloat(r.Values[0].Values[0].Value, 64)
+	if err != nil {
+		return 0, derrors.NewInternalError("invalid query result", err)
+	}
 
 	ival, err := Ftoi(fval)
 	if err != nil {
-                return 0, derrors.NewInternalError("error converting query result", err)
+		return 0, derrors.NewInternalError("error converting query result", err)
 	}
 	return ival, nil
 }
@@ -106,7 +106,7 @@ func scalarResult(val model.Value) *PrometheusResult {
 	v := val.(*model.Scalar)
 
 	result := &PrometheusResult{
-		Type: PrometheusResultScalar,
+		Type:   PrometheusResultScalar,
 		Values: singleValueResult(v.Timestamp.Time(), v.Value.String()),
 	}
 
@@ -117,7 +117,7 @@ func vectorResult(val model.Value) *PrometheusResult {
 	v := val.(model.Vector)
 
 	resVals := make([]*PrometheusResultValue, 0, v.Len())
-	for _, sample := range(([]*model.Sample)(v)) {
+	for _, sample := range ([]*model.Sample)(v) {
 		resVal := &PrometheusResultValue{
 			Labels: metricToLabel(sample.Metric),
 			Values: singleValueList(sample.Timestamp.Time(), sample.Value.String()),
@@ -126,7 +126,7 @@ func vectorResult(val model.Value) *PrometheusResult {
 	}
 
 	result := &PrometheusResult{
-		Type: PrometheusResultVector,
+		Type:   PrometheusResultVector,
 		Values: resVals,
 	}
 
@@ -137,9 +137,9 @@ func matrixResult(val model.Value) *PrometheusResult {
 	v := val.(model.Matrix)
 
 	resVals := make([]*PrometheusResultValue, 0, v.Len())
-	for _, sampleStream := range(([]*model.SampleStream)(v)) {
+	for _, sampleStream := range ([]*model.SampleStream)(v) {
 		values := make([]*PrometheusValue, 0, len(sampleStream.Values))
-		for _, sample := range(sampleStream.Values) {
+		for _, sample := range sampleStream.Values {
 			values = append(values, value(sample.Timestamp.Time(), sample.Value.String()))
 		}
 		resVal := &PrometheusResultValue{
@@ -150,7 +150,7 @@ func matrixResult(val model.Value) *PrometheusResult {
 	}
 
 	result := &PrometheusResult{
-		Type: PrometheusResultMatrix,
+		Type:   PrometheusResultMatrix,
 		Values: resVals,
 	}
 
@@ -161,7 +161,7 @@ func stringResult(val model.Value) *PrometheusResult {
 	v := val.(*model.String)
 
 	result := &PrometheusResult{
-		Type: PrometheusResultString,
+		Type:   PrometheusResultString,
 		Values: singleValueResult(v.Timestamp.Time(), v.Value),
 	}
 
@@ -171,7 +171,7 @@ func stringResult(val model.Value) *PrometheusResult {
 func value(ts time.Time, s string) *PrometheusValue {
 	return &PrometheusValue{
 		Timestamp: ts.UTC(),
-		Value: s,
+		Value:     s,
 	}
 }
 
@@ -191,7 +191,7 @@ func singleValueResult(ts time.Time, s string) []*PrometheusResultValue {
 
 func metricToLabel(m model.Metric) map[string]string {
 	label := make(map[string]string, len(m))
-	for k,v := range(m) {
+	for k, v := range m {
 		label[string(k)] = string(v)
 	}
 

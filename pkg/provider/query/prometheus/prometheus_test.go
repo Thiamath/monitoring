@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Prometheus query provider tests
@@ -34,7 +33,6 @@ import (
 	"github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 )
-
 
 // Stub implementation of prometheus/client_golang/api/prometheus/v1.API
 type fakeAPI struct {
@@ -73,24 +71,48 @@ func (a *fakeAPI) QueryRange(ctx context.Context, query string, r v1.Range) (mod
 var unimplemented = derrors.NewUnimplementedError("fake api stub function not implemented")
 
 // AlertManagers returns an overview of the current state of the Prometheus alert manager discovery.
-func (*fakeAPI) AlertManagers(ctx context.Context) (v1.AlertManagersResult, error) {return v1.AlertManagersResult{}, unimplemented}
+func (*fakeAPI) AlertManagers(ctx context.Context) (v1.AlertManagersResult, error) {
+	return v1.AlertManagersResult{}, unimplemented
+}
+
 // CleanTombstones removes the deleted data from disk and cleans up the existing tombstones.
-func (*fakeAPI) CleanTombstones(ctx context.Context) error {return unimplemented}
+func (*fakeAPI) CleanTombstones(ctx context.Context) error { return unimplemented }
+
 // Config returns the current Prometheus configuration.
-func (*fakeAPI) Config(ctx context.Context) (v1.ConfigResult, error) {return v1.ConfigResult{}, unimplemented}
+func (*fakeAPI) Config(ctx context.Context) (v1.ConfigResult, error) {
+	return v1.ConfigResult{}, unimplemented
+}
+
 // DeleteSeries deletes data for a selection of series in a time range.
-func (*fakeAPI) DeleteSeries(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) error {return unimplemented}
+func (*fakeAPI) DeleteSeries(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) error {
+	return unimplemented
+}
+
 // Flags returns the flag values that Prometheus was launched with.
-func (*fakeAPI) Flags(ctx context.Context) (v1.FlagsResult, error) {return v1.FlagsResult{}, unimplemented}
+func (*fakeAPI) Flags(ctx context.Context) (v1.FlagsResult, error) {
+	return v1.FlagsResult{}, unimplemented
+}
+
 // LabelValues performs a query for the values of the given label.
-func (*fakeAPI) LabelValues(ctx context.Context, label string) (model.LabelValues, error) {return nil, unimplemented}
+func (*fakeAPI) LabelValues(ctx context.Context, label string) (model.LabelValues, error) {
+	return nil, unimplemented
+}
+
 // Series finds series by label matchers.
-func (*fakeAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]model.LabelSet, error) {return nil, unimplemented}
+func (*fakeAPI) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]model.LabelSet, error) {
+	return nil, unimplemented
+}
+
 // Snapshot creates a snapshot of all current data into snapshots/<datetime>-<rand>
 // under the TSDB's data directory and returns the directory as response.
-func (*fakeAPI) Snapshot(ctx context.Context, skipHead bool) (v1.SnapshotResult, error) {return v1.SnapshotResult{}, unimplemented}
+func (*fakeAPI) Snapshot(ctx context.Context, skipHead bool) (v1.SnapshotResult, error) {
+	return v1.SnapshotResult{}, unimplemented
+}
+
 // Targets returns an overview of the current state of the Prometheus target discovery.
-func (*fakeAPI) Targets(ctx context.Context) (v1.TargetsResult, error) {return v1.TargetsResult{}, unimplemented}
+func (*fakeAPI) Targets(ctx context.Context) (v1.TargetsResult, error) {
+	return v1.TargetsResult{}, unimplemented
+}
 
 // Directly from prometheus/client_golang/api/prometheus/v1/api.go
 // queryResult contains result data for a query.
@@ -143,7 +165,7 @@ var (
 	queryTime1 = time.Unix(1554037344, 922000000).UTC()
 	queryTime2 = time.Unix(1553901000, 0).UTC()
 	queryTime3 = time.Unix(1553904000, 0).UTC()
-	queryStep = time.Duration(1200) * time.Second
+	queryStep  = time.Duration(1200) * time.Second
 )
 
 var queryResults = map[string]map[v1.Range][]byte{
@@ -158,8 +180,8 @@ var queryResults = map[string]map[v1.Range][]byte{
 		`),
 		v1.Range{
 			Start: queryTime2,
-			End: queryTime3,
-			Step: queryStep,
+			End:   queryTime3,
+			Step:  queryStep,
 		}: []byte(`
 {"resultType": "matrix", "result": [{"metric": {"cpu": "cpu0", "instance": "10.240.0.4:9100", "mode": "idle"}, "values": [[1553901000, "0.9064999999997477"], [1553902200, "0.9094999999996314"], [1553903400, "0.908833333333314"]]}, {"metric": {"cpu": "cpu0", "instance": "10.240.0.5:9100", "mode": "idle"}, "values": [[1553901000, "0.8698333333333721"], [1553902200, "0.8754999999999806"], [1553903400, "0.8701666666665309"]]}, {"metric": {"cpu": "cpu1", "instance": "10.240.0.4:9100", "mode": "idle"}, "values": [[1553901000, "0.9223333333332752"], [1553902200, "0.9155000000003687"], [1553903400, "0.9121666666668413"]]}, {"metric": {"cpu": "cpu1", "instance": "10.240.0.5:9100", "mode": "idle"}, "values": [[1553901000, "0.8965000000001359"], [1553902200, "0.8935000000002522"], [1553903400, "0.8916666666666667"]]}]}
 		`),
@@ -218,53 +240,53 @@ var _ = ginkgo.Describe("prometheus", func() {
 				Values: []*PrometheusResultValue{
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu0",
+							"cpu":      "cpu0",
 							"instance": "10.240.0.4:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-31T13:02:24.922Z"),
-								Value: "0.9125",
+								Value:     "0.9125",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu0",
+							"cpu":      "cpu0",
 							"instance": "10.240.0.5:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-31T13:02:24.922Z"),
-								Value: "0.876333333333605",
+								Value:     "0.876333333333605",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu1",
+							"cpu":      "cpu1",
 							"instance": "10.240.0.4:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-31T13:02:24.922Z"),
-								Value: "0.9133333333331393",
+								Value:     "0.9133333333331393",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu1",
+							"cpu":      "cpu1",
 							"instance": "10.240.0.5:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-31T13:02:24.922Z"),
-								Value: "0.8819999999997283",
+								Value:     "0.8819999999997283",
 							},
 						},
 					},
@@ -279,8 +301,8 @@ var _ = ginkgo.Describe("prometheus", func() {
 				QueryString: queryTest1,
 				Range: query.QueryRange{
 					Start: queryTime2,
-					End: queryTime3,
-					Step: queryStep,
+					End:   queryTime3,
+					Step:  queryStep,
 				},
 			}
 
@@ -289,85 +311,85 @@ var _ = ginkgo.Describe("prometheus", func() {
 				Values: []*PrometheusResultValue{
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu0",
+							"cpu":      "cpu0",
 							"instance": "10.240.0.4:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:10:00Z"),
-								Value: "0.9064999999997477",
+								Value:     "0.9064999999997477",
 							},
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:30:00Z"),
-								Value: "0.9094999999996314",
+								Value:     "0.9094999999996314",
 							},
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:50:00Z"),
-								Value: "0.908833333333314",
+								Value:     "0.908833333333314",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu0",
+							"cpu":      "cpu0",
 							"instance": "10.240.0.5:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:10:00Z"),
-								Value: "0.8698333333333721",
+								Value:     "0.8698333333333721",
 							},
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:30:00Z"),
-								Value: "0.8754999999999806",
+								Value:     "0.8754999999999806",
 							},
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:50:00Z"),
-								Value: "0.8701666666665309",
+								Value:     "0.8701666666665309",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu1",
+							"cpu":      "cpu1",
 							"instance": "10.240.0.4:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:10:00Z"),
-								Value: "0.9223333333332752",
+								Value:     "0.9223333333332752",
 							},
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:30:00Z"),
-								Value: "0.9155000000003687",
+								Value:     "0.9155000000003687",
 							},
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:50:00Z"),
-								Value: "0.9121666666668413",
+								Value:     "0.9121666666668413",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu1",
+							"cpu":      "cpu1",
 							"instance": "10.240.0.5:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:10:00Z"),
-								Value: "0.8965000000001359",
+								Value:     "0.8965000000001359",
 							},
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:30:00Z"),
-								Value: "0.8935000000002522",
+								Value:     "0.8935000000002522",
 							},
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-29T23:50:00Z"),
-								Value: "0.8916666666666667",
+								Value:     "0.8916666666666667",
 							},
 						},
 					},
@@ -387,53 +409,53 @@ var _ = ginkgo.Describe("prometheus", func() {
 				Values: []*PrometheusResultValue{
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu0",
+							"cpu":      "cpu0",
 							"instance": "10.240.0.4:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-31T13:02:30Z"),
-								Value: "0.9125",
+								Value:     "0.9125",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu0",
+							"cpu":      "cpu0",
 							"instance": "10.240.0.5:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-31T13:02:30Z"),
-								Value: "0.876333333333605",
+								Value:     "0.876333333333605",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu1",
+							"cpu":      "cpu1",
 							"instance": "10.240.0.4:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-31T13:02:30Z"),
-								Value: "0.9133333333331393",
+								Value:     "0.9133333333331393",
 							},
 						},
 					},
 					&PrometheusResultValue{
 						Labels: map[string]string{
-							"cpu": "cpu1",
+							"cpu":      "cpu1",
 							"instance": "10.240.0.5:9100",
-							"mode": "idle",
+							"mode":     "idle",
 						},
 						Values: []*PrometheusValue{
 							&PrometheusValue{
 								Timestamp: timeParse("2019-03-31T13:02:30Z"),
-								Value: "0.8819999999997283",
+								Value:     "0.8819999999997283",
 							},
 						},
 					},
@@ -458,7 +480,7 @@ var _ = ginkgo.Describe("prometheus", func() {
 				QueryString: "empty",
 			}
 			res := &PrometheusResult{
-				Type: PrometheusResultVector,
+				Type:   PrometheusResultVector,
 				Values: []*PrometheusResultValue{},
 			}
 			gomega.Expect(provider.Query(context.Background(), q)).To(gomega.Equal(res))
@@ -481,25 +503,25 @@ var _ = ginkgo.Describe("prometheus", func() {
 		ginkgo.It("should execute template without average", func() {
 			gomega.Expect(
 				provider.ExecuteTemplate(context.Background(),
-					query.TemplateName_Memory + query.TemplateName_Available,
+					query.TemplateName_Memory+query.TemplateName_Available,
 					nil),
-				).To(gomega.Equal(int64(18893152256)))
+			).To(gomega.Equal(int64(18893152256)))
 		})
 
 		ginkgo.It("should execute template with small average", func() {
 			gomega.Expect(
 				provider.ExecuteTemplate(context.Background(),
-					query.TemplateName_Memory + query.TemplateName_Available,
+					query.TemplateName_Memory+query.TemplateName_Available,
 					&query.TemplateVars{AvgSeconds: 10}),
-				).To(gomega.Equal(int64(18893152256)))
+			).To(gomega.Equal(int64(18893152256)))
 		})
 
 		ginkgo.It("should execute template with larger average", func() {
 			gomega.Expect(
 				provider.ExecuteTemplate(context.Background(),
-					query.TemplateName_Storage + query.TemplateName_Available,
+					query.TemplateName_Storage+query.TemplateName_Available,
 					&query.TemplateVars{AvgSeconds: 600}),
-				).To(gomega.Equal(int64(294341394022)))
+			).To(gomega.Equal(int64(294341394022)))
 		})
 
 		ginkgo.It("should execute counter template", func() {
@@ -511,9 +533,9 @@ var _ = ginkgo.Describe("prometheus", func() {
 					tname,
 					&query.TemplateVars{
 						MetricName: "services",
-						StatName: "created",
+						StatName:   "created",
 					}),
-				).To(gomega.Equal(int64(8)))
+			).To(gomega.Equal(int64(8)))
 		})
 	})
 })

@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Prometheus query provider implementation
@@ -33,7 +32,7 @@ import (
 )
 
 type PrometheusProvider struct {
-	api prometheus_v1.API
+	api       prometheus_v1.API
 	templates query.TemplateMap
 }
 
@@ -58,7 +57,7 @@ func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) 
 	}
 
 	provider := &PrometheusProvider{
-		api: prometheus_v1.NewAPI(client),
+		api:       prometheus_v1.NewAPI(client),
 		templates: templates,
 	}
 

@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package monitoring_manager
@@ -23,18 +22,18 @@ import (
 
 	"github.com/nalej/derrors"
 
-        "github.com/nalej/grpc-edge-inventory-proxy-go"
-        "github.com/nalej/grpc-infrastructure-go"
-        "github.com/nalej/grpc-inventory-go"
-        "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-edge-inventory-proxy-go"
+	"github.com/nalej/grpc-infrastructure-go"
+	"github.com/nalej/grpc-inventory-go"
+	"github.com/nalej/grpc-monitoring-go"
 
 	"github.com/nalej/monitoring/internal/app/monitoring-manager/asset"
 	"github.com/nalej/monitoring/internal/app/monitoring-manager/cluster"
 	"github.com/nalej/monitoring/internal/pkg/retrieve"
 
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"github.com/rs/zerolog/log"
 )
 
 // Service with configuration and gRPC server
@@ -83,11 +82,11 @@ func (s *Service) Run() derrors.Error {
 
 	// Create managers and handler
 	params := &cluster.AppClusterConnectParams{
-		AppClusterPrefix: s.Configuration.AppClusterPrefix,
-		AppClusterPort: s.Configuration.AppClusterPort,
-		UseTLS: s.Configuration.UseTLS,
-		CACertPath: s.Configuration.CACertPath,
-		ClientCertPath: s.Configuration.ClientCertPath,
+		AppClusterPrefix:         s.Configuration.AppClusterPrefix,
+		AppClusterPort:           s.Configuration.AppClusterPort,
+		UseTLS:                   s.Configuration.UseTLS,
+		CACertPath:               s.Configuration.CACertPath,
+		ClientCertPath:           s.Configuration.ClientCertPath,
 		SkipServerCertValidation: s.Configuration.SkipServerCertValidation,
 	}
 

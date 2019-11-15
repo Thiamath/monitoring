@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Wrapper for the configuration properties.
@@ -24,8 +23,8 @@ import (
 	"os"
 
 	"github.com/nalej/derrors"
-	"github.com/nalej/monitoring/version"
 	"github.com/nalej/monitoring/pkg/provider/query"
+	"github.com/nalej/monitoring/version"
 	"github.com/rs/zerolog/log"
 )
 
@@ -49,7 +48,7 @@ func (conf *Config) Validate() derrors.Error {
 	}
 
 	// Retrieval backends validation
-	for _, queryConfig := range(conf.QueryProviders) {
+	for _, queryConfig := range conf.QueryProviders {
 		derr := queryConfig.Validate()
 		if derr != nil {
 			return derr
@@ -83,7 +82,7 @@ func (conf *Config) Print() {
 	log.Info().Str("file", conf.Kubeconfig).Bool("in-cluster", conf.InCluster).Msg("kubeconfig")
 
 	// Retrieval backends
-	for _, queryConfig := range(conf.QueryProviders) {
+	for _, queryConfig := range conf.QueryProviders {
 		queryConfig.Print(log.Info())
 	}
 }

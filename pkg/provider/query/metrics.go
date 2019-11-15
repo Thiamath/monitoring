@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Structs for platform metrics for collecting and querying
@@ -21,10 +20,11 @@ package query
 
 // String references for the counters in a metric
 type MetricCounter string
+
 const (
 	MetricCreated MetricCounter = "created"
 	MetricDeleted MetricCounter = "deleted"
-	MetricErrors MetricCounter = "errors"
+	MetricErrors  MetricCounter = "errors"
 	MetricRunning MetricCounter = "running"
 )
 
@@ -34,6 +34,7 @@ func (m MetricCounter) String() string {
 
 // Type of metric values
 type ValueType string
+
 const (
 	// Monotonic increasing
 	ValueCounter ValueType = "couter"
@@ -44,6 +45,6 @@ const (
 var CounterMap = map[MetricCounter]ValueType{
 	MetricCreated: ValueCounter,
 	MetricDeleted: ValueCounter,
-	MetricErrors: ValueCounter,
+	MetricErrors:  ValueCounter,
 	MetricRunning: ValueGauge,
 }

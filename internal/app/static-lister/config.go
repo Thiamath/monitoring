@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 // Wrapper for the configuration properties.
@@ -33,7 +32,7 @@ type Config struct {
 	// The metric name is namespace_subsystem_name
 	Namespace string
 	Subsystem string
-	Name string
+	Name      string
 	// The name of the label that will be set for this series
 	LabelName string
 	// The file with the values for the label
