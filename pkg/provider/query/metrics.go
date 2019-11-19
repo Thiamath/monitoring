@@ -37,7 +37,7 @@ type ValueType string
 
 const (
 	// Monotonic increasing
-	ValueCounter ValueType = "couter"
+	ValueCounter ValueType = "counter"
 	// Variable
 	ValueGauge ValueType = "gauge"
 )
