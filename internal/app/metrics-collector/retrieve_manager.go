@@ -128,10 +128,10 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 
 		// Create mapping to fill
 		resultMap := map[query.MetricCounter]*int64{
-			query.MetricCreated: &stat.Created,
-			query.MetricDeleted: &stat.Deleted,
-			query.MetricErrors:  &stat.Errors,
-			query.MetricRunning: &stat.Running,
+			query.MetricCreated: &stat.Created, // counter
+			query.MetricDeleted: &stat.Deleted, // counter
+			query.MetricErrors:  &stat.Errors,  // counter
+			query.MetricRunning: &stat.Running, // gauge
 		}
 
 		vars.MetricName = GRPCStatsFieldToMetric(field)

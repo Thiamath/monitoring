@@ -55,7 +55,8 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 	if params.UseTLS {
 		rootCAs := x509.NewCertPool()
 		splitHostname := strings.Split(address, ":")
-		if len(splitHostname) == 2 {
+		// TODO the hostname retrieved from clusters will be without : so this split code is about to die
+		if len(splitHostname) > 0 {
 			hostname = splitHostname[0]
 		} else {
 			return nil, derrors.NewInvalidArgumentError("server address incorrectly set")
