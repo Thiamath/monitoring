@@ -18,7 +18,8 @@ package server
 
 import (
 	"fmt"
-	asset2 "github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/asset"
+	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/clients"
+	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/asset"
 	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/cluster"
 	"net"
 
@@ -28,8 +29,6 @@ import (
 	"github.com/nalej/grpc-infrastructure-go"
 	"github.com/nalej/grpc-inventory-go"
 	"github.com/nalej/grpc-monitoring-go"
-
-	"github.com/nalej/monitoring/internal/pkg/retrieve"
 
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
@@ -81,7 +80,7 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create managers and handler
-	params := &cluster.AppClusterConnectParams{
+	params := &clients.AppClusterConnectParams{
 		AppClusterPrefix:         s.Configuration.AppClusterPrefix,
 		AppClusterPort:           s.Configuration.AppClusterPort,
 		UseTLS:                   s.Configuration.UseTLS,
@@ -95,17 +94,17 @@ func (s *Service) Run() derrors.Error {
 	if derr != nil {
 		return derr
 	}
-	clusterHandler, derr := retrieve.NewHandler(clusterManager)
+	clusterHandler, derr := cluster.NewHandler(clusterManager)
 	if derr != nil {
 		return derr
 	}
 
 	// Asset monitoring
-	assetManager, derr := asset2.NewManager(eipClient, assetsClient, controllersClient)
+	assetManager, derr := asset.NewManager(eipClient, assetsClient, controllersClient)
 	if derr != nil {
 		return derr
 	}
-	assetHandler, derr := asset2.NewHandler(assetManager)
+	assetHandler, derr := asset.NewHandler(assetManager)
 
 	// Create server and register handler
 	server := grpc.NewServer()

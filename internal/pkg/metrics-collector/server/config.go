@@ -70,7 +70,7 @@ func (conf *Config) Validate() derrors.Error {
 	if err != nil {
 		return derrors.NewInvalidArgumentError(fmt.Sprintf("cannot open kubeconfig %s", conf.Kubeconfig), err)
 	}
-	f.Close()
+	_ = f.Close()
 
 	return nil
 }

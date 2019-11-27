@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-// RetrieveManager tests
+// Manager tests
 
 package server
 
 import (
 	"context"
 
-	"github.com/nalej/monitoring/internal/pkg/retrieve/translators"
+	"github.com/nalej/monitoring/internal/pkg/metrics-collector/translators"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 	grpc "github.com/nalej/grpc-monitoring-go"

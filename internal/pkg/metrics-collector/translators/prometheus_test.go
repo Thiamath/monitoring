@@ -41,33 +41,33 @@ var _ = ginkgo.Describe("prometheus", func() {
 			qres := PrometheusResult{
 				Type: PrometheusResultMatrix,
 				Values: []*PrometheusResultValue{
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"job":      "example",
 							"instance": "node1",
 						},
 						Values: []*PrometheusValue{
-							&PrometheusValue{
+							{
 								Timestamp: time.Unix(1435781430, 0).UTC(),
 								Value:     "1",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: time.Unix(1435781445, 0).UTC(),
 								Value:     "2",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"job":      "example",
 							"instance": "node2",
 						},
 						Values: []*PrometheusValue{
-							&PrometheusValue{
+							{
 								Timestamp: time.Unix(1435781430, 0).UTC(),
 								Value:     "3",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: time.Unix(1435781445, 0).UTC(),
 								Value:     "4",
 							},
@@ -79,36 +79,36 @@ var _ = ginkgo.Describe("prometheus", func() {
 			pres := grpc.QueryResponse{
 				Type: grpc.QueryType_PROMETHEUS,
 				Result: &grpc.QueryResponse_PrometheusResult{
-					&grpc.QueryResponse_PrometheusResponse{
+					PrometheusResult: &grpc.QueryResponse_PrometheusResponse{
 						ResultType: grpc.QueryResponse_PrometheusResponse_MATRIX,
 						Result: []*grpc.QueryResponse_PrometheusResponse_ResultValue{
-							&grpc.QueryResponse_PrometheusResponse_ResultValue{
+							{
 								Metric: map[string]string{
 									"job":      "example",
 									"instance": "node1",
 								},
 								Value: []*grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
-									&grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
+									{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781430},
 										Value:     "1",
 									},
-									&grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
+									{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781445},
 										Value:     "2",
 									},
 								},
 							},
-							&grpc.QueryResponse_PrometheusResponse_ResultValue{
+							{
 								Metric: map[string]string{
 									"job":      "example",
 									"instance": "node2",
 								},
 								Value: []*grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
-									&grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
+									{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781430},
 										Value:     "3",
 									},
-									&grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
+									{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781445},
 										Value:     "4",
 									},

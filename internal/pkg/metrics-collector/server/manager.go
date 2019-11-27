@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// RetrieveManager handles metrics queries
+// Manager handles metrics queries
 
 package server
 
@@ -28,19 +28,19 @@ import (
 
 	"github.com/nalej/grpc-utils/pkg/conversions"
 
-	"github.com/nalej/monitoring/internal/pkg/retrieve/translators"
+	"github.com/nalej/monitoring/internal/pkg/metrics-collector/translators"
 	"github.com/nalej/monitoring/pkg/provider/query"
 
-	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-monitoring-go"
 )
 
-type RetrieveManager struct {
+type Manager struct {
 	providers        query.QueryProviders
 	featureProviders map[query.QueryProviderFeature]query.QueryProvider
 }
 
 // Create a new query manager.
-func NewRetrieveManager(providers query.QueryProviders) (*RetrieveManager, derrors.Error) {
+func NewManager(providers query.QueryProviders) (Manager, derrors.Error) {
 	// Check providers for specific features
 	// NOTE: this only gives us the last provider with a certain feature,
 	// but at least we have one we can use
@@ -51,7 +51,7 @@ func NewRetrieveManager(providers query.QueryProviders) (*RetrieveManager, derro
 		}
 	}
 
-	manager := &RetrieveManager{
+	manager := Manager{
 		providers:        providers,
 		featureProviders: featureProviders,
 	}
@@ -60,7 +60,7 @@ func NewRetrieveManager(providers query.QueryProviders) (*RetrieveManager, derro
 }
 
 // Retrieve a summary of high level cluster resource availability
-func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error) {
+func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitoring_go.ClusterSummaryRequest) (*grpc_monitoring_go.ClusterSummary, derrors.Error) {
 	// Get right provider
 	provider, found := m.featureProviders[query.FeatureSystemStats]
 	if !found {
@@ -72,13 +72,13 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 	}
 
 	// Create result
-	res := &grpc.ClusterSummary{
+	res := &grpc_monitoring_go.ClusterSummary{
 		OrganizationId: request.GetOrganizationId(),
 		ClusterId:      request.GetClusterId(),
 	}
 
 	// Create mapping to fill
-	resultMap := map[query.TemplateName]**grpc.ClusterStat{
+	resultMap := map[query.TemplateName]**grpc_monitoring_go.ClusterStat{
 		query.TemplateName_CPU:           &res.CpuMillicores,
 		query.TemplateName_Memory:        &res.MemoryBytes,
 		query.TemplateName_Storage:       &res.StorageBytes,
@@ -95,7 +95,7 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 			return nil, derr
 		}
 
-		*stat = &grpc.ClusterStat{
+		*stat = &grpc_monitoring_go.ClusterStat{
 			Total:     total,
 			Available: available,
 		}
@@ -105,7 +105,7 @@ func (m *RetrieveManager) GetClusterSummary(ctx context.Context, request *grpc.C
 }
 
 // Retrieve statistics on cluster with respect to platform resources
-func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.ClusterStatsRequest) (*grpc.ClusterStats, derrors.Error) {
+func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_go.ClusterStatsRequest) (*grpc_monitoring_go.ClusterStats, derrors.Error) {
 	// Get right provider
 	provider, found := m.featureProviders[query.FeaturePlatformStats]
 	if !found {
@@ -123,9 +123,9 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 	}
 
 	// TODO: parallel queries
-	var stats = map[int32]*grpc.PlatformStat{}
+	var stats = map[int32]*grpc_monitoring_go.PlatformStat{}
 	for _, field := range fields {
-		stat := &grpc.PlatformStat{}
+		stat := &grpc_monitoring_go.PlatformStat{}
 
 		// Create mapping to fill
 		resultMap := map[query.MetricCounter]*int64{
@@ -155,7 +155,7 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 	}
 
 	// Create result
-	res := &grpc.ClusterStats{
+	res := &grpc_monitoring_go.ClusterStats{
 		OrganizationId: request.GetOrganizationId(),
 		ClusterId:      request.GetClusterId(),
 		Stats:          stats,
@@ -165,7 +165,7 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 }
 
 // Execute a query directly on the monitoring storage backend
-func (m *RetrieveManager) Query(ctx context.Context, request *grpc.QueryRequest) (*grpc.QueryResponse, derrors.Error) {
+func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRequest) (*grpc_monitoring_go.QueryResponse, derrors.Error) {
 	// Validate we have the right request type for the backend
 	providerType := query.QueryProviderType(request.GetType().String())
 	provider, found := m.providers[providerType]

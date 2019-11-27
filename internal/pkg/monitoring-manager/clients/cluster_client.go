@@ -22,7 +22,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/cluster"
 	"io/ioutil"
 	"strings"
 
@@ -41,9 +40,18 @@ type ClusterClient struct {
 	conn *grpc.ClientConn
 }
 
+type AppClusterConnectParams struct {
+	AppClusterPrefix         string
+	AppClusterPort           int
+	UseTLS                   bool
+	CACertPath               string
+	ClientCertPath           string
+	SkipServerCertValidation bool
+}
+
 // TODO: If we want to test this, we can create a client factory and implement
 // one that creates stub clients
-func NewClusterClient(address string, params *cluster.AppClusterConnectParams) (*ClusterClient, derrors.Error) {
+func NewClusterClient(address string, params *AppClusterConnectParams) (*ClusterClient, derrors.Error) {
 	var options []grpc.DialOption
 	var hostname string
 

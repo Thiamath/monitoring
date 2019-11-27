@@ -30,21 +30,12 @@ import (
 
 type Manager struct {
 	clustersClient grpc_infrastructure_go.ClustersClient
-	params         *AppClusterConnectParams
-}
-
-type AppClusterConnectParams struct {
-	AppClusterPrefix         string
-	AppClusterPort           int
-	UseTLS                   bool
-	CACertPath               string
-	ClientCertPath           string
-	SkipServerCertValidation bool
+	params         *clients.AppClusterConnectParams
 }
 
 // Create a new query manager.
-func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *AppClusterConnectParams) (*Manager, derrors.Error) {
-	manager := &Manager{
+func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *clients.AppClusterConnectParams) (Manager, derrors.Error) {
+	manager := Manager{
 		clustersClient: clustersClient,
 		params:         params,
 	}
