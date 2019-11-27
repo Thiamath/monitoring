@@ -27,7 +27,6 @@ import (
 
 	"github.com/nalej/grpc-monitoring-go"
 
-	"github.com/nalej/monitoring/internal/pkg/retrieve"
 	"github.com/nalej/monitoring/pkg/provider/query"
 
 	"github.com/rs/zerolog/log"
@@ -102,11 +101,11 @@ func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error)
 	}
 
 	// Create manager and handler for gRPC endpoints
-	retrieveManager, derr := NewRetrieveManager(queryProviders)
+	retrieveManager, derr := NewManager(queryProviders)
 	if derr != nil {
 		return nil, derr
 	}
-	retrieveHandler, derr := retrieve.NewHandler(retrieveManager)
+	retrieveHandler, derr := NewHandler(retrieveManager)
 	if derr != nil {
 		return nil, derr
 	}

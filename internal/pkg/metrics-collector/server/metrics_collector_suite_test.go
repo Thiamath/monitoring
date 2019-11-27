@@ -24,7 +24,7 @@ import (
 	"github.com/nalej/grpc-monitoring-go"
 	"github.com/nalej/grpc-utils/pkg/test"
 
-	"github.com/nalej/monitoring/internal/pkg/retrieve/translators"
+	"github.com/nalej/monitoring/internal/pkg/metrics-collector/translators"
 	"github.com/nalej/monitoring/internal/pkg/utils"
 	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/nalej/monitoring/pkg/provider/query/fake"
@@ -47,7 +47,7 @@ var grpcServer *grpc.Server
 
 var client grpc_monitoring_go.MetricsCollectorClient
 
-var manager *RetrieveManager
+var manager *Manager
 
 var _ = ginkgo.BeforeSuite(func() {
 	if utils.RunIntegrationTests() {
@@ -63,7 +63,7 @@ var _ = ginkgo.AfterSuite(func() {
 	}
 
 	if listener != nil {
-		listener.Close()
+		_ = listener.Close()
 	}
 })
 
@@ -200,7 +200,7 @@ func beforeSuiteRetrieveManager() {
 		provider.ProviderType(): provider,
 	}
 
-	manager, derr = NewRetrieveManager(providers)
+	manager, derr = NewManager(providers)
 	gomega.Expect(derr).To(gomega.Succeed())
 
 	/* Insert fake provider */
