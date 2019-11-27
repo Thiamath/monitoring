@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package static_lister
+package server
 
 // Watcher expects an already initialized and registered Prometheus gauge vector
 // (as defined in the Prometheus client code) and a filename. It reads the

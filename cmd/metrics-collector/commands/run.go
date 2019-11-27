@@ -17,16 +17,16 @@
 package commands
 
 import (
+	"github.com/nalej/monitoring/internal/pkg/metrics-collector/server"
 	"os"
 	"path/filepath"
 
-	"github.com/nalej/monitoring/internal/app/metrics-collector"
 	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-var config = metrics_collector.Config{}
+var config = server.Config{}
 
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -62,7 +62,7 @@ func init() {
 func Run() {
 	log.Info().Msg("Launching Metrics Collector service")
 
-	server, err := metrics_collector.NewService(&config)
+	server, err := server.NewService(&config)
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to create service")
 	}

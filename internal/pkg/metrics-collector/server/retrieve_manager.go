@@ -16,11 +16,12 @@
 
 // RetrieveManager handles metrics queries
 
-package metrics_collector
+package server
 
 import (
 	"context"
 	"fmt"
+	"github.com/nalej/monitoring/internal/pkg/metrics-collector"
 	"time"
 
 	"github.com/nalej/derrors"
@@ -118,7 +119,7 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 	// If no specific fields are requested, get all
 	fields := request.GetFields()
 	if len(fields) == 0 {
-		fields = AllGRPCStatsFields()
+		fields = metrics_collector.AllGRPCStatsFields()
 	}
 
 	// TODO: parallel queries
@@ -134,7 +135,7 @@ func (m *RetrieveManager) GetClusterStats(ctx context.Context, request *grpc.Clu
 			query.MetricRunning: &stat.Running, // gauge
 		}
 
-		vars.MetricName = GRPCStatsFieldToMetric(field)
+		vars.MetricName = metrics_collector.GRPCStatsFieldToMetric(field)
 		for counter, valPtr := range resultMap {
 			// Determine template based on value type (counter, gauge)
 			templateName, derr := query.GetPlatformTemplateName(counter)

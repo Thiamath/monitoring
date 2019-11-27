@@ -16,7 +16,7 @@
 
 // Wrapper for the configuration properties.
 
-package static_lister
+package server
 
 import (
 	"github.com/nalej/derrors"

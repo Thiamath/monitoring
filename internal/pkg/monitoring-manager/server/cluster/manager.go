@@ -20,6 +20,7 @@ package cluster
 
 import (
 	"context"
+	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/clients"
 
 	"github.com/nalej/derrors"
 
@@ -51,7 +52,7 @@ func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *Ap
 	return manager, nil
 }
 
-func (m *Manager) getClusterClient(organizationId, clusterId string) (*clusterClient, derrors.Error) {
+func (m *Manager) getClusterClient(organizationId, clusterId string) (*clients.ClusterClient, derrors.Error) {
 	getClusterRequest := &grpc_infrastructure_go.ClusterId{
 		OrganizationId: organizationId,
 		ClusterId:      clusterId,
@@ -62,7 +63,7 @@ func (m *Manager) getClusterClient(organizationId, clusterId string) (*clusterCl
 		return nil, derrors.NewUnavailableError("unable to retrieve cluster", err)
 	}
 
-	return NewClusterClient(cluster.GetHostname(), m.params)
+	return clients.NewClusterClient(cluster.GetHostname(), m.params)
 }
 
 // Retrieve a summary of high level cluster resource availability

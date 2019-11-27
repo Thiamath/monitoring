@@ -12,18 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package commands
 
 import (
-	"github.com/nalej/monitoring/internal/app/static-lister"
+	"github.com/nalej/monitoring/internal/pkg/static-lister/server"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-var config = static_lister.Config{}
+var config = server.Config{}
 
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -49,7 +48,7 @@ func init() {
 func Run() {
 	log.Info().Msg("Launching Prometheus Static Lister service")
 
-	server, err := static_lister.NewService(&config)
+	server, err := server.NewService(&config)
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to create service")
 	}

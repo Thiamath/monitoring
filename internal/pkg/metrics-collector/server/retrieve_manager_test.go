@@ -16,7 +16,7 @@
 
 // RetrieveManager tests
 
-package metrics_collector
+package server
 
 import (
 	"context"

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package monitoring_manager
+package server
 
 import (
 	"fmt"
+	asset2 "github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/asset"
+	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/cluster"
 	"net"
 
 	"github.com/nalej/derrors"
@@ -27,8 +29,6 @@ import (
 	"github.com/nalej/grpc-inventory-go"
 	"github.com/nalej/grpc-monitoring-go"
 
-	"github.com/nalej/monitoring/internal/app/monitoring-manager/asset"
-	"github.com/nalej/monitoring/internal/app/monitoring-manager/cluster"
 	"github.com/nalej/monitoring/internal/pkg/retrieve"
 
 	"github.com/rs/zerolog/log"
@@ -101,11 +101,11 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Asset monitoring
-	assetManager, derr := asset.NewManager(eipClient, assetsClient, controllersClient)
+	assetManager, derr := asset2.NewManager(eipClient, assetsClient, controllersClient)
 	if derr != nil {
 		return derr
 	}
-	assetHandler, derr := asset.NewHandler(assetManager)
+	assetHandler, derr := asset2.NewHandler(assetManager)
 
 	// Create server and register handler
 	server := grpc.NewServer()

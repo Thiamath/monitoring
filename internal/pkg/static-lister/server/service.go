@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package static_lister
+package server
 
 // Static lister app provides a Prometheus metrics endpoint that returns
 // a static metric series with specified name and a label with the values

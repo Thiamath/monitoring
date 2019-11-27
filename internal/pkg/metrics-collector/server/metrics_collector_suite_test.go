@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package metrics_collector
+package server
 
 import (
 	"os"

@@ -16,7 +16,7 @@
 
 // Wrapper for the configuration properties.
 
-package metrics_collector
+package server
 
 import (
 	"fmt"
