@@ -36,7 +36,7 @@
 
 [[constraint]]
   name = "github.com/nalej/grpc-monitoring-go"
-  version = "v0.0.8"
+  version = "v0.0.9"
 
 [[constraint]]
   name = "github.com/nalej/grpc-inventory-go"
@@ -44,7 +44,7 @@
 
 [[constraint]]
   name = "github.com/nalej/grpc-app-cluster-api-go"
-  version = "v0.0.19"
+  version = "v0.0.26"
 
 [[constraint]]
   name = "github.com/nalej/grpc-utils"
