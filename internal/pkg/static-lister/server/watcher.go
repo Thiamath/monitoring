@@ -19,7 +19,7 @@ package server
 // Watcher expects an already initialized and registered Prometheus gauge vector
 // (as defined in the Prometheus client code) and a filename. It reads the
 // lines from the file and creates a metric for each, with the (already
-// defined) label set to the value read from the file (see service.go for
+// defined) label set to the value read from the file (see server.go for
 // an example). It then uses fsnotify to detect changes in the file and if
 // there are any, update the gauge vector.
 // The file can be mounted from a config map in Kubernetes. Any changes from

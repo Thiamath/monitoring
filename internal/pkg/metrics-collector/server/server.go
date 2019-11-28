@@ -39,6 +39,7 @@ type Service struct {
 	Configuration *Config
 }
 
+// NewService creates a new service to handler
 func NewService(conf *Config) (*Service, derrors.Error) {
 	err := conf.Validate()
 	if err != nil {
@@ -85,8 +86,7 @@ func (s *Service) Run() derrors.Error {
 	return nil
 }
 
-// Initialize and start the retrieval/query API.
-// This starts the gRPC server.
+// startRetrieve Initializes and start the retrieval/query API. This starts the gRPC server.
 func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error) (*grpc.Server, derrors.Error) {
 	// Create query providers
 	queryProviders := query.QueryProviders{}

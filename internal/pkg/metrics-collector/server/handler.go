@@ -31,17 +31,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Handler structure for the user requests.
 type Handler struct {
 	manager Manager
 }
 
+// NewHandler creates a new Handler with a linked manager.
 func NewHandler(m Manager) (*Handler, derrors.Error) {
 	return &Handler{
 		manager: m,
 	}, nil
 }
 
-// Retrieve a summary of high level cluster resource availability
+// GetClusterSummary retrieve a summary of high level cluster resource availability
 func (h *Handler) GetClusterSummary(ctx context.Context, request *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, error) {
 	log.Debug().
 		Str("organization_id", request.GetOrganizationId()).
@@ -65,7 +67,7 @@ func (h *Handler) GetClusterSummary(ctx context.Context, request *grpc.ClusterSu
 	return res, nil
 }
 
-// Retrieve statistics on cluster with respect to platform resources
+// GetClusterStats retrieve statistics on cluster with respect to platform resources
 func (h *Handler) GetClusterStats(ctx context.Context, request *grpc.ClusterStatsRequest) (*grpc.ClusterStats, error) {
 	log.Debug().
 		Str("organization_id", request.GetOrganizationId()).
@@ -89,7 +91,7 @@ func (h *Handler) GetClusterStats(ctx context.Context, request *grpc.ClusterStat
 	return res, nil
 }
 
-// Execute a query directly on the monitoring storage backend
+// Query execute a query directly on the monitoring storage backend
 func (h *Handler) Query(ctx context.Context, request *grpc.QueryRequest) (*grpc.QueryResponse, error) {
 	log.Debug().
 		Str("organization_id", request.GetOrganizationId()).

@@ -34,12 +34,13 @@ import (
 	"github.com/nalej/grpc-monitoring-go"
 )
 
+// Manager structure with the required clients for roles operations.
 type Manager struct {
 	providers        query.QueryProviders
 	featureProviders map[query.QueryProviderFeature]query.QueryProvider
 }
 
-// Create a new query manager.
+// NewManager creates a new query manager.
 func NewManager(providers query.QueryProviders) (Manager, derrors.Error) {
 	// Check providers for specific features
 	// NOTE: this only gives us the last provider with a certain feature,
@@ -59,7 +60,7 @@ func NewManager(providers query.QueryProviders) (Manager, derrors.Error) {
 	return manager, nil
 }
 
-// Retrieve a summary of high level cluster resource availability
+// GetClusterSummary retrieves a summary of high level cluster resource availability
 func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitoring_go.ClusterSummaryRequest) (*grpc_monitoring_go.ClusterSummary, derrors.Error) {
 	// Get right provider
 	provider, found := m.featureProviders[query.FeatureSystemStats]
@@ -104,7 +105,7 @@ func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitorin
 	return res, nil
 }
 
-// Retrieve statistics on cluster with respect to platform resources
+// GetClusterStats retrieves statistics on cluster with respect to platform resources
 func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_go.ClusterStatsRequest) (*grpc_monitoring_go.ClusterStats, derrors.Error) {
 	// Get right provider
 	provider, found := m.featureProviders[query.FeaturePlatformStats]
@@ -164,7 +165,7 @@ func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_
 	return res, nil
 }
 
-// Execute a query directly on the monitoring storage backend
+// Query executes a query directly on the monitoring storage backend
 func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRequest) (*grpc_monitoring_go.QueryResponse, derrors.Error) {
 	// Validate we have the right request type for the backend
 	providerType := query.QueryProviderType(request.GetType().String())
