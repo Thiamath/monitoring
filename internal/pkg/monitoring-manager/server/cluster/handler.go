@@ -18,10 +18,11 @@
 // and GetClusterStats.
 // Implements grpc-monitoring-go.MetricsCollectorServer and MonitoringManagerServer
 
-package retrieve
+package cluster
 
 import (
 	"context"
+	"github.com/nalej/monitoring/internal/pkg/entities"
 
 	"github.com/nalej/derrors"
 
@@ -31,10 +32,10 @@ import (
 )
 
 type Handler struct {
-	manager RetrieveManager
+	manager Manager
 }
 
-func NewHandler(m RetrieveManager) (*Handler, derrors.Error) {
+func NewHandler(m Manager) (*Handler, derrors.Error) {
 	return &Handler{
 		manager: m,
 	}, nil
@@ -49,7 +50,7 @@ func (h *Handler) GetClusterSummary(ctx context.Context, request *grpc.ClusterSu
 		Msg("received cluster summary request")
 
 	// Validate
-	derr := validateClusterSummary(request)
+	derr := entities.ValidateClusterSummary(request)
 	if derr != nil {
 		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("invalid request")
 		return nil, derr
@@ -73,7 +74,7 @@ func (h *Handler) GetClusterStats(ctx context.Context, request *grpc.ClusterStat
 		Msg("received cluster statistics request")
 
 	// Validate
-	derr := validateClusterStats(request)
+	derr := entities.ValidateClusterStats(request)
 	if derr != nil {
 		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("invalid request")
 		return nil, derr
@@ -98,7 +99,7 @@ func (h *Handler) Query(ctx context.Context, request *grpc.QueryRequest) (*grpc.
 		Msg("received query request")
 
 	// Validate
-	derr := validateQuery(request)
+	derr := entities.ValidateQuery(request)
 	if derr != nil {
 		log.Info().Str("err", derr.DebugReport()).Err(derr).Msg("invalid request")
 		return nil, derr

@@ -18,7 +18,7 @@
 
 // Currently only test queries - not metrics (needs k8s)
 
-package metrics_collector
+package server
 
 import (
 	"context"

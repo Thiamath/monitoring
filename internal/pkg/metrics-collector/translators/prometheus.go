@@ -66,7 +66,7 @@ func PrometheusTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Err
 
 	grpcResponse := &grpc.QueryResponse{
 		Type:   grpc.QueryType_PROMETHEUS,
-		Result: &grpc.QueryResponse_PrometheusResult{grpcPromResponse},
+		Result: &grpc.QueryResponse_PrometheusResult{PrometheusResult: grpcPromResponse},
 	}
 
 	return grpcResponse, nil

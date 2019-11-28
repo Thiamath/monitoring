@@ -16,7 +16,7 @@
 
 // Validate requests
 
-package retrieve
+package entities
 
 import (
 	"os"
@@ -37,13 +37,13 @@ const (
 
 // This is an interface with the methods that are indentical for all requests,
 // such that we can validate them in the same function
-type validatingRequest interface {
+type ValidatingRequest interface {
 	String() string
 	GetOrganizationId() string
 	GetClusterId() string
 }
 
-func validate(request validatingRequest) derrors.Error {
+func validate(request ValidatingRequest) derrors.Error {
 	log.Debug().Str("request", request.String()).Msg("validating incoming request")
 
 	// Get organization and cluster id for this cluster - set in environment
@@ -69,17 +69,17 @@ func validate(request validatingRequest) derrors.Error {
 	return nil
 }
 
-func validateQuery(request *grpc.QueryRequest) derrors.Error {
+func ValidateQuery(request *grpc.QueryRequest) derrors.Error {
 	if request.GetQuery() == "" {
 		return derrors.NewInvalidArgumentError(emptyQueryString)
 	}
 	return validate(request)
 }
 
-func validateClusterSummary(request *grpc.ClusterSummaryRequest) derrors.Error {
+func ValidateClusterSummary(request *grpc.ClusterSummaryRequest) derrors.Error {
 	return validate(request)
 }
 
-func validateClusterStats(request *grpc.ClusterStatsRequest) derrors.Error {
+func ValidateClusterStats(request *grpc.ClusterStatsRequest) derrors.Error {
 	return validate(request)
 }

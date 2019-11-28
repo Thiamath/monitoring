@@ -16,27 +16,29 @@
 
 // Wrapper for the configuration properties.
 
-package static_lister
+package server
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/nalej/derrors"
+	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/nalej/monitoring/version"
 	"github.com/rs/zerolog/log"
 )
 
 // Config struct for the API service.
 type Config struct {
-	// Port where the Prometheus endpoint will be served
+	// Port where the API service will listen requests.
 	Port int
-	// Namespace, subsystem and name for the metric that is served.
-	// The metric name is namespace_subsystem_name
-	Namespace string
-	Subsystem string
-	Name      string
-	// The name of the label that will be set for this series
-	LabelName string
-	// The file with the values for the label
-	LabelFile string
+	// Path to kubeconfig
+	Kubeconfig string
+	// Running inside Kubernetes cluster
+	InCluster bool
+
+	// Retrieval backends
+	QueryProviders query.QueryProviderConfigs
 }
 
 // Validate the configuration.
@@ -45,18 +47,30 @@ func (conf *Config) Validate() derrors.Error {
 		return derrors.NewInvalidArgumentError("port must be specified")
 	}
 
-	// Namespace and Subsystem may be empty
-	if conf.Name == "" {
-		return derrors.NewInvalidArgumentError("name must be specified")
+	// Retrieval backends validation
+	for _, queryConfig := range conf.QueryProviders {
+		derr := queryConfig.Validate()
+		if derr != nil {
+			return derr
+		}
 	}
 
-	if conf.LabelName == "" {
-		return derrors.NewInvalidArgumentError("label-name must be specified")
+	// NOTE: All validation except kubeconfig should go before this line
+
+	if conf.InCluster {
+		return nil
 	}
 
-	if conf.LabelFile == "" {
-		return derrors.NewInvalidArgumentError("label-file must be specified")
+	// Not in cluster, check kube config
+	if conf.Kubeconfig == "" {
+		return derrors.NewInvalidArgumentError("one of in-cluster or kubeconfig should be specified")
 	}
+
+	f, err := os.Open(conf.Kubeconfig)
+	if err != nil {
+		return derrors.NewInvalidArgumentError(fmt.Sprintf("cannot open kubeconfig %s", conf.Kubeconfig), err)
+	}
+	_ = f.Close()
 
 	return nil
 }
@@ -64,8 +78,11 @@ func (conf *Config) Validate() derrors.Error {
 // Print the current API configuration to the log.
 func (conf *Config) Print() {
 	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
-	log.Info().Int("port", conf.Port).Msg("metrics endpoint port")
-	log.Info().Str("namespace", conf.Namespace).Str("subsystem", conf.Subsystem).Str("name", conf.Name).Msg("metric name")
-	log.Info().Str("label", conf.LabelName).Msg("label name")
-	log.Info().Str("file", conf.LabelFile).Msg("label values file")
+	log.Info().Int("port", conf.Port).Msg("gRPC port")
+	log.Info().Str("file", conf.Kubeconfig).Bool("in-cluster", conf.InCluster).Msg("kubeconfig")
+
+	// Retrieval backends
+	for _, queryConfig := range conf.QueryProviders {
+		queryConfig.Print(log.Info())
+	}
 }

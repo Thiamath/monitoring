@@ -14,23 +14,32 @@
  * limitations under the License.
  */
 
-// RetrieveManager interface definition
+// Translators from specific QueryResult implementations to the
+// appropriate grpc.QueryResponse
 
-package retrieve
+package translators
 
 import (
-	"context"
-
 	"github.com/nalej/derrors"
 
 	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/monitoring/pkg/provider/query"
 )
 
-type RetrieveManager interface {
-	// Retrieve a summary of high level cluster resource availability
-	GetClusterSummary(context.Context, *grpc.ClusterSummaryRequest) (*grpc.ClusterSummary, derrors.Error)
-	// Retrieve statistics on cluster with respect to platform resources
-	GetClusterStats(context.Context, *grpc.ClusterStatsRequest) (*grpc.ClusterStats, derrors.Error)
-	// Execute a query directly on the monitoring storage backend
-	Query(context.Context, *grpc.QueryRequest) (*grpc.QueryResponse, derrors.Error)
+type TranslatorFunc func(query.QueryResult) (*grpc.QueryResponse, derrors.Error)
+
+type Translators map[query.QueryProviderType]TranslatorFunc
+
+var DefaultTranslators = Translators{}
+
+func Register(tpe query.QueryProviderType, f TranslatorFunc) {
+	DefaultTranslators[tpe] = f
+}
+
+func GetTranslator(tpe query.QueryProviderType) (TranslatorFunc, bool) {
+	f, found := DefaultTranslators[tpe]
+	if !found {
+		return nil, false
+	}
+	return f, true
 }

@@ -20,6 +20,7 @@ package cluster
 
 import (
 	"context"
+	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/clients"
 
 	"github.com/nalej/derrors"
 
@@ -29,21 +30,12 @@ import (
 
 type Manager struct {
 	clustersClient grpc_infrastructure_go.ClustersClient
-	params         *AppClusterConnectParams
-}
-
-type AppClusterConnectParams struct {
-	AppClusterPrefix         string
-	AppClusterPort           int
-	UseTLS                   bool
-	CACertPath               string
-	ClientCertPath           string
-	SkipServerCertValidation bool
+	params         *clients.AppClusterConnectParams
 }
 
 // Create a new query manager.
-func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *AppClusterConnectParams) (*Manager, derrors.Error) {
-	manager := &Manager{
+func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *clients.AppClusterConnectParams) (Manager, derrors.Error) {
+	manager := Manager{
 		clustersClient: clustersClient,
 		params:         params,
 	}
@@ -51,7 +43,7 @@ func NewManager(clustersClient grpc_infrastructure_go.ClustersClient, params *Ap
 	return manager, nil
 }
 
-func (m *Manager) getClusterClient(organizationId, clusterId string) (*clusterClient, derrors.Error) {
+func (m *Manager) getClusterClient(organizationId, clusterId string) (*clients.ClusterClient, derrors.Error) {
 	getClusterRequest := &grpc_infrastructure_go.ClusterId{
 		OrganizationId: organizationId,
 		ClusterId:      clusterId,
@@ -62,7 +54,7 @@ func (m *Manager) getClusterClient(organizationId, clusterId string) (*clusterCl
 		return nil, derrors.NewUnavailableError("unable to retrieve cluster", err)
 	}
 
-	return NewClusterClient(cluster.GetHostname(), m.params)
+	return clients.NewClusterClient(cluster.GetHostname(), m.params)
 }
 
 // Retrieve a summary of high level cluster resource availability
