@@ -47,7 +47,7 @@ var grpcServer *grpc.Server
 
 var client grpc_monitoring_go.MetricsCollectorClient
 
-var manager *Manager
+var manager Manager
 
 var _ = ginkgo.BeforeSuite(func() {
 	if utils.RunIntegrationTests() {
@@ -121,40 +121,40 @@ func beforeSuiteRetrieveManager() {
 	}
 
 	templates := map[query.TemplateName]map[query.TemplateVars]int64{
-		query.TemplateName_CPU + query.TemplateName_Total: map[query.TemplateVars]int64{
+		query.TemplateName_CPU + query.TemplateName_Total: {
 			query.TemplateVars{AvgSeconds: 0}:   1,
 			query.TemplateVars{AvgSeconds: 600}: 2,
 		},
-		query.TemplateName_CPU + query.TemplateName_Available: map[query.TemplateVars]int64{
+		query.TemplateName_CPU + query.TemplateName_Available: {
 			query.TemplateVars{AvgSeconds: 0}:   3,
 			query.TemplateVars{AvgSeconds: 600}: 4,
 		},
-		query.TemplateName_Memory + query.TemplateName_Total: map[query.TemplateVars]int64{
+		query.TemplateName_Memory + query.TemplateName_Total: {
 			query.TemplateVars{AvgSeconds: 0}:   5,
 			query.TemplateVars{AvgSeconds: 600}: 6,
 		},
-		query.TemplateName_Memory + query.TemplateName_Available: map[query.TemplateVars]int64{
+		query.TemplateName_Memory + query.TemplateName_Available: {
 			query.TemplateVars{AvgSeconds: 0}:   7,
 			query.TemplateVars{AvgSeconds: 600}: 8,
 		},
-		query.TemplateName_Storage + query.TemplateName_Total: map[query.TemplateVars]int64{
+		query.TemplateName_Storage + query.TemplateName_Total: {
 			query.TemplateVars{AvgSeconds: 0}:   9,
 			query.TemplateVars{AvgSeconds: 600}: 10,
 		},
-		query.TemplateName_Storage + query.TemplateName_Available: map[query.TemplateVars]int64{
+		query.TemplateName_Storage + query.TemplateName_Available: {
 			query.TemplateVars{AvgSeconds: 0}:   11,
 			query.TemplateVars{AvgSeconds: 600}: 12,
 		},
-		query.TemplateName_UsableStorage + query.TemplateName_Total: map[query.TemplateVars]int64{
+		query.TemplateName_UsableStorage + query.TemplateName_Total: {
 			query.TemplateVars{AvgSeconds: 0}:   13,
 			query.TemplateVars{AvgSeconds: 600}: 14,
 		},
-		query.TemplateName_UsableStorage + query.TemplateName_Available: map[query.TemplateVars]int64{
+		query.TemplateName_UsableStorage + query.TemplateName_Available: {
 			query.TemplateVars{AvgSeconds: 0}:   15,
 			query.TemplateVars{AvgSeconds: 600}: 16,
 		},
 
-		query.TemplateName_PlatformStatsCounter: map[query.TemplateVars]int64{
+		query.TemplateName_PlatformStatsCounter: {
 			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "created"}:    13,
 			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "deleted"}:    14,
 			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "errors"}:     15,
@@ -181,7 +181,7 @@ func beforeSuiteRetrieveManager() {
 			query.TemplateVars{AvgSeconds: 600, MetricName: "endpoints", StatName: "errors"}:  36,
 		},
 
-		query.TemplateName_PlatformStatsGauge: map[query.TemplateVars]int64{
+		query.TemplateName_PlatformStatsGauge: {
 			query.TemplateVars{AvgSeconds: 0, MetricName: "services", StatName: "running"}:    37,
 			query.TemplateVars{AvgSeconds: 600, MetricName: "services", StatName: "running"}:  38,
 			query.TemplateVars{AvgSeconds: 0, MetricName: "volumes", StatName: "running"}:     39,
