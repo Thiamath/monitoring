@@ -127,3 +127,18 @@ func (h *Handler) Query(ctx context.Context, request *grpc_monitoring_go.QueryRe
 
 	return res, nil
 }
+
+// GetContainerStats
+func (h *Handler) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty) (*grpc_monitoring_go.ContainerStatsResponse, error) {
+	log.Debug().Msg("received GetContainerStats request")
+
+	response, err := h.manager.GetContainerStats(ctx, nil)
+	if err != nil {
+		log.Error().Str("err", conversions.ToDerror(err).DebugReport()).Err(err).Msg("error executing GetContainerStats")
+		return nil, err
+	}
+	log.Debug().
+		Interface("response", response).
+		Msg("GetContainerStats response")
+	return response, nil
+}
