@@ -61,7 +61,7 @@ func NewManager(providers query.QueryProviders) (Manager, derrors.Error) {
 }
 
 // GetClusterSummary retrieves a summary of high level cluster resource availability
-func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitoring_go.ClusterSummaryRequest) (*grpc_monitoring_go.ClusterSummary, derrors.Error) {
+func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitoring_go.ClusterSummaryRequest) (*grpc_monitoring_go.ClusterSummary, error) {
 	// Get right provider
 	provider, found := m.featureProviders[query.FeatureSystemStats]
 	if !found {
@@ -106,7 +106,7 @@ func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitorin
 }
 
 // GetClusterStats retrieves statistics on cluster with respect to platform resources
-func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_go.ClusterStatsRequest) (*grpc_monitoring_go.ClusterStats, derrors.Error) {
+func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_go.ClusterStatsRequest) (*grpc_monitoring_go.ClusterStats, error) {
 	// Get right provider
 	provider, found := m.featureProviders[query.FeaturePlatformStats]
 	if !found {
@@ -166,7 +166,7 @@ func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_
 }
 
 // Query executes a query directly on the monitoring storage backend
-func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRequest) (*grpc_monitoring_go.QueryResponse, derrors.Error) {
+func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRequest) (*grpc_monitoring_go.QueryResponse, error) {
 	// Validate we have the right request type for the backend
 	providerType := query.QueryProviderType(request.GetType().String())
 	provider, found := m.providers[providerType]
