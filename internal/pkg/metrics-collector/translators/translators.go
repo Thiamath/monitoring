@@ -15,18 +15,18 @@
  */
 
 // Translators from specific QueryResult implementations to the
-// appropriate grpc.QueryResponse
+// appropriate grpc_monitoring_go.QueryResponse
 
 package translators
 
 import (
 	"github.com/nalej/derrors"
 
-	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-monitoring-go"
 	"github.com/nalej/monitoring/pkg/provider/query"
 )
 
-type TranslatorFunc func(query.QueryResult) (*grpc.QueryResponse, derrors.Error)
+type TranslatorFunc func(query.QueryResult) (*grpc_monitoring_go.QueryResponse, derrors.Error)
 
 type Translators map[query.QueryProviderType]TranslatorFunc
 
