@@ -17,12 +17,12 @@
 package commands
 
 import (
-	"github.com/nalej/monitoring/internal/app/monitoring-manager"
+	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-var config = monitoring_manager.Config{}
+var config = server.Config{}
 
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -50,7 +50,7 @@ func init() {
 func Run() {
 	log.Info().Msg("Launching Monitoring Manager service")
 
-	server, err := monitoring_manager.NewService(&config)
+	server, err := server.NewService(&config)
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err)
 		panic(err.Error())

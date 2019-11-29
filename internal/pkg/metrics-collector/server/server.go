@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package metrics_collector
+package server
 
 import (
 	"fmt"
@@ -27,7 +27,6 @@ import (
 
 	"github.com/nalej/grpc-monitoring-go"
 
-	"github.com/nalej/monitoring/internal/pkg/retrieve"
 	"github.com/nalej/monitoring/pkg/provider/query"
 
 	"github.com/rs/zerolog/log"
@@ -40,6 +39,7 @@ type Service struct {
 	Configuration *Config
 }
 
+// NewService creates a new service to handler
 func NewService(conf *Config) (*Service, derrors.Error) {
 	err := conf.Validate()
 	if err != nil {
@@ -86,8 +86,7 @@ func (s *Service) Run() derrors.Error {
 	return nil
 }
 
-// Initialize and start the retrieval/query API.
-// This starts the gRPC server.
+// startRetrieve Initializes and start the retrieval/query API. This starts the gRPC server.
 func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error) (*grpc.Server, derrors.Error) {
 	// Create query providers
 	queryProviders := query.QueryProviders{}
@@ -102,11 +101,11 @@ func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error)
 	}
 
 	// Create manager and handler for gRPC endpoints
-	retrieveManager, derr := NewRetrieveManager(queryProviders)
+	retrieveManager, derr := NewManager(queryProviders)
 	if derr != nil {
 		return nil, derr
 	}
-	retrieveHandler, derr := retrieve.NewHandler(retrieveManager)
+	retrieveHandler, derr := NewHandler(retrieveManager)
 	if derr != nil {
 		return nil, derr
 	}

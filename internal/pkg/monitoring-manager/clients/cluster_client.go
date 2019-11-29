@@ -16,7 +16,7 @@
 
 // Manager implementation for cluster monitoring
 
-package cluster
+package clients
 
 import (
 	"crypto/tls"
@@ -35,14 +35,23 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-type clusterClient struct {
+type ClusterClient struct {
 	grpc_app_cluster_api_go.MetricsCollectorClient
 	conn *grpc.ClientConn
 }
 
+type AppClusterConnectParams struct {
+	AppClusterPrefix         string
+	AppClusterPort           int
+	UseTLS                   bool
+	CACertPath               string
+	ClientCertPath           string
+	SkipServerCertValidation bool
+}
+
 // TODO: If we want to test this, we can create a client factory and implement
 // one that creates stub clients
-func NewClusterClient(address string, params *AppClusterConnectParams) (*clusterClient, derrors.Error) {
+func NewClusterClient(address string, params *AppClusterConnectParams) (*ClusterClient, derrors.Error) {
 	var options []grpc.DialOption
 	var hostname string
 
@@ -114,10 +123,10 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*cluster
 
 	client := grpc_app_cluster_api_go.NewMetricsCollectorClient(conn)
 
-	return &clusterClient{client, conn}, nil
+	return &ClusterClient{client, conn}, nil
 }
 
-func (c *clusterClient) Close() error {
+func (c *ClusterClient) Close() error {
 	err := c.conn.Close()
 	if err != nil {
 		log.Warn().Msg("error closing client connection")
@@ -126,9 +135,9 @@ func (c *clusterClient) Close() error {
 	return err
 }
 
-// printRelevantTLSConfig prints some relevant information from a TLS Config structure, namely:
+// PrintRelevantTLSConfig prints some relevant information from a TLS Config structure, namely:
 // ClientAuth, ServerName. RootCAs, Certificates and InsecureSkipVerify
-func printRelevantTLSConfig(c *tls.Config) {
+func PrintRelevantTLSConfig(c *tls.Config) {
 	if int(c.ClientAuth) != 0 {
 		log.Debug().Int("ClientAuth", int(c.ClientAuth)).Msg("client auth")
 	}
@@ -145,7 +154,7 @@ func printRelevantTLSConfig(c *tls.Config) {
 }
 
 // Add X509 certificate from a file to a pool
-func addCert(pool *x509.CertPool, cert string) derrors.Error {
+func AddCert(pool *x509.CertPool, cert string) derrors.Error {
 	caCert, err := ioutil.ReadFile(cert)
 	if err != nil {
 		return derrors.NewInternalError("unable to read certificate", err)

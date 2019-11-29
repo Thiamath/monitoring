@@ -12,25 +12,17 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package asset
+package translators
 
 import (
-	"context"
-	"time"
+	"github.com/onsi/ginkgo"
+	"github.com/onsi/gomega"
+	"testing"
 )
 
-const InventoryContextTimeout = 30 * time.Second
-const ProxyContextTimeout = 30 * time.Second
-
-// InventoryContext generates a new gRPC context for inventory connections
-func InventoryContext() (context.Context, func()) {
-	return context.WithTimeout(context.Background(), InventoryContextTimeout)
-}
-
-// ProxyContext generates a new gRPC context for edge inventory proxy connections
-func ProxyContext() (context.Context, func()) {
-	return context.WithTimeout(context.Background(), ProxyContextTimeout)
+func TestHandlerPackage(t *testing.T) {
+	gomega.RegisterFailHandler(ginkgo.Fail)
+	ginkgo.RunSpecs(t, "internal/pkg/retrieve/translators package suite")
 }
