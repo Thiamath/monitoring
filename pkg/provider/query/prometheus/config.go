@@ -27,15 +27,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const ProviderType query.QueryProviderType = "PROMETHEUS"
+const ProviderType query.ProviderType = "PROMETHEUS"
 
-type PrometheusConfig struct {
+type Config struct {
 	Enable bool
 	Url    string
 }
 
-func NewPrometheusConfig(cmd *cobra.Command) query.QueryProviderConfig {
-	c := &PrometheusConfig{}
+func NewPrometheusConfig(cmd *cobra.Command) query.ProviderConfig {
+	c := &Config{}
 
 	cmd.Flags().BoolVar(&c.Enable, "retrieve.prometheus.enabled", false, "Enable Prometheus retrieval backend")
 	cmd.Flags().StringVar(&c.Url, "retrieve.prometheus.url", "http://localhost:9090", "Prometheus retrieval backend URL")
@@ -43,15 +43,15 @@ func NewPrometheusConfig(cmd *cobra.Command) query.QueryProviderConfig {
 	return c
 }
 
-func (c *PrometheusConfig) Enabled() bool {
+func (c *Config) Enabled() bool {
 	return c.Enable
 }
 
-func (c *PrometheusConfig) Print(log *zerolog.Event) {
+func (c *Config) Print(log *zerolog.Event) {
 	log.Bool("enabled", c.Enable).Str("url", c.Url).Msg("prometheus retrieval backend")
 }
 
-func (c *PrometheusConfig) Validate() derrors.Error {
+func (c *Config) Validate() derrors.Error {
 	// Disabled is always ok
 	if !c.Enabled() {
 		return nil
@@ -65,7 +65,7 @@ func (c *PrometheusConfig) Validate() derrors.Error {
 	return nil
 }
 
-func (c *PrometheusConfig) NewProvider() (query.QueryProvider, derrors.Error) {
+func (c *Config) NewProvider() (query.Provider, derrors.Error) {
 	if !c.Enabled() {
 		return nil, derrors.NewInternalError("cannot create a disabled query provider")
 	}

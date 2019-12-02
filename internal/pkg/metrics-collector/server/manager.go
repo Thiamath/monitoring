@@ -21,10 +21,14 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/nalej/grpc-common-go"
 	"github.com/nalej/monitoring/internal/pkg/metrics-collector"
+	"github.com/nalej/monitoring/pkg/provider/query/prometheus"
+	"strconv"
 	"time"
 
 	"github.com/nalej/derrors"
+	"github.com/rs/zerolog/log"
 
 	"github.com/nalej/grpc-utils/pkg/conversions"
 
@@ -34,18 +38,24 @@ import (
 	"github.com/nalej/grpc-monitoring-go"
 )
 
+const (
+	CpuQuery     = "nalej_servinst_cpu_core"
+	MemoryQuery  = "nalej_servinst_memory_byte"
+	StorageQuery = "nalej_servinst_storage_byte"
+)
+
 // Manager structure with the required clients for roles operations.
 type Manager struct {
-	providers        query.QueryProviders
-	featureProviders map[query.QueryProviderFeature]query.QueryProvider
+	providers        query.Providers
+	featureProviders map[query.ProviderFeature]query.Provider
 }
 
 // NewManager creates a new query manager.
-func NewManager(providers query.QueryProviders) (Manager, derrors.Error) {
+func NewManager(providers query.Providers) (Manager, derrors.Error) {
 	// Check providers for specific features
 	// NOTE: this only gives us the last provider with a certain feature,
 	// but at least we have one we can use
-	featureProviders := map[query.QueryProviderFeature]query.QueryProvider{}
+	featureProviders := map[query.ProviderFeature]query.Provider{}
 	for _, provider := range providers {
 		for _, feature := range provider.Supported() {
 			featureProviders[feature] = provider
@@ -61,7 +71,7 @@ func NewManager(providers query.QueryProviders) (Manager, derrors.Error) {
 }
 
 // GetClusterSummary retrieves a summary of high level cluster resource availability
-func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitoring_go.ClusterSummaryRequest) (*grpc_monitoring_go.ClusterSummary, derrors.Error) {
+func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitoring_go.ClusterSummaryRequest) (*grpc_monitoring_go.ClusterSummary, error) {
 	// Get right provider
 	provider, found := m.featureProviders[query.FeatureSystemStats]
 	if !found {
@@ -106,7 +116,7 @@ func (m *Manager) GetClusterSummary(ctx context.Context, request *grpc_monitorin
 }
 
 // GetClusterStats retrieves statistics on cluster with respect to platform resources
-func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_go.ClusterStatsRequest) (*grpc_monitoring_go.ClusterStats, derrors.Error) {
+func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_go.ClusterStatsRequest) (*grpc_monitoring_go.ClusterStats, error) {
 	// Get right provider
 	provider, found := m.featureProviders[query.FeaturePlatformStats]
 	if !found {
@@ -166,9 +176,9 @@ func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_
 }
 
 // Query executes a query directly on the monitoring storage backend
-func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRequest) (*grpc_monitoring_go.QueryResponse, derrors.Error) {
+func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRequest) (*grpc_monitoring_go.QueryResponse, error) {
 	// Validate we have the right request type for the backend
-	providerType := query.QueryProviderType(request.GetType().String())
+	providerType := query.ProviderType(request.GetType().String())
 	provider, found := m.providers[providerType]
 	if !found {
 		return nil, derrors.NewUnavailableError(fmt.Sprintf("requested query provider %s not available", string(providerType)))
@@ -178,7 +188,7 @@ func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRe
 	queryRange := request.GetRange()
 	q := &query.Query{
 		QueryString: request.GetQuery(),
-		Range: query.QueryRange{
+		Range: query.Range{
 			Start: conversions.GoTime(queryRange.GetStart()),
 			End:   conversions.GoTime(queryRange.GetEnd()),
 			// Step is a float32 in seconds, convert to int64 in nanos
@@ -207,4 +217,127 @@ func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRe
 	queryResponse.ClusterId = request.GetClusterId()
 
 	return queryResponse, nil
+}
+
+func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty) (*grpc_monitoring_go.ContainerStatsResponse, error) {
+	// Validate we have the right request type for the backend
+	providerType := prometheus.ProviderType
+	provider, found := m.providers[providerType]
+	if !found {
+		return nil, derrors.NewUnavailableError(fmt.Sprintf("requested query provider %s not available", string(providerType)))
+	}
+	// Translate result
+	translator, found := translators.GetTranslator(provider.ProviderType())
+	if !found {
+		return nil, derrors.NewNotFoundError(fmt.Sprintf("no result translator found for provider %s", string(provider.ProviderType())))
+	}
+
+	queryTime := time.Now()
+
+	cpuStatsFuture := getCpuStats(queryTime, ctx, provider, translator)
+	memoryStatsFuture := getMemoryStats(queryTime, ctx, provider, translator)
+	storageStatsFuture := getStorageStats(queryTime, ctx, provider, translator)
+
+	cpuStats := <-cpuStatsFuture
+	memoryStats := <-memoryStatsFuture
+	storageStats := <-storageStatsFuture
+
+	statsMapByNamespace := make(map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
+	if cpuStats == nil {
+		log.Warn().Msg(CpuQuery + " stats could not be retrieved and will not be aggregated")
+	} else {
+		mapQueryResultsByNamespace(CpuQuery, cpuStats, statsMapByNamespace)
+	}
+	if memoryStats == nil {
+		log.Warn().Msg(MemoryQuery + " stats could not be retrieved and will not be aggregated")
+	} else {
+		mapQueryResultsByNamespace(MemoryQuery, memoryStats, statsMapByNamespace)
+	}
+	if storageStats == nil {
+		log.Warn().Msg(StorageQuery + " stats could not be retrieved and will not be aggregated")
+	} else {
+		mapQueryResultsByNamespace(StorageQuery, cpuStats, statsMapByNamespace)
+	}
+
+	containerStats := make([]*grpc_monitoring_go.ContainerStats, 0)
+	for namespace, statsByType := range statsMapByNamespace {
+		pod := statsByType[CpuQuery].Metric["pod"]
+		container := statsByType[CpuQuery].Metric["container"]
+		cpuMillicore, _ := strconv.ParseFloat(statsByType[CpuQuery].Value[0].Value, 64)
+		memoryByte, _ := strconv.ParseFloat(statsByType[MemoryQuery].Value[0].Value, 64)
+		storageByte, _ := strconv.ParseFloat(statsByType[StorageQuery].Value[0].Value, 64)
+
+		stats := grpc_monitoring_go.ContainerStats{
+			Namespace:    namespace,
+			Pod:          pod,
+			Container:    container,
+			CpuMillicore: cpuMillicore,
+			MemoryByte:   memoryByte,
+			StorageByte:  storageByte,
+		}
+		containerStats = append(containerStats, &stats)
+	}
+
+	containerStatsResponse := &grpc_monitoring_go.ContainerStatsResponse{
+		ContainerStats: containerStats,
+	}
+	return containerStatsResponse, nil
+}
+
+func mapQueryResultsByNamespace(metricName string, results *grpc_monitoring_go.QueryResponse, statsMap map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue) {
+	for _, result := range results.GetPrometheusResult().GetResult() {
+		namespace := result.Metric["namespace"]
+		namespaceMetrics, exists := statsMap[namespace]
+		if !exists {
+			namespaceMetrics = make(map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
+			statsMap[namespace] = namespaceMetrics
+		}
+		namespaceMetrics[metricName] = result
+	}
+}
+
+func getCpuStats(queryTime time.Time, ctx context.Context, provider query.Provider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
+	future := make(chan *grpc_monitoring_go.QueryResponse)
+	go launchQuery(CpuQuery, queryTime, provider, ctx, translator, future)
+	return future
+}
+
+func getMemoryStats(queryTime time.Time, ctx context.Context, provider query.Provider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
+	future := make(chan *grpc_monitoring_go.QueryResponse)
+	go launchQuery(MemoryQuery, queryTime, provider, ctx, translator, future)
+	return future
+}
+
+func getStorageStats(queryTime time.Time, ctx context.Context, provider query.Provider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
+	future := make(chan *grpc_monitoring_go.QueryResponse)
+	go launchQuery(StorageQuery, queryTime, provider, ctx, translator, future)
+	return future
+}
+
+func launchQuery(queryString string, queryTime time.Time, provider query.Provider, ctx context.Context, translator translators.TranslatorFunc, future chan *grpc_monitoring_go.QueryResponse) {
+	q := &query.Query{
+		QueryString: queryString,
+		Range: query.Range{
+			Start: queryTime,
+			End:   time.Time{},
+			// Step is a float32 in seconds, convert to int64 in nanos
+			Step: time.Duration(0),
+		},
+	}
+	res, derr := provider.Query(ctx, q)
+	if derr != nil {
+		log.Error().
+			Interface("query", q).
+			Msg("error getting cpu stats")
+		future <- nil
+	}
+	queryResponse, derr := translator(res)
+	if derr != nil {
+		log.Error().
+			Interface("query", q).
+			Interface("response", queryResponse).
+			Msg("error translating cpu stats")
+		future <- nil
+	}
+	future <- queryResponse
 }

@@ -21,33 +21,33 @@ package translators
 import (
 	"github.com/nalej/derrors"
 
-	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-monitoring-go"
 	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/nalej/monitoring/pkg/provider/query/fake"
 )
 
-func FakeTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Error) {
+func FakeTranslator(q query.Result) (*grpc_monitoring_go.QueryResponse, derrors.Error) {
 	result, ok := q.(fake.FakeResult)
-	if !ok || result.ResultType() != fake.FakeProviderType {
+	if !ok || result.ResultType() != fake.ProviderType {
 		return nil, derrors.NewAbortedError("invalid query result type")
 	}
 	if string(result) == "" {
 		return nil, derrors.NewAbortedError("nil query result")
 	}
 
-	grpcResponse := &grpc.QueryResponse{
-		Type:   grpc.QueryType(-1), // FAKE,
-		Result: &QueryResponse_FakeResult{Result: string(result)},
+	grpcResponse := &grpc_monitoring_go.QueryResponse{
+		Type:   grpc_monitoring_go.QueryType(-1), // FAKE,
+		Result: &QueryResponseFakeResult{Result: string(result)},
 	}
 
 	return grpcResponse, nil
 }
 
-type QueryResponse_FakeResult struct {
-	Result                              string
-	grpc.QueryResponse_PrometheusResult // to make it a valid response
+type QueryResponseFakeResult struct {
+	Result                                            string
+	grpc_monitoring_go.QueryResponse_PrometheusResult // to make it a valid response
 }
 
-func (q *QueryResponse_FakeResult) String() string {
+func (q *QueryResponseFakeResult) String() string {
 	return q.Result
 }

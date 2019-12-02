@@ -74,7 +74,7 @@ func beforeSuiteIntegrationTests() {
 		ginkgo.Fail("missing environment variables")
 	}
 
-	prometheusConfig := &prometheus.PrometheusConfig{
+	prometheusConfig := &prometheus.Config{
 		Enable: true,
 		Url:    prometheusAddress,
 	}
@@ -83,7 +83,7 @@ func beforeSuiteIntegrationTests() {
 		Port:      8423,
 		InCluster: true, // We won't actually connect to K8s, but this passes validation
 
-		QueryProviders: query.QueryProviderConfigs{
+		QueryProviders: query.ProviderConfigs{
 			prometheus.ProviderType: prometheusConfig,
 		},
 	}
@@ -103,13 +103,13 @@ func beforeSuiteIntegrationTests() {
 }
 
 func beforeSuiteRetrieveManager() {
-	queries := map[query.Query]query.QueryResult{
+	queries := map[query.Query]query.Result{
 		query.Query{
 			QueryString: "this is a valid fake query",
 		}: fake.FakeResult("result 1"),
 		query.Query{
 			QueryString: "this is a valid fake query",
-			Range: query.QueryRange{
+			Range: query.Range{
 				Start: time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
 				End:   time.Date(2000, time.February, 1, 0, 0, 0, 0, time.UTC),
 				Step:  time.Duration(10) * time.Second,
@@ -193,10 +193,10 @@ func beforeSuiteRetrieveManager() {
 		},
 	}
 
-	provider, derr := fake.NewFakeProvider(queries, templates)
+	provider, derr := fake.NewProvider(queries, templates)
 	gomega.Expect(derr).To(gomega.Succeed())
 
-	providers := query.QueryProviders{
+	providers := query.Providers{
 		provider.ProviderType(): provider,
 	}
 

@@ -66,3 +66,11 @@ spec:
       record: node:node_cpu_used_seconds:avg_rate
     - expr: sum by (node) (label_replace(1-((node_memory_MemFree_bytes + node_memory_Cached_bytes + node_memory_Buffers_bytes) / node_memory_MemTotal_bytes),"node","$1","instance","(.*)"))
       record: node:node_memory_MemUsed_bytes:sum
+  - name: application-stats
+    rules:
+    - expr: rate (container_cpu_usage_seconds_total{image!="", namespace!~"nalej|kube-system|cert-manager", container!~"zt-.+|POD"}[2m]) / 1000
+      record: nalej_servinst_cpu_core
+    - expr: rate (container_memory_usage_bytes{image!="", namespace!~"nalej|kube-system|cert-manager", container!~"zt-.+|POD"}[2m])
+      record: nalej_servinst_memory_byte
+    - expr: rate (container_fs_usage_bytes{image!="", namespace!~"nalej|kube-system|cert-manager", container!~"zt-.+|POD"}[2m])
+      record: nalej_servinst_storage_byte

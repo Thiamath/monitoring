@@ -51,7 +51,7 @@ func init() {
 	runCmd.PersistentFlags().BoolVar(&config.InCluster, "in-cluster", false, "Running inside Kubernetes cluster (--kubeconfig is ignored)")
 
 	// Configuration for the various retrieval backends - see pkg/provider/query/*/config.go
-	config.QueryProviders = make(query.QueryProviderConfigs, query.Registry.NumEntries())
+	config.QueryProviders = make(query.ProviderConfigs, query.Registry.NumEntries())
 	for queryProviderType, configFunc := range query.Registry {
 		config.QueryProviders[queryProviderType] = configFunc(runCmd)
 	}
@@ -62,12 +62,12 @@ func init() {
 func Run() {
 	log.Info().Msg("Launching Metrics Collector service")
 
-	server, err := server.NewService(&config)
+	service, err := server.NewService(&config)
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to create service")
 	}
 
-	err = server.Run()
+	err = service.Run()
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err).Msg("failed to start service")
 	}

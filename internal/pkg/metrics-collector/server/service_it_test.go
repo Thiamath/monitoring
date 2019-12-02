@@ -158,4 +158,11 @@ var _ = ginkgo.Describe("integration tests", func() {
 			gomega.Expect(err).To(gomega.Succeed())
 		})
 	})
+
+	ginkgo.Context("GetContainerStats", func() {
+		ginkgo.It("should succeed on valid request", func() {
+			_, err := client.GetContainerStats(context.Background(), nil)
+			gomega.Expect(err).To(gomega.Succeed())
+		})
+	})
 })

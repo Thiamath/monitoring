@@ -24,43 +24,43 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type QueryProviderType string
+type ProviderType string
 
-func (t QueryProviderType) String() string {
+func (t ProviderType) String() string {
 	return string(t)
 }
 
-type QueryProviderConfigFunc func(*cobra.Command) QueryProviderConfig
+type ProviderConfigFunc func(*cobra.Command) ProviderConfig
 
-type QueryProviderConfig interface {
+type ProviderConfig interface {
 	Enabled() bool
 	Print(*zerolog.Event)
 	Validate() derrors.Error
-	NewProvider() (QueryProvider, derrors.Error)
+	NewProvider() (Provider, derrors.Error)
 }
 
 // A query provider registry translates between a query provider type and
 // its configuration function. The returned configuration can be used
 // to create a new instance
-type QueryProviderRegistry map[QueryProviderType]QueryProviderConfigFunc
+type ProviderRegistry map[ProviderType]ProviderConfigFunc
 
 // Created during command initialization
-type QueryProviderConfigs map[QueryProviderType]QueryProviderConfig
+type ProviderConfigs map[ProviderType]ProviderConfig
 
 // Created during service start
-type QueryProviders map[QueryProviderType]QueryProvider
+type Providers map[ProviderType]Provider
 
-func (r QueryProviderRegistry) Register(tpe QueryProviderType, f QueryProviderConfigFunc) {
+func (r ProviderRegistry) Register(tpe ProviderType, f ProviderConfigFunc) {
 	r[tpe] = f
 }
 
-func (r QueryProviderRegistry) NumEntries() int {
+func (r ProviderRegistry) NumEntries() int {
 	return len(r)
 }
 
 // Default global query provider registry and convenience functions
-var Registry = QueryProviderRegistry{}
+var Registry = ProviderRegistry{}
 
-func Register(tpe QueryProviderType, f QueryProviderConfigFunc) {
+func Register(tpe ProviderType, f ProviderConfigFunc) {
 	Registry.Register(tpe, f)
 }

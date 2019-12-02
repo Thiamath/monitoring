@@ -22,7 +22,7 @@ import (
 	"os"
 
 	"github.com/nalej/derrors"
-	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-monitoring-go"
 
 	"github.com/rs/zerolog/log"
 )
@@ -69,17 +69,24 @@ func validate(request ValidatingRequest) derrors.Error {
 	return nil
 }
 
-func ValidateQuery(request *grpc.QueryRequest) derrors.Error {
+func ValidateQuery(request *grpc_monitoring_go.QueryRequest) derrors.Error {
 	if request.GetQuery() == "" {
 		return derrors.NewInvalidArgumentError(emptyQueryString)
 	}
 	return validate(request)
 }
 
-func ValidateClusterSummary(request *grpc.ClusterSummaryRequest) derrors.Error {
+func ValidateClusterSummary(request *grpc_monitoring_go.ClusterSummaryRequest) derrors.Error {
 	return validate(request)
 }
 
-func ValidateClusterStats(request *grpc.ClusterStatsRequest) derrors.Error {
+func ValidateClusterStats(request *grpc_monitoring_go.ClusterStatsRequest) derrors.Error {
 	return validate(request)
+}
+
+func ValidateOrganizationApplicationStatsRequest(removeRequest *grpc_monitoring_go.OrganizationApplicationStatsRequest) derrors.Error {
+	if removeRequest.OrganizationId == "" {
+		return derrors.NewInvalidArgumentError(emptyOrganizationId)
+	}
+	return nil
 }

@@ -23,7 +23,7 @@ import (
 
 	"github.com/nalej/grpc-utils/pkg/conversions"
 
-	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-monitoring-go"
 	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/nalej/monitoring/pkg/provider/query/prometheus"
 )
@@ -32,9 +32,9 @@ func init() {
 	Register(prometheus.ProviderType, PrometheusTranslator)
 }
 
-// Converts from the internal PrometheusResult to a grpc.QueryResponse with a grpc.PrometheusResponse.
-func PrometheusTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Error) {
-	promResult, ok := q.(*prometheus.PrometheusResult)
+// Converts from the internal PrometheusResult to a grpc_monitoring_go.QueryResponse with a grpc_monitoring_go.PrometheusResponse.
+func PrometheusTranslator(q query.Result) (*grpc_monitoring_go.QueryResponse, derrors.Error) {
+	promResult, ok := q.(*prometheus.Result)
 	if !ok || promResult.ResultType() != prometheus.ProviderType {
 		return nil, derrors.NewAbortedError("invalid query result type")
 	}
@@ -42,31 +42,31 @@ func PrometheusTranslator(q query.QueryResult) (*grpc.QueryResponse, derrors.Err
 		return nil, derrors.NewAbortedError("nil query result")
 	}
 
-	grpcRes := make([]*grpc.QueryResponse_PrometheusResponse_ResultValue, 0, len(promResult.Values))
+	grpcRes := make([]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0, len(promResult.Values))
 	for _, resVal := range promResult.Values {
-		grpcValues := make([]*grpc.QueryResponse_PrometheusResponse_ResultValue_Value, 0, len(resVal.Values))
+		grpcValues := make([]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue_Value, 0, len(resVal.Values))
 		for _, val := range resVal.Values {
-			grpcVal := &grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
+			grpcVal := &grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue_Value{
 				Timestamp: conversions.GRPCTime(val.Timestamp),
 				Value:     val.Value,
 			}
 			grpcValues = append(grpcValues, grpcVal)
 		}
-		grpcResVal := &grpc.QueryResponse_PrometheusResponse_ResultValue{
+		grpcResVal := &grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue{
 			Metric: resVal.Labels,
 			Value:  grpcValues,
 		}
 		grpcRes = append(grpcRes, grpcResVal)
 	}
 
-	grpcPromResponse := &grpc.QueryResponse_PrometheusResponse{
-		ResultType: grpc.QueryResponse_PrometheusResponse_ResultType(grpc.QueryResponse_PrometheusResponse_ResultType_value[promResult.Type.String()]),
+	grpcPromResponse := &grpc_monitoring_go.QueryResponse_PrometheusResponse{
+		ResultType: grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultType(grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultType_value[promResult.Type.String()]),
 		Result:     grpcRes,
 	}
 
-	grpcResponse := &grpc.QueryResponse{
-		Type:   grpc.QueryType_PROMETHEUS,
-		Result: &grpc.QueryResponse_PrometheusResult{PrometheusResult: grpcPromResponse},
+	grpcResponse := &grpc_monitoring_go.QueryResponse{
+		Type:   grpc_monitoring_go.QueryType_PROMETHEUS,
+		Result: &grpc_monitoring_go.QueryResponse_PrometheusResult{PrometheusResult: grpcPromResponse},
 	}
 
 	return grpcResponse, nil

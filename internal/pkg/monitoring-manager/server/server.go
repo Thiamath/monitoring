@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/clients"
 	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/asset"
-	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/cluster"
 	"net"
 
 	"github.com/nalej/derrors"
@@ -90,11 +89,11 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Cluster monitoring
-	clusterManager, derr := cluster.NewManager(clustersClient, params)
+	clusterManager, derr := NewManager(clustersClient, params)
 	if derr != nil {
 		return derr
 	}
-	clusterHandler, derr := cluster.NewHandler(clusterManager)
+	clusterHandler, derr := NewHandler(clusterManager)
 	if derr != nil {
 		return derr
 	}

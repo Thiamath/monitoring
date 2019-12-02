@@ -26,22 +26,22 @@ import (
 	"github.com/nalej/monitoring/pkg/provider/query"
 
 	"github.com/prometheus/client_golang/api"
-	prometheus_v1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
 	"github.com/rs/zerolog/log"
 )
 
-type PrometheusProvider struct {
-	api       prometheus_v1.API
+type Provider struct {
+	api       v1.API
 	templates query.TemplateMap
 }
 
-var PrometheusSupports = query.QueryProviderSupport{
+var Supports = query.ProviderSupport{
 	query.FeaturePlatformStats,
 	query.FeatureSystemStats,
 }
 
-func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) {
+func NewProvider(config *Config) (*Provider, derrors.Error) {
 	log.Debug().Str("url", config.Url).Str("type", string(ProviderType)).Msg("creating query provider")
 	// Create API client
 	client, err := api.NewClient(api.Config{
@@ -56,8 +56,8 @@ func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) 
 		return nil, derr
 	}
 
-	provider := &PrometheusProvider{
-		api:       prometheus_v1.NewAPI(client),
+	provider := &Provider{
+		api:       v1.NewAPI(client),
 		templates: templates,
 	}
 
@@ -65,16 +65,16 @@ func NewProvider(config *PrometheusConfig) (*PrometheusProvider, derrors.Error) 
 }
 
 // Returns the query provider type
-func (p *PrometheusProvider) ProviderType() query.QueryProviderType {
+func (p *Provider) ProviderType() query.ProviderType {
 	return ProviderType
 }
 
-func (p *PrometheusProvider) Supported() query.QueryProviderSupport {
-	return PrometheusSupports
+func (p *Provider) Supported() query.ProviderSupport {
+	return Supports
 }
 
 // Execute query q.
-func (p *PrometheusProvider) Query(ctx context.Context, q *query.Query) (query.QueryResult, derrors.Error) {
+func (p *Provider) Query(ctx context.Context, q *query.Query) (query.Result, derrors.Error) {
 	var val model.Value
 	var err error
 
@@ -86,7 +86,7 @@ func (p *PrometheusProvider) Query(ctx context.Context, q *query.Query) (query.Q
 		// Instance query
 		val, err = p.api.Query(ctx, q.QueryString, q.Range.Start)
 	} else {
-		val, err = p.api.QueryRange(ctx, q.QueryString, prometheus_v1.Range(q.Range))
+		val, err = p.api.QueryRange(ctx, q.QueryString, v1.Range(q.Range))
 	}
 	if err != nil {
 		return nil, derrors.NewInvalidArgumentError("failed executing query", err)
@@ -95,7 +95,7 @@ func (p *PrometheusProvider) Query(ctx context.Context, q *query.Query) (query.Q
 	return NewPrometheusResult(val), nil
 }
 
-func (p *PrometheusProvider) ExecuteTemplate(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
+func (p *Provider) ExecuteTemplate(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
 	q, derr := p.templates.GetTemplateQuery(name, vars)
 	if derr != nil {
 		return 0, derr
@@ -106,7 +106,7 @@ func (p *PrometheusProvider) ExecuteTemplate(ctx context.Context, name query.Tem
 		return 0, derr
 	}
 
-	val, derr := res.(*PrometheusResult).GetScalarInt()
+	val, derr := res.(*Result).GetScalarInt()
 	if derr != nil {
 		return 0, derr
 	}

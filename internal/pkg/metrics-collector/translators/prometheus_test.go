@@ -22,9 +22,9 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
-	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-monitoring-go"
 
-	. "github.com/nalej/monitoring/pkg/provider/query/prometheus"
+	"github.com/nalej/monitoring/pkg/provider/query/prometheus"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -38,15 +38,15 @@ var _ = ginkgo.Describe("prometheus", func() {
 
 	ginkgo.Context("PrometheusTranslator", func() {
 		ginkgo.It("should translate a query result", func() {
-			qres := PrometheusResult{
-				Type: PrometheusResultMatrix,
-				Values: []*PrometheusResultValue{
+			qres := prometheus.Result{
+				Type: prometheus.ResultMatrix,
+				Values: []*prometheus.ResultValue{
 					{
 						Labels: map[string]string{
 							"job":      "example",
 							"instance": "node1",
 						},
-						Values: []*PrometheusValue{
+						Values: []*prometheus.Value{
 							{
 								Timestamp: time.Unix(1435781430, 0).UTC(),
 								Value:     "1",
@@ -62,7 +62,7 @@ var _ = ginkgo.Describe("prometheus", func() {
 							"job":      "example",
 							"instance": "node2",
 						},
-						Values: []*PrometheusValue{
+						Values: []*prometheus.Value{
 							{
 								Timestamp: time.Unix(1435781430, 0).UTC(),
 								Value:     "3",
@@ -76,18 +76,18 @@ var _ = ginkgo.Describe("prometheus", func() {
 				},
 			}
 
-			pres := grpc.QueryResponse{
-				Type: grpc.QueryType_PROMETHEUS,
-				Result: &grpc.QueryResponse_PrometheusResult{
-					PrometheusResult: &grpc.QueryResponse_PrometheusResponse{
-						ResultType: grpc.QueryResponse_PrometheusResponse_MATRIX,
-						Result: []*grpc.QueryResponse_PrometheusResponse_ResultValue{
+			pres := grpc_monitoring_go.QueryResponse{
+				Type: grpc_monitoring_go.QueryType_PROMETHEUS,
+				Result: &grpc_monitoring_go.QueryResponse_PrometheusResult{
+					PrometheusResult: &grpc_monitoring_go.QueryResponse_PrometheusResponse{
+						ResultType: grpc_monitoring_go.QueryResponse_PrometheusResponse_MATRIX,
+						Result: []*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue{
 							{
 								Metric: map[string]string{
 									"job":      "example",
 									"instance": "node1",
 								},
-								Value: []*grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
+								Value: []*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue_Value{
 									{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781430},
 										Value:     "1",
@@ -103,7 +103,7 @@ var _ = ginkgo.Describe("prometheus", func() {
 									"job":      "example",
 									"instance": "node2",
 								},
-								Value: []*grpc.QueryResponse_PrometheusResponse_ResultValue_Value{
+								Value: []*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue_Value{
 									{
 										Timestamp: &timestamp.Timestamp{Seconds: 1435781430},
 										Value:     "3",

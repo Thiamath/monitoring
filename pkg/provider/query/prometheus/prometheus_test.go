@@ -64,7 +64,7 @@ func (a *fakeAPI) QueryRange(ctx context.Context, query string, r v1.Range) (mod
 	var qres queryResult
 	err := json.Unmarshal(res, &qres)
 
-	return model.Value(qres.v), err
+	return qres.v, err
 }
 
 // Empty functions for interface requirements we don't use
@@ -169,7 +169,7 @@ var (
 )
 
 var queryResults = map[string]map[v1.Range][]byte{
-	queryTest1: map[v1.Range][]byte{
+	queryTest1: {
 		v1.Range{}: []byte(`
 {"resultType": "vector","result": [{"metric": {"cpu": "cpu0","instance": "10.240.0.4:9100","mode": "idle"},"value": [1554037350,"0.9125"]},{"metric": {"cpu": "cpu0","instance": "10.240.0.5:9100","mode": "idle"},"value": [1554037350,"0.876333333333605"]},{"metric": {"cpu": "cpu1","instance": "10.240.0.4:9100","mode": "idle"},"value": [1554037350,"0.9133333333331393"]},{"metric": {"cpu": "cpu1","instance": "10.240.0.5:9100","mode": "idle"},"value": [1554037350,"0.8819999999997283"]}]}
 		`),
@@ -186,19 +186,19 @@ var queryResults = map[string]map[v1.Range][]byte{
 {"resultType": "matrix", "result": [{"metric": {"cpu": "cpu0", "instance": "10.240.0.4:9100", "mode": "idle"}, "values": [[1553901000, "0.9064999999997477"], [1553902200, "0.9094999999996314"], [1553903400, "0.908833333333314"]]}, {"metric": {"cpu": "cpu0", "instance": "10.240.0.5:9100", "mode": "idle"}, "values": [[1553901000, "0.8698333333333721"], [1553902200, "0.8754999999999806"], [1553903400, "0.8701666666665309"]]}, {"metric": {"cpu": "cpu1", "instance": "10.240.0.4:9100", "mode": "idle"}, "values": [[1553901000, "0.9223333333332752"], [1553902200, "0.9155000000003687"], [1553903400, "0.9121666666668413"]]}, {"metric": {"cpu": "cpu1", "instance": "10.240.0.5:9100", "mode": "idle"}, "values": [[1553901000, "0.8965000000001359"], [1553902200, "0.8935000000002522"], [1553903400, "0.8916666666666667"]]}]}
 		`),
 	},
-	"scalar(sum(node_memory_MemAvailable_bytes))": map[v1.Range][]byte{
+	"scalar(sum(node_memory_MemAvailable_bytes))": {
 		v1.Range{}: []byte(`{"resultType":"scalar","result":[1554037344.922,"18893152256"]}`),
 	},
-	"scalar(sum(avg_over_time(node_filesystem_free_bytes[600s])))": map[v1.Range][]byte{
+	"scalar(sum(avg_over_time(node_filesystem_free_bytes[600s])))": {
 		v1.Range{}: []byte(`{"resultType":"scalar","result":[1554037344.922,"294341394022.4"]}`),
 	},
-	"scalar(irate(services_created_total[2m]) * 60)": map[v1.Range][]byte{
+	"scalar(irate(services_created_total[2m]) * 60)": {
 		v1.Range{}: []byte(`{"resultType":"scalar","result":[1554037344.922,"8"]}`),
 	},
-	"empty": map[v1.Range][]byte{
+	"empty": {
 		v1.Range{}: []byte(`{"resultType":"vector","result":[]}`),
 	},
-	"nan": map[v1.Range][]byte{
+	"nan": {
 		v1.Range{}: []byte(`{"resultType":"scalar","result":[1234, "NaN"]}`),
 	},
 }
@@ -213,11 +213,11 @@ func timeParse(in string) time.Time {
 
 var _ = ginkgo.Describe("prometheus", func() {
 
-	var provider *PrometheusProvider
+	var provider *Provider
 
 	ginkgo.BeforeSuite(func() {
 		var derr derrors.Error
-		provider, derr = NewProvider(&PrometheusConfig{})
+		provider, derr = NewProvider(&Config{})
 		gomega.Expect(derr).To(gomega.Succeed())
 
 		fakeapi := &fakeAPI{
@@ -230,61 +230,61 @@ var _ = ginkgo.Describe("prometheus", func() {
 		ginkgo.It("should execute timed query", func() {
 			q := &query.Query{
 				QueryString: queryTest1,
-				Range: query.QueryRange{
+				Range: query.Range{
 					Start: queryTime1,
 				},
 			}
 
-			res := &PrometheusResult{
-				Type: PrometheusResultVector,
-				Values: []*PrometheusResultValue{
-					&PrometheusResultValue{
+			res := &Result{
+				Type: ResultVector,
+				Values: []*ResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu0",
 							"instance": "10.240.0.4:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-31T13:02:24.922Z"),
 								Value:     "0.9125",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu0",
 							"instance": "10.240.0.5:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-31T13:02:24.922Z"),
 								Value:     "0.876333333333605",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu1",
 							"instance": "10.240.0.4:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-31T13:02:24.922Z"),
 								Value:     "0.9133333333331393",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu1",
 							"instance": "10.240.0.5:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-31T13:02:24.922Z"),
 								Value:     "0.8819999999997283",
 							},
@@ -299,95 +299,95 @@ var _ = ginkgo.Describe("prometheus", func() {
 		ginkgo.It("should execute range query", func() {
 			q := &query.Query{
 				QueryString: queryTest1,
-				Range: query.QueryRange{
+				Range: query.Range{
 					Start: queryTime2,
 					End:   queryTime3,
 					Step:  queryStep,
 				},
 			}
 
-			res := &PrometheusResult{
-				Type: PrometheusResultMatrix,
-				Values: []*PrometheusResultValue{
-					&PrometheusResultValue{
+			res := &Result{
+				Type: ResultMatrix,
+				Values: []*ResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu0",
 							"instance": "10.240.0.4:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-29T23:10:00Z"),
 								Value:     "0.9064999999997477",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: timeParse("2019-03-29T23:30:00Z"),
 								Value:     "0.9094999999996314",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: timeParse("2019-03-29T23:50:00Z"),
 								Value:     "0.908833333333314",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu0",
 							"instance": "10.240.0.5:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-29T23:10:00Z"),
 								Value:     "0.8698333333333721",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: timeParse("2019-03-29T23:30:00Z"),
 								Value:     "0.8754999999999806",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: timeParse("2019-03-29T23:50:00Z"),
 								Value:     "0.8701666666665309",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu1",
 							"instance": "10.240.0.4:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-29T23:10:00Z"),
 								Value:     "0.9223333333332752",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: timeParse("2019-03-29T23:30:00Z"),
 								Value:     "0.9155000000003687",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: timeParse("2019-03-29T23:50:00Z"),
 								Value:     "0.9121666666668413",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu1",
 							"instance": "10.240.0.5:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-29T23:10:00Z"),
 								Value:     "0.8965000000001359",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: timeParse("2019-03-29T23:30:00Z"),
 								Value:     "0.8935000000002522",
 							},
-							&PrometheusValue{
+							{
 								Timestamp: timeParse("2019-03-29T23:50:00Z"),
 								Value:     "0.8916666666666667",
 							},
@@ -404,56 +404,56 @@ var _ = ginkgo.Describe("prometheus", func() {
 				QueryString: queryTest1,
 			}
 
-			res := &PrometheusResult{
-				Type: PrometheusResultVector,
-				Values: []*PrometheusResultValue{
-					&PrometheusResultValue{
+			res := &Result{
+				Type: ResultVector,
+				Values: []*ResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu0",
 							"instance": "10.240.0.4:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-31T13:02:30Z"),
 								Value:     "0.9125",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu0",
 							"instance": "10.240.0.5:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-31T13:02:30Z"),
 								Value:     "0.876333333333605",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu1",
 							"instance": "10.240.0.4:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-31T13:02:30Z"),
 								Value:     "0.9133333333331393",
 							},
 						},
 					},
-					&PrometheusResultValue{
+					{
 						Labels: map[string]string{
 							"cpu":      "cpu1",
 							"instance": "10.240.0.5:9100",
 							"mode":     "idle",
 						},
-						Values: []*PrometheusValue{
-							&PrometheusValue{
+						Values: []*Value{
+							{
 								Timestamp: timeParse("2019-03-31T13:02:30Z"),
 								Value:     "0.8819999999997283",
 							},
@@ -479,9 +479,9 @@ var _ = ginkgo.Describe("prometheus", func() {
 			q := &query.Query{
 				QueryString: "empty",
 			}
-			res := &PrometheusResult{
-				Type:   PrometheusResultVector,
-				Values: []*PrometheusResultValue{},
+			res := &Result{
+				Type:   ResultVector,
+				Values: []*ResultValue{},
 			}
 			gomega.Expect(provider.Query(context.Background(), q)).To(gomega.Equal(res))
 		})
@@ -492,7 +492,7 @@ var _ = ginkgo.Describe("prometheus", func() {
 			}
 			res, err := provider.Query(context.Background(), q)
 			gomega.Expect(err).To(gomega.Succeed())
-			gomega.Expect(res.(*PrometheusResult).GetScalarInt()).To(gomega.Equal(int64(0)))
+			gomega.Expect(res.(*Result).GetScalarInt()).To(gomega.Equal(int64(0)))
 		})
 	})
 
