@@ -26,20 +26,20 @@ import (
 	"github.com/nalej/monitoring/pkg/provider/query"
 )
 
-const FakeProviderType query.QueryProviderType = "FAKE"
+const ProviderType query.ProviderType = "FAKE"
 
-type FakeProvider struct {
-	queries   map[query.Query]query.QueryResult
+type Provider struct {
+	queries   map[query.Query]query.Result
 	templates map[query.TemplateName]map[query.TemplateVars]int64
 }
 
-var FakeProviderSupports = query.QueryProviderSupport{
+var Supports = query.ProviderSupport{
 	query.FeaturePlatformStats,
 	query.FeatureSystemStats,
 }
 
-func NewFakeProvider(queries map[query.Query]query.QueryResult, templates map[query.TemplateName]map[query.TemplateVars]int64) (*FakeProvider, derrors.Error) {
-	p := &FakeProvider{
+func NewProvider(queries map[query.Query]query.Result, templates map[query.TemplateName]map[query.TemplateVars]int64) (*Provider, derrors.Error) {
+	p := &Provider{
 		queries:   queries,
 		templates: templates,
 	}
@@ -48,16 +48,16 @@ func NewFakeProvider(queries map[query.Query]query.QueryResult, templates map[qu
 }
 
 // Returns the query provider type
-func (p *FakeProvider) ProviderType() query.QueryProviderType {
-	return FakeProviderType
+func (p *Provider) ProviderType() query.ProviderType {
+	return ProviderType
 }
 
-func (p *FakeProvider) Supported() query.QueryProviderSupport {
-	return FakeProviderSupports
+func (p *Provider) Supported() query.ProviderSupport {
+	return Supports
 }
 
 // Execute query q.
-func (p *FakeProvider) Query(ctx context.Context, q *query.Query) (query.QueryResult, derrors.Error) {
+func (p *Provider) Query(ctx context.Context, q *query.Query) (query.Result, derrors.Error) {
 	res, found := p.queries[*q]
 	if !found {
 		return nil, derrors.NewNotFoundError("fake provider received unexpected query").WithParams(q)
@@ -65,7 +65,7 @@ func (p *FakeProvider) Query(ctx context.Context, q *query.Query) (query.QueryRe
 	return res, nil
 }
 
-func (p *FakeProvider) ExecuteTemplate(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
+func (p *Provider) ExecuteTemplate(ctx context.Context, name query.TemplateName, vars *query.TemplateVars) (int64, derrors.Error) {
 	knownvars, found := p.templates[name]
 	if !found {
 		return 0, derrors.NewNotFoundError("fake provider received unexpected template name").WithParams(name)

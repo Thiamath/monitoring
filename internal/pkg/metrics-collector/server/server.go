@@ -89,7 +89,7 @@ func (s *Service) Run() derrors.Error {
 // startRetrieve Initializes and start the retrieval/query API. This starts the gRPC server.
 func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error) (*grpc.Server, derrors.Error) {
 	// Create query providers
-	queryProviders := query.QueryProviders{}
+	queryProviders := query.Providers{}
 	for queryProviderType, queryProviderConfig := range s.Configuration.QueryProviders {
 		if queryProviderConfig.Enabled() {
 			queryProvider, derr := queryProviderConfig.NewProvider()

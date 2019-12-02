@@ -24,7 +24,7 @@ import (
 	"github.com/nalej/monitoring/internal/pkg/metrics-collector/translators"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
-	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-monitoring-go"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -39,27 +39,27 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 
 	ginkgo.Context("GetClusterSummary", func() {
 		ginkgo.It("should return cluster summary without range", func() {
-			request := &grpc.ClusterSummaryRequest{
+			request := &grpc_monitoring_go.ClusterSummaryRequest{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
 			}
 
-			result := &grpc.ClusterSummary{
+			result := &grpc_monitoring_go.ClusterSummary{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				CpuMillicores: &grpc.ClusterStat{
+				CpuMillicores: &grpc_monitoring_go.ClusterStat{
 					Total:     1,
 					Available: 3,
 				},
-				MemoryBytes: &grpc.ClusterStat{
+				MemoryBytes: &grpc_monitoring_go.ClusterStat{
 					Total:     5,
 					Available: 7,
 				},
-				StorageBytes: &grpc.ClusterStat{
+				StorageBytes: &grpc_monitoring_go.ClusterStat{
 					Total:     9,
 					Available: 11,
 				},
-				UsableStorageBytes: &grpc.ClusterStat{
+				UsableStorageBytes: &grpc_monitoring_go.ClusterStat{
 					Total:     13,
 					Available: 15,
 				},
@@ -68,28 +68,28 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 		})
 
 		ginkgo.It("should return cluster summary with range", func() {
-			request := &grpc.ClusterSummaryRequest{
+			request := &grpc_monitoring_go.ClusterSummaryRequest{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
 				RangeMinutes:   10,
 			}
 
-			result := &grpc.ClusterSummary{
+			result := &grpc_monitoring_go.ClusterSummary{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				CpuMillicores: &grpc.ClusterStat{
+				CpuMillicores: &grpc_monitoring_go.ClusterStat{
 					Total:     2,
 					Available: 4,
 				},
-				MemoryBytes: &grpc.ClusterStat{
+				MemoryBytes: &grpc_monitoring_go.ClusterStat{
 					Total:     6,
 					Available: 8,
 				},
-				StorageBytes: &grpc.ClusterStat{
+				StorageBytes: &grpc_monitoring_go.ClusterStat{
 					Total:     10,
 					Available: 12,
 				},
-				UsableStorageBytes: &grpc.ClusterStat{
+				UsableStorageBytes: &grpc_monitoring_go.ClusterStat{
 					Total:     14,
 					Available: 16,
 				},
@@ -100,17 +100,17 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 
 	ginkgo.Context("GetClusterStats", func() {
 		ginkgo.It("should return cluster stats for single metric", func() {
-			request := &grpc.ClusterStatsRequest{
+			request := &grpc_monitoring_go.ClusterStatsRequest{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Fields:         []grpc.PlatformStatsField{grpc.PlatformStatsField_VOLUMES},
+				Fields:         []grpc_monitoring_go.PlatformStatsField{grpc_monitoring_go.PlatformStatsField_VOLUMES},
 			}
 
-			result := &grpc.ClusterStats{
+			result := &grpc_monitoring_go.ClusterStats{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Stats: map[int32]*grpc.PlatformStat{
-					int32(grpc.PlatformStatsField_VOLUMES): &grpc.PlatformStat{
+				Stats: map[int32]*grpc_monitoring_go.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_VOLUMES): {
 						Created: 19,
 						Deleted: 20,
 						Running: 39,
@@ -122,34 +122,34 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 		})
 
 		ginkgo.It("should return cluster stats for all metrics without range", func() {
-			request := &grpc.ClusterStatsRequest{
+			request := &grpc_monitoring_go.ClusterStatsRequest{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
 			}
 
-			result := &grpc.ClusterStats{
+			result := &grpc_monitoring_go.ClusterStats{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Stats: map[int32]*grpc.PlatformStat{
-					int32(grpc.PlatformStatsField_SERVICES): &grpc.PlatformStat{
+				Stats: map[int32]*grpc_monitoring_go.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_SERVICES): {
 						Created: 13,
 						Deleted: 14,
 						Running: 37,
 						Errors:  15,
 					},
-					int32(grpc.PlatformStatsField_VOLUMES): &grpc.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_VOLUMES): {
 						Created: 19,
 						Deleted: 20,
 						Running: 39,
 						Errors:  21,
 					},
-					int32(grpc.PlatformStatsField_FRAGMENTS): &grpc.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_FRAGMENTS): {
 						Created: 25,
 						Deleted: 26,
 						Running: 41,
 						Errors:  27,
 					},
-					int32(grpc.PlatformStatsField_ENDPOINTS): &grpc.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_ENDPOINTS): {
 						Created: 31,
 						Deleted: 32,
 						Running: 43,
@@ -161,35 +161,35 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 		})
 
 		ginkgo.It("should return cluster stats for all metrics with range", func() {
-			request := &grpc.ClusterStatsRequest{
+			request := &grpc_monitoring_go.ClusterStatsRequest{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
 				RangeMinutes:   10,
 			}
 
-			result := &grpc.ClusterStats{
+			result := &grpc_monitoring_go.ClusterStats{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Stats: map[int32]*grpc.PlatformStat{
-					int32(grpc.PlatformStatsField_SERVICES): &grpc.PlatformStat{
+				Stats: map[int32]*grpc_monitoring_go.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_SERVICES): {
 						Created: 16,
 						Deleted: 17,
 						Running: 38,
 						Errors:  18,
 					},
-					int32(grpc.PlatformStatsField_VOLUMES): &grpc.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_VOLUMES): {
 						Created: 22,
 						Deleted: 23,
 						Running: 40,
 						Errors:  24,
 					},
-					int32(grpc.PlatformStatsField_FRAGMENTS): &grpc.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_FRAGMENTS): {
 						Created: 28,
 						Deleted: 29,
 						Running: 42,
 						Errors:  30,
 					},
-					int32(grpc.PlatformStatsField_ENDPOINTS): &grpc.PlatformStat{
+					int32(grpc_monitoring_go.PlatformStatsField_ENDPOINTS): {
 						Created: 34,
 						Deleted: 35,
 						Running: 44,
@@ -203,29 +203,29 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 
 	ginkgo.Context("Query", func() {
 		ginkgo.It("should accept a valid query without range", func() {
-			request := &grpc.QueryRequest{
+			request := &grpc_monitoring_go.QueryRequest{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Type:           grpc.QueryType(-1), // FAKE
+				Type:           grpc_monitoring_go.QueryType(-1), // FAKE
 				Query:          "this is a valid fake query",
 			}
 
-			response := &grpc.QueryResponse{
+			response := &grpc_monitoring_go.QueryResponse{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Type:           grpc.QueryType(-1), // FAKE
-				Result:         &translators.QueryResponse_FakeResult{Result: "result 1"},
+				Type:           grpc_monitoring_go.QueryType(-1), // FAKE
+				Result:         &translators.QueryResponseFakeResult{Result: "result 1"},
 			}
 
 			gomega.Expect(manager.Query(context.Background(), request)).To(gomega.Equal(response))
 		})
 
 		ginkgo.It("should accept a valid query with range", func() {
-			request := &grpc.QueryRequest{
+			request := &grpc_monitoring_go.QueryRequest{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Type:           grpc.QueryType(-1), // FAKE
-				Range: &grpc.QueryRequest_QueryRange{
+				Type:           grpc_monitoring_go.QueryType(-1), // FAKE
+				Range: &grpc_monitoring_go.QueryRequest_QueryRange{
 					Start: &timestamp.Timestamp{Seconds: 946684800},
 					End:   &timestamp.Timestamp{Seconds: 949363200},
 					Step:  10.0,
@@ -233,21 +233,21 @@ var _ = ginkgo.Describe("retrieve_manager", func() {
 				Query: "this is a valid fake query",
 			}
 
-			response := &grpc.QueryResponse{
+			response := &grpc_monitoring_go.QueryResponse{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Type:           grpc.QueryType(-1), // FAKE
-				Result:         &translators.QueryResponse_FakeResult{Result: "result 2"},
+				Type:           grpc_monitoring_go.QueryType(-1), // FAKE
+				Result:         &translators.QueryResponseFakeResult{Result: "result 2"},
 			}
 
 			gomega.Expect(manager.Query(context.Background(), request)).To(gomega.Equal(response))
 		})
 
 		ginkgo.It("should handle an invalid query", func() {
-			request := &grpc.QueryRequest{
+			request := &grpc_monitoring_go.QueryRequest{
 				OrganizationId: OrganizationId,
 				ClusterId:      ClusterId,
-				Type:           grpc.QueryType(-1), // FAKE
+				Type:           grpc_monitoring_go.QueryType(-1), // FAKE
 				Query:          "this is an invalid fake query",
 			}
 

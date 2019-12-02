@@ -38,7 +38,7 @@ type Config struct {
 	InCluster bool
 
 	// Retrieval backends
-	QueryProviders query.QueryProviderConfigs
+	QueryProviders query.ProviderConfigs
 }
 
 // Validate the configuration.

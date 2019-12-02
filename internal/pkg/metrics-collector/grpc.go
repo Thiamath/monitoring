@@ -19,17 +19,17 @@ package metrics_collector
 import (
 	"strings"
 
-	grpc "github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/grpc-monitoring-go"
 )
 
-func GRPCStatsFieldToMetric(g grpc.PlatformStatsField) string {
+func GRPCStatsFieldToMetric(g grpc_monitoring_go.PlatformStatsField) string {
 	return strings.ToLower(g.String())
 }
 
-func AllGRPCStatsFields() []grpc.PlatformStatsField {
-	fields := make([]grpc.PlatformStatsField, 0, len(grpc.PlatformStatsField_name))
-	for i, _ := range grpc.PlatformStatsField_name {
-		fields = append(fields, grpc.PlatformStatsField(i))
+func AllGRPCStatsFields() []grpc_monitoring_go.PlatformStatsField {
+	fields := make([]grpc_monitoring_go.PlatformStatsField, 0, len(grpc_monitoring_go.PlatformStatsField_name))
+	for fieldName := range grpc_monitoring_go.PlatformStatsField_name {
+		fields = append(fields, grpc_monitoring_go.PlatformStatsField(fieldName))
 	}
 
 	return fields

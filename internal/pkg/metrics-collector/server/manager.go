@@ -46,16 +46,16 @@ const (
 
 // Manager structure with the required clients for roles operations.
 type Manager struct {
-	providers        query.QueryProviders
-	featureProviders map[query.QueryProviderFeature]query.QueryProvider
+	providers        query.Providers
+	featureProviders map[query.ProviderFeature]query.Provider
 }
 
 // NewManager creates a new query manager.
-func NewManager(providers query.QueryProviders) (Manager, derrors.Error) {
+func NewManager(providers query.Providers) (Manager, derrors.Error) {
 	// Check providers for specific features
 	// NOTE: this only gives us the last provider with a certain feature,
 	// but at least we have one we can use
-	featureProviders := map[query.QueryProviderFeature]query.QueryProvider{}
+	featureProviders := map[query.ProviderFeature]query.Provider{}
 	for _, provider := range providers {
 		for _, feature := range provider.Supported() {
 			featureProviders[feature] = provider
@@ -178,7 +178,7 @@ func (m *Manager) GetClusterStats(ctx context.Context, request *grpc_monitoring_
 // Query executes a query directly on the monitoring storage backend
 func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRequest) (*grpc_monitoring_go.QueryResponse, error) {
 	// Validate we have the right request type for the backend
-	providerType := query.QueryProviderType(request.GetType().String())
+	providerType := query.ProviderType(request.GetType().String())
 	provider, found := m.providers[providerType]
 	if !found {
 		return nil, derrors.NewUnavailableError(fmt.Sprintf("requested query provider %s not available", string(providerType)))
@@ -188,7 +188,7 @@ func (m *Manager) Query(ctx context.Context, request *grpc_monitoring_go.QueryRe
 	queryRange := request.GetRange()
 	q := &query.Query{
 		QueryString: request.GetQuery(),
-		Range: query.QueryRange{
+		Range: query.Range{
 			Start: conversions.GoTime(queryRange.GetStart()),
 			End:   conversions.GoTime(queryRange.GetEnd()),
 			// Step is a float32 in seconds, convert to int64 in nanos
@@ -296,28 +296,28 @@ func mapQueryResultsByNamespace(metricName string, results *grpc_monitoring_go.Q
 	}
 }
 
-func getCpuStats(queryTime time.Time, ctx context.Context, provider query.QueryProvider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
+func getCpuStats(queryTime time.Time, ctx context.Context, provider query.Provider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
 	future := make(chan *grpc_monitoring_go.QueryResponse)
 	go launchQuery(CpuQuery, queryTime, provider, ctx, translator, future)
 	return future
 }
 
-func getMemoryStats(queryTime time.Time, ctx context.Context, provider query.QueryProvider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
+func getMemoryStats(queryTime time.Time, ctx context.Context, provider query.Provider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
 	future := make(chan *grpc_monitoring_go.QueryResponse)
 	go launchQuery(MemoryQuery, queryTime, provider, ctx, translator, future)
 	return future
 }
 
-func getStorageStats(queryTime time.Time, ctx context.Context, provider query.QueryProvider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
+func getStorageStats(queryTime time.Time, ctx context.Context, provider query.Provider, translator translators.TranslatorFunc) chan *grpc_monitoring_go.QueryResponse {
 	future := make(chan *grpc_monitoring_go.QueryResponse)
 	go launchQuery(StorageQuery, queryTime, provider, ctx, translator, future)
 	return future
 }
 
-func launchQuery(queryString string, queryTime time.Time, provider query.QueryProvider, ctx context.Context, translator translators.TranslatorFunc, future chan *grpc_monitoring_go.QueryResponse) {
+func launchQuery(queryString string, queryTime time.Time, provider query.Provider, ctx context.Context, translator translators.TranslatorFunc, future chan *grpc_monitoring_go.QueryResponse) {
 	q := &query.Query{
 		QueryString: queryString,
-		Range: query.QueryRange{
+		Range: query.Range{
 			Start: queryTime,
 			End:   time.Time{},
 			// Step is a float32 in seconds, convert to int64 in nanos

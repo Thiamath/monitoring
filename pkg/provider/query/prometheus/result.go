@@ -28,36 +28,36 @@ import (
 	"github.com/prometheus/common/model"
 )
 
-type PrometheusResult struct {
-	Type   PrometheusResultType
-	Values []*PrometheusResultValue
+type Result struct {
+	Type   ResultType
+	Values []*ResultValue
 }
 
-type PrometheusResultValue struct {
+type ResultValue struct {
 	Labels map[string]string
-	Values []*PrometheusValue
+	Values []*Value
 }
 
-type PrometheusValue struct {
+type Value struct {
 	Timestamp time.Time
 	Value     string
 }
 
-type PrometheusResultType string
+type ResultType string
 
-func (t PrometheusResultType) String() string {
+func (t ResultType) String() string {
 	return string(t)
 }
 
 const (
-	PrometheusResultScalar PrometheusResultType = "SCALAR"
-	PrometheusResultVector PrometheusResultType = "VECTOR"
-	PrometheusResultMatrix PrometheusResultType = "MATRIX"
-	PrometheusResultString PrometheusResultType = "STRING"
+	ResultScalar ResultType = "SCALAR"
+	ResultVector ResultType = "VECTOR"
+	ResultMatrix ResultType = "MATRIX"
+	ResultString ResultType = "STRING"
 )
 
-func NewPrometheusResult(val model.Value) *PrometheusResult {
-	var result *PrometheusResult = nil
+func NewPrometheusResult(val model.Value) *Result {
+	var result *Result = nil
 
 	switch val.Type() {
 	case model.ValScalar:
@@ -73,11 +73,11 @@ func NewPrometheusResult(val model.Value) *PrometheusResult {
 	return result
 }
 
-func (r *PrometheusResult) ResultType() query.QueryProviderType {
+func (r *Result) ResultType() query.ProviderType {
 	return ProviderType
 }
 
-func (r *PrometheusResult) GetScalarInt() (val int64, derr derrors.Error) {
+func (r *Result) GetScalarInt() (val int64, derr derrors.Error) {
 	// We want to catch the panic if some of the arrays below are
 	// out of bound
 	defer func() {
@@ -86,7 +86,7 @@ func (r *PrometheusResult) GetScalarInt() (val int64, derr derrors.Error) {
 			derr = derrors.NewInternalError("query result empty")
 		}
 	}()
-	if r.Type != PrometheusResultScalar {
+	if r.Type != ResultScalar {
 		return 0, derrors.NewInternalError("query does not return scalar")
 	}
 
@@ -102,88 +102,88 @@ func (r *PrometheusResult) GetScalarInt() (val int64, derr derrors.Error) {
 	return ival, nil
 }
 
-func scalarResult(val model.Value) *PrometheusResult {
+func scalarResult(val model.Value) *Result {
 	v := val.(*model.Scalar)
 
-	result := &PrometheusResult{
-		Type:   PrometheusResultScalar,
+	result := &Result{
+		Type:   ResultScalar,
 		Values: singleValueResult(v.Timestamp.Time(), v.Value.String()),
 	}
 
 	return result
 }
 
-func vectorResult(val model.Value) *PrometheusResult {
+func vectorResult(val model.Value) *Result {
 	v := val.(model.Vector)
 
-	resVals := make([]*PrometheusResultValue, 0, v.Len())
+	resVals := make([]*ResultValue, 0, v.Len())
 	for _, sample := range ([]*model.Sample)(v) {
-		resVal := &PrometheusResultValue{
+		resVal := &ResultValue{
 			Labels: metricToLabel(sample.Metric),
 			Values: singleValueList(sample.Timestamp.Time(), sample.Value.String()),
 		}
 		resVals = append(resVals, resVal)
 	}
 
-	result := &PrometheusResult{
-		Type:   PrometheusResultVector,
+	result := &Result{
+		Type:   ResultVector,
 		Values: resVals,
 	}
 
 	return result
 }
 
-func matrixResult(val model.Value) *PrometheusResult {
+func matrixResult(val model.Value) *Result {
 	v := val.(model.Matrix)
 
-	resVals := make([]*PrometheusResultValue, 0, v.Len())
+	resVals := make([]*ResultValue, 0, v.Len())
 	for _, sampleStream := range ([]*model.SampleStream)(v) {
-		values := make([]*PrometheusValue, 0, len(sampleStream.Values))
+		values := make([]*Value, 0, len(sampleStream.Values))
 		for _, sample := range sampleStream.Values {
 			values = append(values, value(sample.Timestamp.Time(), sample.Value.String()))
 		}
-		resVal := &PrometheusResultValue{
+		resVal := &ResultValue{
 			Labels: metricToLabel(sampleStream.Metric),
 			Values: values,
 		}
 		resVals = append(resVals, resVal)
 	}
 
-	result := &PrometheusResult{
-		Type:   PrometheusResultMatrix,
+	result := &Result{
+		Type:   ResultMatrix,
 		Values: resVals,
 	}
 
 	return result
 }
 
-func stringResult(val model.Value) *PrometheusResult {
+func stringResult(val model.Value) *Result {
 	v := val.(*model.String)
 
-	result := &PrometheusResult{
-		Type:   PrometheusResultString,
+	result := &Result{
+		Type:   ResultString,
 		Values: singleValueResult(v.Timestamp.Time(), v.Value),
 	}
 
 	return result
 }
 
-func value(ts time.Time, s string) *PrometheusValue {
-	return &PrometheusValue{
+func value(ts time.Time, s string) *Value {
+	return &Value{
 		Timestamp: ts.UTC(),
 		Value:     s,
 	}
 }
 
-func singleValueList(ts time.Time, s string) []*PrometheusValue {
-	return []*PrometheusValue{
+func singleValueList(ts time.Time, s string) []*Value {
+	return []*Value{
 		value(ts, s),
 	}
 }
 
-func singleValueResult(ts time.Time, s string) []*PrometheusResultValue {
-	return []*PrometheusResultValue{
-		&PrometheusResultValue{
+func singleValueResult(ts time.Time, s string) []*ResultValue {
+	return []*ResultValue{
+		{
 			Values: singleValueList(ts, s),
 		},
 	}
