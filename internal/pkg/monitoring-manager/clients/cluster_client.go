@@ -35,7 +35,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-type ClusterClient struct {
+type MetricsCollectorClient struct {
 	grpc_app_cluster_api_go.MetricsCollectorClient
 	conn *grpc.ClientConn
 }
@@ -51,7 +51,7 @@ type AppClusterConnectParams struct {
 
 // TODO: If we want to test this, we can create a client factory and implement
 // one that creates stub clients
-func NewClusterClient(address string, params *AppClusterConnectParams) (*ClusterClient, derrors.Error) {
+func NewMetricsCollectorClient(address string, params *AppClusterConnectParams) (*MetricsCollectorClient, derrors.Error) {
 	var options []grpc.DialOption
 	var hostname string
 
@@ -123,10 +123,10 @@ func NewClusterClient(address string, params *AppClusterConnectParams) (*Cluster
 
 	client := grpc_app_cluster_api_go.NewMetricsCollectorClient(conn)
 
-	return &ClusterClient{client, conn}, nil
+	return &MetricsCollectorClient{client, conn}, nil
 }
 
-func (c *ClusterClient) Close() error {
+func (c *MetricsCollectorClient) Close() error {
 	err := c.conn.Close()
 	if err != nil {
 		log.Warn().Msg("error closing client connection")
