@@ -13,6 +13,12 @@
     "metrics-collector",
     "static-lister"
   ],
+  "component_list": [
+    "monitoring-manager",
+    "metrics-collector",
+    "prometheus",
+    "static-lister"
+  ],
   "tools": [
     "k8s",
     "docker"
