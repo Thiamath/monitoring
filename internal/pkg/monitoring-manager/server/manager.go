@@ -131,7 +131,6 @@ func (m *Manager) GetOrganizationApplicationStats(ctx context.Context, request *
 	if err != nil {
 		return nil, derrors.NewFailedPreconditionError("could not get organization", err)
 	}
-	organizationName := organization.Name
 
 	listClustersCtx, listclustersCancel := context.WithTimeout(ctx, defaultTimeout)
 	defer listclustersCancel()
@@ -140,7 +139,20 @@ func (m *Manager) GetOrganizationApplicationStats(ctx context.Context, request *
 		return nil, derrors.NewFailedPreconditionError("could not geet cluster list", err)
 	}
 
-	containerStatsFutures := make([]chan *grpc_monitoring_go.ContainerStatsResponse, 0)
+	orgContainerStats := m.requestContainerStatsToClusters(clusterList, organization, ctx)
+
+	serviceInstanceStats := m.aggregateStatsByServiceInstanceId(orgContainerStats, request, organization.Name)
+
+	orgAppStats := &grpc_monitoring_go.OrganizationApplicationStatsResponse{
+		ServiceInstanceStats: serviceInstanceStats,
+		Timestamp:            time.Now().Unix(),
+	}
+
+	return orgAppStats, nil
+}
+
+func (m *Manager) requestContainerStatsToClusters(clusterList *grpc_infrastructure_go.ClusterList, organization *grpc_organization_go.Organization, ctx context.Context) []*grpc_monitoring_go.ContainerStats {
+	containerStatsFutures := make([]chan *grpc_monitoring_go.ContainerStatsResponse, 0, len(clusterList.Clusters))
 	for _, cluster := range clusterList.Clusters {
 		metricsCollector, derr := m.getMetricsCollectorClient(organization.OrganizationId, cluster.ClusterId)
 		if derr != nil {
@@ -153,39 +165,14 @@ func (m *Manager) GetOrganizationApplicationStats(ctx context.Context, request *
 		}
 		statsFuture := make(chan *grpc_monitoring_go.ContainerStatsResponse)
 		containerStatsFutures = append(containerStatsFutures, statsFuture)
-		go func() {
-			getClusterContainerStats(cluster, metricsCollector, ctx, statsFuture)
-		}()
+		go getClusterContainerStats(cluster, metricsCollector, ctx, statsFuture)
 	}
-
 	orgContainerStats := make([]*grpc_monitoring_go.ContainerStats, 0)
 	for _, statsFuture := range containerStatsFutures {
 		containerStatsResponse := <-statsFuture
 		orgContainerStats = append(orgContainerStats, containerStatsResponse.ContainerStats...)
 	}
-
-	serviceInstanceStats := make([]*grpc_monitoring_go.OrganizationApplicationStats, len(orgContainerStats))
-	for ix, containerStats := range orgContainerStats {
-		serviceInstanceStats[ix] = &grpc_monitoring_go.OrganizationApplicationStats{
-			OrganizationId:           request.OrganizationId,
-			OrganizationName:         organizationName,
-			AppInstanceId:            containerStats.AppInstanceId,
-			AppInstanceName:          containerStats.AppInstanceName,
-			ServiceGroupInstanceId:   containerStats.ServiceGroupInstanceId,
-			ServiceGroupInstanceName: containerStats.ServiceGroupInstanceName,
-			ServiceInstanceId:        containerStats.ServiceInstanceId,
-			ServiceInstanceName:      containerStats.ServiceInstanceName,
-			CpuMillicore:             containerStats.CpuMillicore,
-			MemoryByte:               containerStats.MemoryByte,
-			StorageByte:              containerStats.StorageByte,
-		}
-	}
-	orgAppStats := &grpc_monitoring_go.OrganizationApplicationStatsResponse{
-		ServiceInstanceStats: serviceInstanceStats,
-		Timestamp:            time.Now().Unix(),
-	}
-
-	return orgAppStats, nil
+	return orgContainerStats
 }
 
 func getClusterContainerStats(cluster *grpc_infrastructure_go.Cluster, metricsCollector *clients.MetricsCollectorClient, ctx context.Context, statsFuture chan *grpc_monitoring_go.ContainerStatsResponse) {
@@ -205,4 +192,37 @@ func getClusterContainerStats(cluster *grpc_infrastructure_go.Cluster, metricsCo
 		containerStat.CpuMillicore = containerStat.GetCpuMillicore() * cluster.MillicoresConversionFactor
 	}
 	statsFuture <- clusterContainerStats
+}
+
+func (m *Manager) aggregateStatsByServiceInstanceId(orgContainerStats []*grpc_monitoring_go.ContainerStats, request *grpc_monitoring_go.OrganizationApplicationStatsRequest, organizationName string) []*grpc_monitoring_go.OrganizationApplicationStats {
+	statsMapByServiceInstanceId := make(map[string]*grpc_monitoring_go.OrganizationApplicationStats, 0)
+	for _, containerStats := range orgContainerStats {
+		stats, found := statsMapByServiceInstanceId[containerStats.ServiceInstanceId]
+		if !found {
+			// Include
+			statsMapByServiceInstanceId[containerStats.ServiceInstanceId] = &grpc_monitoring_go.OrganizationApplicationStats{
+				OrganizationId:           request.OrganizationId,
+				OrganizationName:         organizationName,
+				AppInstanceId:            containerStats.AppInstanceId,
+				AppInstanceName:          containerStats.AppInstanceName,
+				ServiceGroupInstanceId:   containerStats.ServiceGroupInstanceId,
+				ServiceGroupInstanceName: containerStats.ServiceGroupInstanceName,
+				ServiceInstanceId:        containerStats.ServiceInstanceId,
+				ServiceInstanceName:      containerStats.ServiceInstanceName,
+				CpuMillicore:             containerStats.CpuMillicore,
+				MemoryByte:               containerStats.MemoryByte,
+				StorageByte:              containerStats.StorageByte,
+			}
+		} else {
+			// Aggregate
+			stats.CpuMillicore += containerStats.CpuMillicore
+			stats.MemoryByte += containerStats.MemoryByte
+			stats.StorageByte += containerStats.StorageByte
+		}
+	}
+	serviceInstanceStats := make([]*grpc_monitoring_go.OrganizationApplicationStats, 0, len(statsMapByServiceInstanceId))
+	for _, value := range statsMapByServiceInstanceId {
+		serviceInstanceStats = append(serviceInstanceStats, value)
+	}
+	return serviceInstanceStats
 }
