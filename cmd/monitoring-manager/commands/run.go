@@ -20,6 +20,7 @@ import (
 	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"time"
 )
 
 var config = server.Config{}
@@ -44,19 +45,20 @@ func init() {
 	runCmd.PersistentFlags().BoolVar(&config.SkipServerCertValidation, "skipServerCertValidation", false, "Don't validate TLS certificates")
 	runCmd.PersistentFlags().StringVar(&config.CACertPath, "caCertPath", "", "Alternative certificate path to use for validation")
 	runCmd.PersistentFlags().StringVar(&config.ClientCertPath, "clientCertPath", "", "Client cert path")
+	runCmd.PersistentFlags().DurationVar(&config.CacheTTL, "cacheTTL", time.Minute, "TTL duration for the stats cache (ex: 10s, 5m). Defaults to 1m (1 minute).")
 	rootCmd.AddCommand(runCmd)
 }
 
 func Run() {
 	log.Info().Msg("Launching Monitoring Manager service")
 
-	server, err := server.NewService(&config)
+	service, err := server.NewService(&config)
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err)
 		panic(err.Error())
 	}
 
-	err = server.Run()
+	err = service.Run()
 	if err != nil {
 		log.Fatal().Str("err", err.DebugReport()).Err(err)
 		panic(err.Error())

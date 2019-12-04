@@ -22,28 +22,31 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/monitoring/version"
 	"github.com/rs/zerolog/log"
+	"time"
 )
 
 // Config struct for the API service.
 type Config struct {
 	// Port where the API service will listen requests.
 	Port int
-	// Address with host:port of the system model component
+	// SystemModelAddress is the address with host:port of the system model component.
 	SystemModelAddress string
-	// EdgeInventoryProxyAddress with host:port of the edge inventory proxy
+	// EdgeInventoryProxyAddress with host:port of the edge inventory proxy.
 	EdgeInventoryProxyAddress string
-	// Prefix for application cluster hostnames
+	// AppClusterPrefix is the prefix for application cluster hostnames.
 	AppClusterPrefix string
-	// Port used by app-cluster-api
+	// AppClusterPort is the port used by app-cluster-api.
 	AppClusterPort int
-	// Use TLS
+	// UseTLS Use or not TLS.
 	UseTLS bool
-	// Don't validate TLS certificates
+	// SkipServerCertValidation Don't validate TLS certificates.
 	SkipServerCertValidation bool
-	// Alternative certificate file to use for validation
+	// CACertPath Alternative certificate file to use for validation.
 	CACertPath string
-	// Client Cert Path
+	// ClientCertPath Client Cert Path.
 	ClientCertPath string
+	// CacheTTL is the default duration for cache entries.
+	CacheTTL time.Duration
 }
 
 // Validate the configuration.
@@ -78,4 +81,5 @@ func (conf *Config) Print() {
 	log.Info().Str("prefix", conf.AppClusterPrefix).Msg("appClusterPrefix")
 	log.Info().Int("port", conf.AppClusterPort).Msg("appClusterPort")
 	log.Info().Bool("tls", conf.UseTLS).Bool("skipServerCertValidation", conf.SkipServerCertValidation).Str("cert", conf.CACertPath).Str("cert", conf.ClientCertPath).Msg("TLS parameters")
+	log.Info().Dur("CacheTTL", conf.CacheTTL).Msg("selected TTL for the stats cache in milliseconds")
 }

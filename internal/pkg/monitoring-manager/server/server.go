@@ -95,7 +95,7 @@ func (s *Service) Run() derrors.Error {
 	if derr != nil {
 		return derr
 	}
-	clusterHandler, derr := NewHandler(clusterManager)
+	clusterHandler, derr := NewHandler(clusterManager, s.Configuration.CacheTTL)
 	if derr != nil {
 		return derr
 	}
