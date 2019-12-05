@@ -249,26 +249,26 @@ func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty
 	storageStats := <-storageStatsFuture
 
 	// Map the stats to allow optimum access access
-	statsMapByNamespaceMetric := make(map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
+	statsMapByNamespacePodContainerMetric := make(map[string]map[string]map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
 	if cpuStats == nil {
 		log.Warn().Msg(CpuQuery + " stats could not be retrieved and will not be aggregated")
 	} else {
-		mapQueryResultsByNamespaceAndMetric(CpuQuery, cpuStats, statsMapByNamespaceMetric)
+		mapQueryResultsByNamespacePodContainerMetric(CpuQuery, cpuStats, statsMapByNamespacePodContainerMetric)
 	}
 	if memoryStats == nil {
 		log.Warn().Msg(MemoryQuery + " stats could not be retrieved and will not be aggregated")
 	} else {
-		mapQueryResultsByNamespaceAndMetric(MemoryQuery, memoryStats, statsMapByNamespaceMetric)
+		mapQueryResultsByNamespacePodContainerMetric(MemoryQuery, memoryStats, statsMapByNamespacePodContainerMetric)
 	}
 	if storageStats == nil {
 		log.Warn().Msg(StorageQuery + " stats could not be retrieved and will not be aggregated")
 	} else {
-		mapQueryResultsByNamespaceAndMetric(StorageQuery, cpuStats, statsMapByNamespaceMetric)
+		mapQueryResultsByNamespacePodContainerMetric(StorageQuery, cpuStats, statsMapByNamespacePodContainerMetric)
 	}
 
 	// Map the pods to reduce the k8s queries
-	podMapByNamespacePodName := make(map[string]map[string]*corev1.Pod, len(statsMapByNamespaceMetric))
-	for namespaceName := range statsMapByNamespaceMetric {
+	podMapByNamespacePodName := make(map[string]map[string]*corev1.Pod, len(statsMapByNamespacePodContainerMetric))
+	for namespaceName := range statsMapByNamespacePodContainerMetric {
 		podList, err := m.k8sClient.CoreV1().Pods(namespaceName).List(metav1.ListOptions{LabelSelector: "nalej-app-instance-id"})
 		if err != nil {
 			log.Error().
@@ -277,44 +277,50 @@ func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty
 			continue
 		}
 		podMapByPodName := make(map[string]*corev1.Pod, podList.Size())
-		for _, pod := range podList.Items {
-			podMapByPodName[pod.Name] = &pod
+		for ix, pod := range podList.Items {
+			podMapByPodName[pod.Name] = &podList.Items[ix]
 		}
 		podMapByNamespacePodName[namespaceName] = podMapByPodName
 	}
 
+	log.Debug().
+		Interface("statsMapByNamespacePodContainerMetric", statsMapByNamespacePodContainerMetric).
+		Interface("podMapByNamespacePodName", podMapByNamespacePodName).
+		Msg("trace")
 	// Compose the response object
 	containerStats := make([]*grpc_monitoring_go.ContainerStats, 0)
-	for namespaceName, statsByType := range statsMapByNamespaceMetric {
-		podName := statsByType[CpuQuery].Metric["pod"]
-		pod, found := podMapByNamespacePodName[namespaceName][podName]
-		if !found {
-			log.Error().
-				Str("namespace", namespaceName).
-				Str("pod", podName).
-				Msg("could not find pod info. The stats will not be included")
-			continue
+	for namespaceName, podContainerMetric := range statsMapByNamespacePodContainerMetric {
+		for podName, containerMetric := range podContainerMetric {
+			pod, found := podMapByNamespacePodName[namespaceName][podName]
+			if !found {
+				log.Error().
+					Str("namespace", namespaceName).
+					Str("pod", podName).
+					Msg("could not find pod info. The stats will not be included")
+				continue
+			}
+			for containerName, metric := range containerMetric {
+				cpuMillicore, _ := strconv.ParseFloat(metric[CpuQuery].Value[0].Value, 64)
+				memoryByte, _ := strconv.ParseFloat(metric[MemoryQuery].Value[0].Value, 64)
+				storageByte, _ := strconv.ParseFloat(metric[StorageQuery].Value[0].Value, 64)
+				stats := grpc_monitoring_go.ContainerStats{
+					Namespace:                namespaceName,
+					Pod:                      podName,
+					Container:                containerName,
+					Image:                    metric[CpuQuery].Metric["image"],
+					AppInstanceId:            pod.Labels["nalej-app-instance-id"],
+					AppInstanceName:          pod.Labels["nalej-app-name"],
+					ServiceGroupInstanceId:   pod.Labels["nalej-service-group-instance-id"],
+					ServiceGroupInstanceName: pod.Labels["nalej-service-group-name"],
+					ServiceInstanceId:        pod.Labels["nalej-service-instance-id"],
+					ServiceInstanceName:      pod.Labels["nalej-service-name"],
+					CpuMillicore:             cpuMillicore,
+					MemoryByte:               memoryByte,
+					StorageByte:              storageByte,
+				}
+				containerStats = append(containerStats, &stats)
+			}
 		}
-		cpuMillicore, _ := strconv.ParseFloat(statsByType[CpuQuery].Value[0].Value, 64)
-		memoryByte, _ := strconv.ParseFloat(statsByType[MemoryQuery].Value[0].Value, 64)
-		storageByte, _ := strconv.ParseFloat(statsByType[StorageQuery].Value[0].Value, 64)
-
-		stats := grpc_monitoring_go.ContainerStats{
-			Namespace:                namespaceName,
-			Pod:                      podName,
-			Container:                statsByType[CpuQuery].Metric["container"],
-			Image:                    statsByType[CpuQuery].Metric["image"],
-			AppInstanceId:            pod.Labels["nalej-app-instance-id"],
-			AppInstanceName:          pod.Labels["nalej-app-name"],
-			ServiceGroupInstanceId:   pod.Labels["nalej-service-group-instance-id"],
-			ServiceGroupInstanceName: pod.Labels["nalej-service-group-name"],
-			ServiceInstanceId:        pod.Labels["nalej-service-instance-id"],
-			ServiceInstanceName:      pod.Labels["nalej-service-name"],
-			CpuMillicore:             cpuMillicore,
-			MemoryByte:               memoryByte,
-			StorageByte:              storageByte,
-		}
-		containerStats = append(containerStats, &stats)
 	}
 
 	containerStatsResponse := &grpc_monitoring_go.ContainerStatsResponse{
@@ -323,17 +329,31 @@ func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty
 	return containerStatsResponse, nil
 }
 
-// mapQueryResultsByNamespaceAndMetric iterates over the stats query response and map the results in a tree which first
+// mapQueryResultsByNamespacePodContainerMetric iterates over the stats query response and map the results in a tree which first
 // first layer is the namespace name of the application instance and the second layer is metric name.
-func mapQueryResultsByNamespaceAndMetric(metricName string, results *grpc_monitoring_go.QueryResponse, statsMap map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue) {
+func mapQueryResultsByNamespacePodContainerMetric(metricName string, results *grpc_monitoring_go.QueryResponse, statsMap map[string]map[string]map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue) {
 	for _, result := range results.GetPrometheusResult().GetResult() {
-		namespace := result.Metric["namespace"]
-		namespaceMetrics, exists := statsMap[namespace]
+		namespaceName := result.Metric["namespace"]
+		podContainerMetrics, exists := statsMap[namespaceName]
 		if !exists {
-			namespaceMetrics = make(map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
-			statsMap[namespace] = namespaceMetrics
+			podContainerMetrics = make(map[string]map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
+			statsMap[namespaceName] = podContainerMetrics
 		}
-		namespaceMetrics[metricName] = result
+
+		podName := result.Metric["pod"]
+		containerMetrics, exists := podContainerMetrics[podName]
+		if !exists {
+			containerMetrics = make(map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
+			podContainerMetrics[podName] = containerMetrics
+		}
+
+		containerName := result.Metric["container"]
+		metrics, exists := containerMetrics[containerName]
+		if !exists {
+			metrics = make(map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
+			containerMetrics[containerName] = metrics
+		}
+		metrics[metricName] = result
 	}
 }
 
@@ -380,5 +400,6 @@ func launchQuery(queryString string, queryTime time.Time, provider query.Provide
 			Msg("error translating cpu stats")
 		future <- nil
 	}
+	log.Debug().Interface("queryResponse", queryResponse).Msg("prometheus response")
 	future <- queryResponse
 }
