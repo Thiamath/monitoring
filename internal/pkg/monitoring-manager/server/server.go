@@ -18,6 +18,7 @@ package server
 
 import (
 	"fmt"
+	grpc_organization_go "github.com/nalej/grpc-organization-go"
 	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/clients"
 	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server/asset"
 	"net"
@@ -68,6 +69,7 @@ func (s *Service) Run() derrors.Error {
 
 	// Create clients
 	clustersClient := grpc_infrastructure_go.NewClustersClient(smConn)
+	organizationsClient := grpc_organization_go.NewOrganizationsClient(smConn)
 	assetsClient := grpc_inventory_go.NewAssetsClient(smConn)
 	controllersClient := grpc_inventory_go.NewControllersClient(smConn)
 	eipClient := grpc_edge_inventory_proxy_go.NewEdgeControllerProxyClient(eipConn)
@@ -89,11 +91,11 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Cluster monitoring
-	clusterManager, derr := NewManager(clustersClient, params)
+	clusterManager, derr := NewManager(&clustersClient, &organizationsClient, params)
 	if derr != nil {
 		return derr
 	}
-	clusterHandler, derr := NewHandler(clusterManager)
+	clusterHandler, derr := NewHandler(clusterManager, s.Configuration.CacheTTL)
 	if derr != nil {
 		return derr
 	}

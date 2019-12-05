@@ -200,7 +200,7 @@ func beforeSuiteRetrieveManager() {
 		provider.ProviderType(): provider,
 	}
 
-	manager, derr = NewManager(providers)
+	manager, derr = NewManager(providers, nil)
 	gomega.Expect(derr).To(gomega.Succeed())
 
 	/* Insert fake provider */

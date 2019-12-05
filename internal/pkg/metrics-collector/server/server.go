@@ -18,6 +18,8 @@ package server
 
 import (
 	"fmt"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"net"
 	"os"
 	"os/signal"
@@ -100,8 +102,13 @@ func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error)
 		}
 	}
 
+	k8sClient, err := getInternalKubernetesClient()
+	if err != nil {
+		return nil, derrors.NewInternalError("failed creating a kubernetes client", err)
+	}
+
 	// Create manager and handler for gRPC endpoints
-	retrieveManager, derr := NewManager(queryProviders)
+	retrieveManager, derr := NewManager(queryProviders, k8sClient)
 	if derr != nil {
 		return nil, derr
 	}
@@ -126,4 +133,24 @@ func (s *Service) startRetrieve(grpcListener net.Listener, errChan chan<- error)
 	}()
 
 	return grpcServer, nil
+}
+
+// Create a new kubernetes Client using deployment inside the cluster.
+//  params:
+//   internal true if the Client is deployed inside the cluster.
+//  return:
+//   instance for the k8s Client or error if any
+func getInternalKubernetesClient() (*kubernetes.Clientset, error) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		log.Panic().Err(err).Msg("impossible to get local configuration for internal k8s Client")
+		return nil, err
+	}
+	// creates the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Panic().Err(err).Msg("impossible to instantiate k8s Client")
+		return nil, err
+	}
+	return clientset, nil
 }

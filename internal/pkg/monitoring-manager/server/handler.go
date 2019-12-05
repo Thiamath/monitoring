@@ -23,21 +23,23 @@ package server
 import (
 	"context"
 	"github.com/nalej/derrors"
+	"github.com/nalej/grpc-monitoring-go"
 	"github.com/nalej/grpc-utils/pkg/conversions"
 	"github.com/nalej/monitoring/internal/pkg/entities"
-
-	"github.com/nalej/grpc-monitoring-go"
-
+	"github.com/patrickmn/go-cache"
 	"github.com/rs/zerolog/log"
+	"time"
 )
 
 type Handler struct {
 	manager Manager
+	cache   *cache.Cache
 }
 
-func NewHandler(m Manager) (*Handler, derrors.Error) {
+func NewHandler(m Manager, cacheTTL time.Duration) (*Handler, derrors.Error) {
 	return &Handler{
 		manager: m,
+		cache:   cache.New(cacheTTL, cacheTTL*2),
 	}, nil
 }
 
@@ -135,7 +137,7 @@ func (h *Handler) Query(ctx context.Context, request *grpc_monitoring_go.QueryRe
 
 func (h *Handler) GetOrganizationApplicationStats(ctx context.Context, request *grpc_monitoring_go.OrganizationApplicationStatsRequest) (*grpc_monitoring_go.OrganizationApplicationStatsResponse, error) {
 	log.Debug().
-		Str("organization_id", request.GetOrganizationId()).
+		Interface("request", request).
 		Msg("received GetOrganizationApplicationStats request")
 
 	// Validate
@@ -147,16 +149,22 @@ func (h *Handler) GetOrganizationApplicationStats(ctx context.Context, request *
 			Msg("invalid request")
 		return nil, derr
 	}
-
 	// Execute
-	res, err := h.manager.GetOrganizationApplicationStats(ctx, request)
-	if err != nil {
-		log.Error().
-			Str("err", conversions.ToDerror(err).DebugReport()).
-			Err(err).
-			Msg("error executing GetOrganizationApplicationStats")
-		return nil, err
+	cacheKey := "GetOrganizationApplicationStats" + request.OrganizationId
+	response, found := h.cache.Get(cacheKey)
+	if !found {
+		log.Debug().Interface("request", request).Msg("cache miss")
+		res, err := h.manager.GetOrganizationApplicationStats(ctx, request)
+		if err != nil {
+			log.Error().
+				Str("err", conversions.ToDerror(err).DebugReport()).
+				Err(err).
+				Msg("error executing GetOrganizationApplicationStats")
+			return nil, err
+		}
+		h.cache.SetDefault(cacheKey, res)
+		response = res
 	}
 
-	return res, nil
+	return response.(*grpc_monitoring_go.OrganizationApplicationStatsResponse), nil
 }
