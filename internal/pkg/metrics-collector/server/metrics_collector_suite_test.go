@@ -25,10 +25,10 @@ import (
 	"github.com/nalej/grpc-utils/pkg/test"
 
 	"github.com/nalej/monitoring/internal/pkg/metrics-collector/translators"
-	"github.com/nalej/monitoring/internal/pkg/utils"
 	"github.com/nalej/monitoring/pkg/provider/query"
 	"github.com/nalej/monitoring/pkg/provider/query/fake"
 	"github.com/nalej/monitoring/pkg/provider/query/prometheus"
+	"github.com/nalej/monitoring/pkg/utils"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"

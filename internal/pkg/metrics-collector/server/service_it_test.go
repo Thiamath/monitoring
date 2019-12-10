@@ -24,7 +24,7 @@ import (
 	"context"
 
 	"github.com/nalej/grpc-monitoring-go"
-	"github.com/nalej/monitoring/internal/pkg/utils"
+	"github.com/nalej/monitoring/pkg/utils"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
