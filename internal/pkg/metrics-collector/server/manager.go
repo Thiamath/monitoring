@@ -37,6 +37,7 @@ import (
 
 	"github.com/nalej/monitoring/internal/pkg/metrics-collector/translators"
 	"github.com/nalej/monitoring/pkg/provider/query"
+	"github.com/nalej/monitoring/pkg/utils"
 
 	"github.com/nalej/grpc-monitoring-go"
 )
@@ -269,7 +270,7 @@ func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty
 	// Map the pods to reduce the k8s queries
 	podMapByNamespacePodName := make(map[string]map[string]*corev1.Pod, len(statsMapByNamespacePodContainerMetric))
 	for namespaceName := range statsMapByNamespacePodContainerMetric {
-		podList, err := m.k8sClient.CoreV1().Pods(namespaceName).List(metav1.ListOptions{LabelSelector: "nalej-app-instance-id"})
+		podList, err := m.k8sClient.CoreV1().Pods(namespaceName).List(metav1.ListOptions{LabelSelector: utils.NalejPodLabelServiceInstanceId})
 		if err != nil {
 			log.Error().
 				Str("namespace", namespaceName).
@@ -307,13 +308,13 @@ func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty
 					Namespace:                namespaceName,
 					Pod:                      podName,
 					Container:                containerName,
-					Image:                    metric[CpuQuery].Metric["image"],
-					AppInstanceId:            pod.Labels["nalej-app-instance-id"],
-					AppInstanceName:          pod.Labels["nalej-app-name"],
-					ServiceGroupInstanceId:   pod.Labels["nalej-service-group-instance-id"],
-					ServiceGroupInstanceName: pod.Labels["nalej-service-group-name"],
-					ServiceInstanceId:        pod.Labels["nalej-service-instance-id"],
-					ServiceInstanceName:      pod.Labels["nalej-service-name"],
+					Image:                    metric[CpuQuery].Metric[utils.NalejMetricsImage],
+					AppInstanceId:            pod.Labels[utils.NalejPodLabelAppInstanceId],
+					AppInstanceName:          pod.Labels[utils.NalejPodLabelAppName],
+					ServiceGroupInstanceId:   pod.Labels[utils.NalejPodLabelServiceGroupInstanceId],
+					ServiceGroupInstanceName: pod.Labels[utils.NalejPodLabelServiceGroupName],
+					ServiceInstanceId:        pod.Labels[utils.NalejPodLabelServiceInstanceId],
+					ServiceInstanceName:      pod.Labels[utils.NalejPodLabelServiceName],
 					CpuMillicore:             cpuMillicore,
 					MemoryByte:               memoryByte,
 					StorageByte:              storageByte,
@@ -333,21 +334,21 @@ func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty
 // first layer is the namespace name of the application instance and the second layer is metric name.
 func mapQueryResultsByNamespacePodContainerMetric(metricName string, results *grpc_monitoring_go.QueryResponse, statsMap map[string]map[string]map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue) {
 	for _, result := range results.GetPrometheusResult().GetResult() {
-		namespaceName := result.Metric["namespace"]
+		namespaceName := result.Metric[utils.NalejMetricsNamespace]
 		podContainerMetrics, exists := statsMap[namespaceName]
 		if !exists {
 			podContainerMetrics = make(map[string]map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
 			statsMap[namespaceName] = podContainerMetrics
 		}
 
-		podName := result.Metric["pod"]
+		podName := result.Metric[utils.NalejMetricsPod]
 		containerMetrics, exists := podContainerMetrics[podName]
 		if !exists {
 			containerMetrics = make(map[string]map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
 			podContainerMetrics[podName] = containerMetrics
 		}
 
-		containerName := result.Metric["container"]
+		containerName := result.Metric[utils.NalejMetricsContainer]
 		metrics, exists := containerMetrics[containerName]
 		if !exists {
 			metrics = make(map[string]*grpc_monitoring_go.QueryResponse_PrometheusResponse_ResultValue, 0)
