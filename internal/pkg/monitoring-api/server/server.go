@@ -18,6 +18,7 @@ package server
 
 import (
 	"fmt"
+	grpc_monitoring_go "github.com/nalej/grpc-monitoring-go"
 	"net"
 
 	"github.com/nalej/derrors"
@@ -48,6 +49,12 @@ func NewService(conf *Config) (*Service, derrors.Error) {
 // Run the service, launch the REST service handler.
 func (s *Service) Run() derrors.Error {
 	// Create clients
+	mmConn, err := grpc.Dial(s.Configuration.MonitoringManagerAddress, grpc.WithInsecure())
+	if err != nil {
+		return derrors.NewUnavailableError("cannot create connection with monitoring manager", err)
+	}
+
+	monitoringManagerClient := grpc_monitoring_go.NewMonitoringManagerClient(mmConn)
 
 	// Start listening
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
@@ -56,9 +63,18 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create managers and handler
+	manager, derr := NewManager(&monitoringManagerClient)
+	if derr != nil {
+		return derr
+	}
+	handler, derr := NewHandler(manager)
+	if derr != nil {
+		return derr
+	}
 
 	// Create server and register handler
 	server := grpc.NewServer()
+	grpc_monitoring_go.RegisterMonitoringApiServer(server, handler)
 
 	reflection.Register(server)
 	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")
