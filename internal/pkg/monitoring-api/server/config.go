@@ -39,6 +39,8 @@ type Config struct {
 	ClientCertPath string
 	// CacheTTL is the default duration for cache entries.
 	CacheTTL time.Duration
+	// MonitoringManagerAddress is the address to the monitoring manager service
+	MonitoringManagerAddress string
 }
 
 // Validate the configuration.
@@ -51,6 +53,9 @@ func (conf *Config) Validate() derrors.Error {
 	}
 	if conf.ClientCertPath == "" {
 		return derrors.NewInvalidArgumentError("clientCertPath is required")
+	}
+	if conf.MonitoringManagerAddress == "" {
+		return derrors.NewInvalidArgumentError("monitoringManagerAddress is required")
 	}
 	return nil
 }
