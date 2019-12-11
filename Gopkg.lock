@@ -286,12 +286,12 @@
   version = "v0.0.57"
 
 [[projects]]
-  digest = "1:5c3d2751e210c6df160ecdc425d42220dfff4b1cf7825ebc4a1d69820efdf8d2"
+  digest = "1:b005c97cc61ff67305ef3f3184ec21254be5dda38fbca59f520effb811f0c89a"
   name = "github.com/nalej/grpc-monitoring-go"
   packages = ["."]
   pruneopts = ""
-  revision = "4bea22eebfac63bd200e0a00be1d1bf58c34ff0e"
-  version = "v0.0.12"
+  revision = "a5015a5341a09554655ce5ff2e87a8d859232231"
+  version = "v0.0.13"
 
 [[projects]]
   digest = "1:a38c55f4ee4da38689b71b5fbd0d0f2902657546dd39d49e5a5beb8c6b4f1e5c"
