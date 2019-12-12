@@ -390,16 +390,18 @@ func launchQuery(queryString string, queryTime time.Time, provider query.Provide
 	if derr != nil {
 		log.Error().
 			Interface("query", q).
-			Msg("error getting cpu stats")
+			Msg(fmt.Sprintf("error executing query %s", queryString))
 		future <- nil
+		return
 	}
 	queryResponse, derr := translator(res)
 	if derr != nil {
 		log.Error().
 			Interface("query", q).
 			Interface("response", queryResponse).
-			Msg("error translating cpu stats")
+			Msg("error translating stats response")
 		future <- nil
+		return
 	}
 	log.Debug().Interface("queryResponse", queryResponse).Msg("prometheus response")
 	future <- queryResponse
