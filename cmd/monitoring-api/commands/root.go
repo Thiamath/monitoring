@@ -30,10 +30,9 @@ var debugLevel bool
 var consoleLogging bool
 
 var rootCmd = &cobra.Command{
-	Use:     "monitoring-manager",
-	Short:   "Monitoring Manager",
-	Long:    `Monitoring Manager on Management Cluster forwards queries to Application Clusters`,
-	Version: "unknown-version",
+	Use:   "monitoring-api",
+	Short: "Monitoring API",
+	Long:  `Monitoring API on Management Cluster exposes metrics to the internet`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		SetupLogging()

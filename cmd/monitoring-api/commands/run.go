@@ -20,7 +20,6 @@ import (
 	"github.com/nalej/monitoring/internal/pkg/monitoring-api/server"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 var config = server.Config{}
@@ -36,17 +35,18 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	runCmd.Flags().IntVar(&config.Port, "port", 8423, "Port for Monitoring Manager gRPC API")
+	runCmd.Flags().IntVar(&config.GrpcPort, "grpcport", 8421, "GrpcPort for Monitoring API")
+	runCmd.Flags().IntVar(&config.HttpPort, "httpport", 8420, "GrpcPort for Monitoring API")
 	runCmd.PersistentFlags().BoolVar(&config.UseTLS, "useTLS", true, "Use TLS to connect to application cluster")
 	runCmd.PersistentFlags().BoolVar(&config.SkipServerCertValidation, "skipServerCertValidation", false, "Don't validate TLS certificates")
 	runCmd.PersistentFlags().StringVar(&config.CACertPath, "caCertPath", "", "Alternative certificate path to use for validation")
 	runCmd.PersistentFlags().StringVar(&config.ClientCertPath, "clientCertPath", "", "Client cert path")
-	runCmd.PersistentFlags().DurationVar(&config.CacheTTL, "cacheTTL", time.Minute, "TTL duration for the stats cache (ex: 10s, 5m). Defaults to 1m (1 minute).")
+	runCmd.PersistentFlags().StringVar(&config.MonitoringManagerAddress, "monitoringManagerAddress", "", "Address of the monitoring manager service")
 	rootCmd.AddCommand(runCmd)
 }
 
 func Run() {
-	log.Info().Msg("Launching Monitoring Manager service")
+	log.Info().Msg("Launching Monitoring API service")
 
 	service, err := server.NewService(&config)
 	if err != nil {

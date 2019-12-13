@@ -39,7 +39,7 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	runCmd.Flags().IntVar(&config.Port, "port", 8422, "Port for Metrics Collector gRPC API")
+	runCmd.Flags().IntVar(&config.Port, "port", 8422, "GrpcPort for Metrics Collector gRPC API")
 	// By default, we read ~/.kube/config if it's available. Alternative
 	// config can be specified on command line; or we can run inside
 	// a Kubernetes cluster (with the correct role)

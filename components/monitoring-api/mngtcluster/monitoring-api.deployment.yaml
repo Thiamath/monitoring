@@ -1,0 +1,59 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    cluster: management
+    component: monitoring
+    service: monitoring-api
+  name: monitoring-api
+  namespace: __NPH_NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cluster: management
+      component: monitoring
+      service: monitoring-api
+  template:
+    metadata:
+      labels:
+        cluster: management
+        component: monitoring
+        service: monitoring-api
+    spec:
+      containers:
+      - name: monitoring-api
+        image: __NPH_REGISTRY_NAMESPACE/monitoring-api:__NPH_VERSION
+        imagePullPolicy: Always
+        securityContext:
+          runAsUser: 2000
+        env:
+          - name: ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: management-config
+                key: environment
+        args:
+        - "run"
+        - "--monitoringManagerAddress=monitoring-manager.__NPH_NAMESPACE:8423"
+        - "--caCertPath=/nalej/ca-certificate/ca.crt"
+        - "--clientCertPath=/nalej/tls-client-certificate/"
+        - "--skipServerCertValidation=false"
+        - "--useTLS=true"
+        ports:
+        - name: api-port
+          containerPort: 8421
+        volumeMounts:
+          - name: ca-certificate-volume
+            readOnly: true
+            mountPath: /nalej/ca-certificate
+          - name: tls-client-certificate-volume
+            readOnly: true
+            mountPath: /nalej/tls-client-certificate
+      volumes:
+        - name: ca-certificate-volume
+          secret:
+            secretName: ca-certificate
+        - name: tls-client-certificate-volume
+          secret:
+            secretName: tls-client-certificate

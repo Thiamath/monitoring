@@ -17,13 +17,16 @@
 package server
 
 import (
+	"context"
 	"fmt"
-	grpc_monitoring_go "github.com/nalej/grpc-monitoring-go"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"net"
+	"net/http"
 
 	"github.com/nalej/derrors"
-
+	"github.com/nalej/grpc-monitoring-go"
 	"github.com/rs/zerolog/log"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -57,7 +60,7 @@ func (s *Service) Run() derrors.Error {
 	monitoringManagerClient := grpc_monitoring_go.NewMonitoringManagerClient(mmConn)
 
 	// Start listening
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.GrpcPort))
 	if err != nil {
 		return derrors.NewUnavailableError("failed to listen", err)
 	}
@@ -72,15 +75,31 @@ func (s *Service) Run() derrors.Error {
 		return derr
 	}
 
+	go s.launchHttpServer()
+
 	// Create server and register handler
 	server := grpc.NewServer()
 	grpc_monitoring_go.RegisterMonitoringApiServer(server, handler)
 
 	reflection.Register(server)
-	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")
+	log.Info().Int("port", s.Configuration.GrpcPort).Msg("Launching gRPC server")
 	if err := server.Serve(lis); err != nil {
 		return derrors.NewUnavailableError("failed to serve", err)
 	}
 
 	return nil
+}
+
+// launchHttpServer launches an http server as proxy of the gRPC server.
+func (s *Service) launchHttpServer() {
+	mux := runtime.NewServeMux()
+	runtime.SetHTTPBodyMarshaler(mux)
+	httpAddress := fmt.Sprintf(":%d", s.Configuration.HttpPort)
+	httpServer := &http.Server{
+		Addr:    httpAddress,
+		Handler: mux,
+	}
+	_ = grpc_monitoring_go.RegisterMonitoringApiHandlerFromEndpoint(context.Background(), mux, fmt.Sprintf(":%d", s.Configuration.GrpcPort), []grpc.DialOption{grpc.WithInsecure()})
+	log.Info().Str("address", httpAddress).Msg("HTTP Listening")
+	_ = httpServer.ListenAndServe()
 }

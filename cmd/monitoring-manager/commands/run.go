@@ -36,11 +36,11 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	runCmd.Flags().IntVar(&config.Port, "port", 8423, "Port for Monitoring Manager gRPC API")
+	runCmd.Flags().IntVar(&config.Port, "port", 8423, "GrpcPort for Monitoring Manager gRPC API")
 	runCmd.PersistentFlags().StringVar(&config.SystemModelAddress, "systemModelAddress", "localhost:8800", "System Model address (host:port)")
 	runCmd.PersistentFlags().StringVar(&config.EdgeInventoryProxyAddress, "edgeInventoryProxyAddress", "localhost:5544", "Edge Inventory Proxy address (host:port)")
 	runCmd.PersistentFlags().StringVar(&config.AppClusterPrefix, "appClusterPrefix", "appcluster", "Prefix for application cluster hostnames")
-	runCmd.PersistentFlags().IntVar(&config.AppClusterPort, "appClusterPort", 443, "Port used by app-cluster-api")
+	runCmd.PersistentFlags().IntVar(&config.AppClusterPort, "appClusterPort", 443, "GrpcPort used by app-cluster-api")
 	runCmd.PersistentFlags().BoolVar(&config.UseTLS, "useTLS", true, "Use TLS to connect to application cluster")
 	runCmd.PersistentFlags().BoolVar(&config.SkipServerCertValidation, "skipServerCertValidation", false, "Don't validate TLS certificates")
 	runCmd.PersistentFlags().StringVar(&config.CACertPath, "caCertPath", "", "Alternative certificate path to use for validation")

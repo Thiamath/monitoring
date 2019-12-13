@@ -27,7 +27,7 @@ import (
 
 // Config struct for the API service.
 type Config struct {
-	// Port where the API service will listen requests.
+	// GrpcPort where the API service will listen requests.
 	Port int
 	// SystemModelAddress is the address with host:port of the system model component.
 	SystemModelAddress string

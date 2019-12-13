@@ -26,7 +26,7 @@ import (
 
 // Config struct for the API service.
 type Config struct {
-	// Port where the Prometheus endpoint will be served
+	// GrpcPort where the Prometheus endpoint will be served
 	Port int
 	// Namespace, subsystem and name for the metric that is served.
 	// The metric name is namespace_subsystem_name

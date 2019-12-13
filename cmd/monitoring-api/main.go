@@ -20,7 +20,7 @@
 package main
 
 import (
-	"github.com/nalej/monitoring/cmd/monitoring-manager/commands"
+	"github.com/nalej/monitoring/cmd/monitoring-api/commands"
 	"github.com/nalej/monitoring/version"
 )
 

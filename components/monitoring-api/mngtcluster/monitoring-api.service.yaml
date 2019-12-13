@@ -1,0 +1,20 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: monitoring-api
+  namespace: __NPH_NAMESPACE
+  labels:
+    cluster: management
+    component: monitoring
+    service: monitoring-api
+spec:
+  selector:
+      cluster: management
+      component: monitoring
+      service: monitoring-api
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    name: http
+    port: 8421
+    targetPort: 8421

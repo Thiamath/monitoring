@@ -22,13 +22,14 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/monitoring/version"
 	"github.com/rs/zerolog/log"
-	"time"
 )
 
 // Config struct for the API service.
 type Config struct {
-	// Port where the API service will listen requests.
-	Port int
+	// GrpcPort where the API service will listen requests.
+	GrpcPort int
+	// HttpPort where the API service will listen requests.
+	HttpPort int
 	// UseTLS Use or not TLS.
 	UseTLS bool
 	// SkipServerCertValidation Don't validate TLS certificates.
@@ -37,16 +38,17 @@ type Config struct {
 	CACertPath string
 	// ClientCertPath Client Cert Path.
 	ClientCertPath string
-	// CacheTTL is the default duration for cache entries.
-	CacheTTL time.Duration
 	// MonitoringManagerAddress is the address to the monitoring manager service
 	MonitoringManagerAddress string
 }
 
 // Validate the configuration.
 func (conf *Config) Validate() derrors.Error {
-	if conf.Port <= 0 {
-		return derrors.NewInvalidArgumentError("port must be specified")
+	if conf.GrpcPort <= 0 {
+		return derrors.NewInvalidArgumentError("grpc port must be specified")
+	}
+	if conf.HttpPort <= 0 {
+		return derrors.NewInvalidArgumentError("http port must be specified")
 	}
 	if conf.CACertPath == "" {
 		return derrors.NewInvalidArgumentError("caCertPath is required")
@@ -63,7 +65,8 @@ func (conf *Config) Validate() derrors.Error {
 // Print the current API configuration to the log.
 func (conf *Config) Print() {
 	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
-	log.Info().Int("port", conf.Port).Msg("gRPC port")
+	log.Info().Int("port", conf.GrpcPort).Msg("gRPC port")
+	log.Info().Int("port", conf.HttpPort).Msg("HTTP port")
 	log.Info().Bool("tls", conf.UseTLS).Bool("skipServerCertValidation", conf.SkipServerCertValidation).Str("cert", conf.CACertPath).Str("cert", conf.ClientCertPath).Msg("TLS parameters")
-	log.Info().Dur("CacheTTL", conf.CacheTTL).Msg("selected TTL for the stats cache in milliseconds")
+	log.Info().Str("MonitoringManagerAddress", conf.MonitoringManagerAddress).Msg("address of the  monitoring manager service")
 }
