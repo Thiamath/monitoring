@@ -123,6 +123,8 @@ stages:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
 
+    - template: k8s/configmaps/management-config.yaml@ci_templates
+
     - template: k8s/ns/create.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
