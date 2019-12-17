@@ -5,7 +5,7 @@ metadata:
     prometheus: k8s
     role: recording-rules
   name: prometheus-k8s-rules
-  namespace: nalej
+  namespace: __NPH_NAMESPACE
 spec:
   groups:
   - name: components-availability

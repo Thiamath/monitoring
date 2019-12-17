@@ -5,7 +5,7 @@ metadata:
     component: monitoring
     service: node-exporter
   name: node-exporter
-  namespace: nalej
+  namespace: __NPH_NAMESPACE
 spec:
   clusterIP: None
   ports:
