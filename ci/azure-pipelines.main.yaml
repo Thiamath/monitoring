@@ -110,8 +110,19 @@ stages:
     - template: k8s/resources/create.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
+        platform: appcluster
+        environment: "staging"
+
+    - template: k8s/resources/create.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
         platform: mngtcluster
         environment: "staging"
+
+    - template: templates/verify_deploy.appcluster.yaml
+      parameters:
+        kubeconfig: $(kubeconfig)
+        namespace: $(namespace)
     
     - template: templates/verify_deploy.mngtcluster.yaml
       parameters:
@@ -127,46 +138,6 @@ stages:
       parameters:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-operator"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-operator"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "kube-state-metrics"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "kube-state-metrics"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "node-exporter"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "node-exporter"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus"
 
 # - stage: 'AssetPublish'
 #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
