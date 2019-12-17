@@ -75,7 +75,8 @@ stages:
     - template: k8s/yaml/render.yaml@ci_templates
       parameters:
         namespace: "__NPH_NAMESPACE"
-        componentList: "metrics-collector monitoring-manager static-lister"
+        #componentList: "metrics-collector monitoring-manager static-lister"
+        componentList: $(componentList)
         environment: "staging"
         version: edge
 
