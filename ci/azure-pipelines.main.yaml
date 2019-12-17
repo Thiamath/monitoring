@@ -126,6 +126,46 @@ stages:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
 
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheus-operator"
+
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheus-operator"
+
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "kube-state-metrics"
+
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "kube-state-metrics"
+
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "node-exporter"
+
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "node-exporter"
+
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheus-k8s"
+
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheus-k8s"
+
     - template: k8s/ns/create.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
@@ -151,6 +191,46 @@ stages:
       parameters:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
+
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheus-operator"
+
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheus-operator"
+
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "kube-state-metrics"
+
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "kube-state-metrics"
+
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "node-exporter"
+
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "node-exporter"
+
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheus-k8s"
+
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheus-k8s"
 
 # - stage: 'AssetPublish'
 #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
