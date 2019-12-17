@@ -110,10 +110,10 @@ stages:
     - template: k8s/resources/create.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
-        platform: appcluster
+        platform: mngtcluster
         environment: "staging"
 
-    - template: templates/verify_deploy.appcluster.yaml
+    - template: templates/verify_deploy.mngtcluster.yaml
       parameters:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
@@ -126,10 +126,10 @@ stages:
     - template: k8s/resources/create.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
-        platform: mngtcluster
+        platform: appcluster
         environment: "staging"
     
-    - template: templates/verify_deploy.mngtcluster.yaml
+    - template: templates/verify_deploy.appcluster.yaml
       parameters:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
