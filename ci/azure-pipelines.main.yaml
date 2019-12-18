@@ -87,6 +87,7 @@ stages:
     - template: k8s/yaml/download-cdr.yaml@ci_templates
       parameters:
         yamlPath: dist/yaml/staging
+        kubeconfig: $(kubeconfig)
 
     - template: k8s/yaml/namespace.yaml@ci_templates
       parameters:
