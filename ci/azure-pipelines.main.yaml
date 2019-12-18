@@ -232,6 +232,31 @@ stages:
         kubeconfig: $(kubeconfig)
         component: "prometheus-k8s"
 
+    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "alertmanagers.monitoring.coreos.com"
+
+    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "podmonitors.monitoring.coreos.com"
+
+    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheuses.monitoring.coreos.com"
+
+    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "prometheusrules.monitoring.coreos.com"
+
+    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        component: "servicemonitors.monitoring.coreos.com"
+
     - template: k8s/ns/delete.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
