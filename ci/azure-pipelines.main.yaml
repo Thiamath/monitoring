@@ -84,6 +84,10 @@ stages:
 
     - template: k8s/configmaps/cluster-config.yaml@ci_templates
 
+    - template: k8s/yaml/download-cdr.yaml@ci_templates
+      parameters:
+        yamlPath: dist/yaml/staging
+
     - template: k8s/yaml/namespace.yaml@ci_templates
       parameters:
         namespace: $(namespace)
