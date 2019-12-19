@@ -176,7 +176,7 @@ stages:
 
     - template: k8s/custom/delete-monitoring-clusterrole.yaml@ci_templates
 
-    - template: k8s/custom/cdr-main.yaml@ci_templates
+    - template: k8s/custom/delete-cdr-main.yaml@ci_templates
 
     - template: k8s/ns/delete.yaml@ci_templates
       parameters:
