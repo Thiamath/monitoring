@@ -130,10 +130,9 @@ stages:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
 
-    - script: |
-        rm -rf dist/yaml/staging/appcluster/
-        rm -rf dist/yaml/staging/mngtcluster/
-      displayName: Clean environment
+    - template: k8s/yaml/delele.yaml@ci_templates
+      parameters:
+        yamlPath: dist/yaml/staging
 
     - template: k8s/yaml/render.yaml@ci_templates
       parameters:
