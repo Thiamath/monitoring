@@ -207,7 +207,8 @@ stages:
     - template: templates/verify_deploy.appcluster.yaml
       parameters:
         kubeconfig: $(kubeconfig)
-        namespace: $(namespace)-2
+        #namespace: $(namespace)-2
+        namespace: "test"
 
     - template: k8s/logs/archive.yaml@ci_templates
       parameters:
