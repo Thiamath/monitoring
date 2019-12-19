@@ -130,7 +130,7 @@ stages:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
 
-    - template: k8s/yaml/delele.yaml@ci_templates
+    - template: k8s/yaml/delete.yaml@ci_templates
       parameters:
         yamlPath: dist/yaml/staging
 
