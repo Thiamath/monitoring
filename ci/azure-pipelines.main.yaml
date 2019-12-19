@@ -72,22 +72,19 @@ stages:
     steps:
     - template: misc/nalej-component.yaml@ci_templates
 
+    - template: k8s/yaml/download-cdr.yaml@ci_templates
+      parameters:
+        yamlPath: dist/yaml/staging
+        kubeconfig: $(kubeconfig)
+
     - template: k8s/yaml/render.yaml@ci_templates
       parameters:
         namespace: "__NPH_NAMESPACE"
-        #componentList: "metrics-collector monitoring-manager static-lister"
         componentList: $(componentList)
         environment: "staging"
         version: edge
 
     - template: k8s/configmaps/management-config.yaml@ci_templates
-
-    - template: k8s/configmaps/cluster-config.yaml@ci_templates
-
-    - template: k8s/yaml/download-cdr.yaml@ci_templates
-      parameters:
-        yamlPath: dist/yaml/staging
-        kubeconfig: $(kubeconfig)
 
     - template: k8s/yaml/namespace.yaml@ci_templates
       parameters:
@@ -126,45 +123,7 @@ stages:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
 
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-operator"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-operator"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "kube-state-metrics"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "kube-state-metrics"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "node-exporter"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "node-exporter"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-k8s"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-k8s"
+    - template: k8s/custom/delete-monitoring-clusterrole.yaml@ci_templates
 
     - template: k8s/ns/delete.yaml@ci_templates
       parameters:
@@ -179,7 +138,6 @@ stages:
     - template: k8s/yaml/render.yaml@ci_templates
       parameters:
         namespace: "__NPH_NAMESPACE"
-        #componentList: "metrics-collector monitoring-manager static-lister"
         componentList: $(componentList)
         environment: "staging"
         version: edge
@@ -216,70 +174,9 @@ stages:
         #namespace: $(namespace)-2   
         namespace: "test"
 
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-operator"
+    - template: k8s/custom/delete-monitoring-clusterrole.yaml@ci_templates
 
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-operator"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "kube-state-metrics"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "kube-state-metrics"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "node-exporter"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "node-exporter"
-
-    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-k8s"
-
-    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheus-k8s"
-
-    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "alertmanagers.monitoring.coreos.com"
-
-    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "podmonitors.monitoring.coreos.com"
-
-    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheuses.monitoring.coreos.com"
-
-    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "prometheusrules.monitoring.coreos.com"
-
-    - template: k8s/custom/delete-customresourcedefinition.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        component: "servicemonitors.monitoring.coreos.com"
+    - template: k8s/custom/cdr-main.yaml@ci_templates
 
     - template: k8s/ns/delete.yaml@ci_templates
       parameters:
