@@ -188,13 +188,15 @@ stages:
 
     - template: k8s/yaml/namespace.yaml@ci_templates
       parameters:
-        namespace: $(namespace)-2
+        #namespace: $(namespace)-2
+        namespace: "test"
         yamlPath: dist/yaml/staging
 
     - template: k8s/ns/create.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
-        namespace: $(namespace)-2
+        #namespace: $(namespace)-2
+        namespace: "test"
 
     - template: k8s/resources/create.yaml@ci_templates
       parameters:
@@ -210,7 +212,8 @@ stages:
     - template: k8s/logs/archive.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
-        namespace: $(namespace)-2   
+        #namespace: $(namespace)-2   
+        namespace: "test"
 
     - template: k8s/custom/delete-clusterrole.yaml@ci_templates
       parameters:
@@ -280,7 +283,8 @@ stages:
     - template: k8s/ns/delete.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
-        namespace: $(namespace)-2
+        #namespace: $(namespace)-2
+        namespace: "test"
 
 # - stage: 'AssetPublish'
 #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
