@@ -172,8 +172,8 @@ stages:
         namespace: $(namespace)
 
     - script: |
-        rm dist/yaml/staging/appcluster/.
-        rm dist/yaml/staging/mngtcluster/.
+        rm -rf dist/yaml/staging/appcluster/
+        rm -rf dist/yaml/staging/mngtcluster/
       displayName: Clean environment
 
     - template: k8s/yaml/render.yaml@ci_templates
