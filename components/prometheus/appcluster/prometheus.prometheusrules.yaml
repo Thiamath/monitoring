@@ -68,9 +68,9 @@ spec:
       record: node:node_memory_MemUsed_bytes:sum
   - name: application-stats
     rules:
-    - expr: rate (container_cpu_usage_seconds_total{image!="", namespace!~"nalej|kube-system|cert-manager", container!~"zt-.+|POD"}[2m]) / 1000
+    - expr: rate (container_cpu_usage_seconds_total{image!="", namespace!~"nalej|kube-system|cert-manager", container_name!~"zt-.+|POD"}[2m]) / 1000
       record: nalej_servinst_cpu_core
-    - expr: rate (container_memory_usage_bytes{image!="", namespace!~"nalej|kube-system|cert-manager", container!~"zt-.+|POD"}[2m])
+    - expr: rate (container_memory_usage_bytes{image!="", namespace!~"nalej|kube-system|cert-manager", container_name!~"zt-.+|POD"}[2m])
       record: nalej_servinst_memory_byte
-    - expr: rate (container_fs_usage_bytes{image!="", namespace!~"nalej|kube-system|cert-manager", container!~"zt-.+|POD"}[2m])
+    - expr: rate (container_fs_usage_bytes{image!="", namespace!~"nalej|kube-system|cert-manager", container_name!~"zt-.+|POD"}[2m])
       record: nalej_servinst_storage_byte
