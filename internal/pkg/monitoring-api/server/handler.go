@@ -19,6 +19,7 @@ package server
 import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/grpc-monitoring-go"
+	"github.com/nalej/monitoring/internal/pkg/entities"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
 	"google.golang.org/genproto/googleapis/api/httpbody"
@@ -34,8 +35,17 @@ func NewHandler(manager *Manager) (*Handler, derrors.Error) {
 
 func (h *Handler) Metrics(ctx context.Context, request *grpc_monitoring_go.OrganizationApplicationStatsRequest) (*httpbody.HttpBody, error) {
 	log.Info().Interface("request", request).Msg("Got metrics request")
+	derr := entities.ValidateOrganizationApplicationStatsRequest(request)
+	if derr != nil {
+		return nil, derr
+	}
+
+	response, err := h.manager.Metrics(request.OrganizationId)
+	if err != nil {
+		return nil, err
+	}
 	return &httpbody.HttpBody{
 		ContentType: "text/plain; version=0.0.4",
-		Data:        []byte("Implement me"),
+		Data:        response,
 	}, nil
 }

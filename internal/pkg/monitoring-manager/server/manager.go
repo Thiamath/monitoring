@@ -145,7 +145,7 @@ func (m *Manager) GetOrganizationApplicationStats(ctx context.Context, request *
 
 	orgAppStats := &grpc_monitoring_go.OrganizationApplicationStatsResponse{
 		ServiceInstanceStats: serviceInstanceStats,
-		Timestamp:            time.Now().Unix(),
+		Timestamp:            time.Now().UnixNano() / 1000000,
 	}
 
 	return orgAppStats, nil

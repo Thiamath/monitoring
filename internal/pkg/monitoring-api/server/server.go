@@ -56,7 +56,6 @@ func (s *Service) Run() derrors.Error {
 	if err != nil {
 		return derrors.NewUnavailableError("cannot create connection with monitoring manager", err)
 	}
-
 	monitoringManagerClient := grpc_monitoring_go.NewMonitoringManagerClient(mmConn)
 
 	// Start listening
@@ -77,13 +76,17 @@ func (s *Service) Run() derrors.Error {
 
 	go s.launchHttpServer()
 
-	// Create server and register handler
-	server := grpc.NewServer()
-	grpc_monitoring_go.RegisterMonitoringApiServer(server, handler)
+	// Create grpcServer and register handler
+	grpcServer := grpc.NewServer()
+	grpc_monitoring_go.RegisterMonitoringApiServer(grpcServer, handler)
 
-	reflection.Register(server)
+	if s.Configuration.Debug {
+		log.Info().Msg("Enabling gRPC grpcServer reflection")
+		// Register reflection service on gRPC grpcServer.
+		reflection.Register(grpcServer)
+	}
 	log.Info().Int("port", s.Configuration.GrpcPort).Msg("Launching gRPC server")
-	if err := server.Serve(lis); err != nil {
+	if err := grpcServer.Serve(lis); err != nil {
 		return derrors.NewUnavailableError("failed to serve", err)
 	}
 
@@ -95,11 +98,18 @@ func (s *Service) launchHttpServer() {
 	mux := runtime.NewServeMux()
 	runtime.SetHTTPBodyMarshaler(mux)
 	httpAddress := fmt.Sprintf(":%d", s.Configuration.HttpPort)
+	grpcAddress := fmt.Sprintf(":%d", s.Configuration.GrpcPort)
 	httpServer := &http.Server{
 		Addr:    httpAddress,
 		Handler: mux,
 	}
-	_ = grpc_monitoring_go.RegisterMonitoringApiHandlerFromEndpoint(context.Background(), mux, fmt.Sprintf(":%d", s.Configuration.GrpcPort), []grpc.DialOption{grpc.WithInsecure()})
+	err := grpc_monitoring_go.RegisterMonitoringApiHandlerFromEndpoint(context.Background(), mux, grpcAddress, []grpc.DialOption{grpc.WithInsecure()})
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to start monitoring API handler")
+	}
 	log.Info().Str("address", httpAddress).Msg("HTTP Listening")
-	_ = httpServer.ListenAndServe()
+	err = httpServer.ListenAndServe()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to start serving HTTP API")
+	}
 }

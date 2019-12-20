@@ -264,7 +264,7 @@ func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty
 	if storageStats == nil {
 		log.Warn().Msg(StorageQuery + " stats could not be retrieved and will not be aggregated")
 	} else {
-		mapQueryResultsByNamespacePodContainerMetric(StorageQuery, cpuStats, statsMapByNamespacePodContainerMetric)
+		mapQueryResultsByNamespacePodContainerMetric(StorageQuery, storageStats, statsMapByNamespacePodContainerMetric)
 	}
 
 	// Map the pods to reduce the k8s queries
