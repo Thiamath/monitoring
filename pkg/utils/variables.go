@@ -25,7 +25,7 @@ const (
 	NalejPodLabelServiceName            = "nalej-service-name"
 
 	NalejMetricsNamespace = "namespace"
-	NalejMetricsPod       = "pod"
-	NalejMetricsContainer = "container"
+	NalejMetricsPod       = "pod_name"
+	NalejMetricsContainer = "container_name"
 	NalejMetricsImage     = "image"
 )
