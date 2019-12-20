@@ -30,6 +30,7 @@ var runCmd = &cobra.Command{
 	Long:  `Launch the server API`,
 	Run: func(cmd *cobra.Command, args []string) {
 		SetupLogging()
+		config.Debug = debugLevel
 		Run()
 	},
 }

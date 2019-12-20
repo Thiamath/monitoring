@@ -26,6 +26,8 @@ import (
 
 // Config struct for the API service.
 type Config struct {
+	// Debug flag of the run command
+	Debug bool
 	// GrpcPort where the API service will listen requests.
 	GrpcPort int
 	// HttpPort where the API service will listen requests.
