@@ -35,8 +35,8 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	runCmd.Flags().IntVar(&config.GrpcPort, "grpcport", 8421, "GrpcPort for Monitoring API")
-	runCmd.Flags().IntVar(&config.HttpPort, "httpport", 8420, "GrpcPort for Monitoring API")
+	runCmd.Flags().IntVar(&config.GrpcPort, "grpcport", 8420, "GrpcPort for Monitoring API")
+	runCmd.Flags().IntVar(&config.HttpPort, "httpport", 8421, "GrpcPort for Monitoring API")
 	runCmd.PersistentFlags().BoolVar(&config.UseTLS, "useTLS", true, "Use TLS to connect to application cluster")
 	runCmd.PersistentFlags().BoolVar(&config.SkipServerCertValidation, "skipServerCertValidation", false, "Don't validate TLS certificates")
 	runCmd.PersistentFlags().StringVar(&config.CACertPath, "caCertPath", "", "Alternative certificate path to use for validation")
