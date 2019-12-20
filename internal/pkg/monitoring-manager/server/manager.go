@@ -145,7 +145,7 @@ func (m *Manager) GetOrganizationApplicationStats(ctx context.Context, request *
 
 	orgAppStats := &grpc_monitoring_go.OrganizationApplicationStatsResponse{
 		ServiceInstanceStats: serviceInstanceStats,
-		Timestamp:            time.Now().Unix(),
+		Timestamp:            time.Now().UnixNano() / 1000000,
 	}
 
 	return orgAppStats, nil
@@ -170,7 +170,9 @@ func (m *Manager) requestContainerStatsToClusters(clusterList *grpc_infrastructu
 	orgContainerStats := make([]*grpc_monitoring_go.ContainerStats, 0)
 	for _, statsFuture := range containerStatsFutures {
 		containerStatsResponse := <-statsFuture
-		orgContainerStats = append(orgContainerStats, containerStatsResponse.ContainerStats...)
+		if containerStatsResponse != nil {
+			orgContainerStats = append(orgContainerStats, containerStatsResponse.ContainerStats...)
+		}
 	}
 	return orgContainerStats
 }
@@ -186,6 +188,7 @@ func getClusterContainerStats(cluster *grpc_infrastructure_go.Cluster, metricsCo
 			Err(err).
 			Msg("metrics-collector responded with an error when querying for stats. The aggregation will not include this cluster stats.")
 		statsFuture <- nil
+		return
 	}
 	// Adjust millicores metric with the cluster conversion factor
 	for _, containerStat := range clusterContainerStats.ContainerStats {

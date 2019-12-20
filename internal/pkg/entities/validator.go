@@ -84,8 +84,8 @@ func ValidateClusterStats(request *grpc_monitoring_go.ClusterStatsRequest) derro
 	return validate(request)
 }
 
-func ValidateOrganizationApplicationStatsRequest(removeRequest *grpc_monitoring_go.OrganizationApplicationStatsRequest) derrors.Error {
-	if removeRequest.OrganizationId == "" {
+func ValidateOrganizationApplicationStatsRequest(request *grpc_monitoring_go.OrganizationApplicationStatsRequest) derrors.Error {
+	if request.OrganizationId == "" {
 		return derrors.NewInvalidArgumentError(emptyOrganizationId)
 	}
 	return nil

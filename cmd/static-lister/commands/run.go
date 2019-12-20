@@ -35,7 +35,7 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	runCmd.Flags().IntVar(&config.Port, "port", 9001, "Port for Metrics endpoint")
+	runCmd.Flags().IntVar(&config.Port, "port", 9001, "GrpcPort for Metrics endpoint")
 	runCmd.Flags().StringVar(&config.Namespace, "namespace", "nalej", "Metric namespace")
 	runCmd.Flags().StringVar(&config.Subsystem, "subsystem", "components", "Metric subsystem")
 	runCmd.Flags().StringVar(&config.Name, "name", "", "Metric name")

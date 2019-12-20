@@ -17,10 +17,9 @@
 package commands
 
 import (
-	"github.com/nalej/monitoring/internal/pkg/monitoring-manager/server"
+	"github.com/nalej/monitoring/internal/pkg/monitoring-api/server"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 var config = server.Config{}
@@ -31,26 +30,24 @@ var runCmd = &cobra.Command{
 	Long:  `Launch the server API`,
 	Run: func(cmd *cobra.Command, args []string) {
 		SetupLogging()
+		config.Debug = debugLevel
 		Run()
 	},
 }
 
 func init() {
-	runCmd.Flags().IntVar(&config.Port, "port", 8423, "GrpcPort for Monitoring Manager gRPC API")
-	runCmd.PersistentFlags().StringVar(&config.SystemModelAddress, "systemModelAddress", "localhost:8800", "System Model address (host:port)")
-	runCmd.PersistentFlags().StringVar(&config.EdgeInventoryProxyAddress, "edgeInventoryProxyAddress", "localhost:5544", "Edge Inventory Proxy address (host:port)")
-	runCmd.PersistentFlags().StringVar(&config.AppClusterPrefix, "appClusterPrefix", "appcluster", "Prefix for application cluster hostnames")
-	runCmd.PersistentFlags().IntVar(&config.AppClusterPort, "appClusterPort", 443, "GrpcPort used by app-cluster-api")
+	runCmd.Flags().IntVar(&config.GrpcPort, "grpcport", 8420, "GrpcPort for Monitoring API")
+	runCmd.Flags().IntVar(&config.HttpPort, "httpport", 8421, "GrpcPort for Monitoring API")
 	runCmd.PersistentFlags().BoolVar(&config.UseTLS, "useTLS", true, "Use TLS to connect to application cluster")
 	runCmd.PersistentFlags().BoolVar(&config.SkipServerCertValidation, "skipServerCertValidation", false, "Don't validate TLS certificates")
 	runCmd.PersistentFlags().StringVar(&config.CACertPath, "caCertPath", "", "Alternative certificate path to use for validation")
 	runCmd.PersistentFlags().StringVar(&config.ClientCertPath, "clientCertPath", "", "Client cert path")
-	runCmd.PersistentFlags().DurationVar(&config.CacheTTL, "cacheTTL", time.Minute, "TTL duration for the stats cache (ex: 10s, 5m). Defaults to 1m (1 minute).")
+	runCmd.PersistentFlags().StringVar(&config.MonitoringManagerAddress, "monitoringManagerAddress", "", "Address of the monitoring manager service")
 	rootCmd.AddCommand(runCmd)
 }
 
 func Run() {
-	log.Info().Msg("Launching Monitoring Manager service")
+	log.Info().Msg("Launching Monitoring API service")
 
 	service, err := server.NewService(&config)
 	if err != nil {

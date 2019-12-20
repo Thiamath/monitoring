@@ -30,7 +30,7 @@ import (
 
 // Config struct for the API service.
 type Config struct {
-	// Port where the API service will listen requests.
+	// GrpcPort where the API service will listen requests.
 	Port int
 	// Path to kubeconfig
 	Kubeconfig string

@@ -264,7 +264,7 @@ func (m *Manager) GetContainerStats(ctx context.Context, _ *grpc_common_go.Empty
 	if storageStats == nil {
 		log.Warn().Msg(StorageQuery + " stats could not be retrieved and will not be aggregated")
 	} else {
-		mapQueryResultsByNamespacePodContainerMetric(StorageQuery, cpuStats, statsMapByNamespacePodContainerMetric)
+		mapQueryResultsByNamespacePodContainerMetric(StorageQuery, storageStats, statsMapByNamespacePodContainerMetric)
 	}
 
 	// Map the pods to reduce the k8s queries
@@ -390,16 +390,18 @@ func launchQuery(queryString string, queryTime time.Time, provider query.Provide
 	if derr != nil {
 		log.Error().
 			Interface("query", q).
-			Msg("error getting cpu stats")
+			Msg(fmt.Sprintf("error executing query %s", queryString))
 		future <- nil
+		return
 	}
 	queryResponse, derr := translator(res)
 	if derr != nil {
 		log.Error().
 			Interface("query", q).
 			Interface("response", queryResponse).
-			Msg("error translating cpu stats")
+			Msg("error translating stats response")
 		future <- nil
+		return
 	}
 	log.Debug().Interface("queryResponse", queryResponse).Msg("prometheus response")
 	future <- queryResponse

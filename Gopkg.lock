@@ -56,6 +56,14 @@
   version = "v1.3.2"
 
 [[projects]]
+  digest = "1:6a6322a15aa8e99bd156fbba0aae4e5d67b4bb05251d860b348a45dfdcba9cce"
+  name = "github.com/golang/snappy"
+  packages = ["."]
+  pruneopts = ""
+  revision = "2a8bb927dd31d8daada140a5d09578521ce5c36a"
+  version = "v0.0.1"
+
+[[projects]]
   digest = "1:8d4a577a9643f713c25a32151c0f26af7228b4b97a219b5ddb7fd38d16f6e673"
   name = "github.com/google/gofuzz"
   packages = ["."]
@@ -286,12 +294,12 @@
   version = "v0.0.57"
 
 [[projects]]
-  digest = "1:5c3d2751e210c6df160ecdc425d42220dfff4b1cf7825ebc4a1d69820efdf8d2"
+  digest = "1:1e8132b96d7f9bf1f69e61afbc97a1f6dfcf9a069812b3f4dc2af505bd07ede5"
   name = "github.com/nalej/grpc-monitoring-go"
   packages = ["."]
   pruneopts = ""
-  revision = "4bea22eebfac63bd200e0a00be1d1bf58c34ff0e"
-  version = "v0.0.12"
+  revision = "5f8448973aaa962086a6fa89c7b7553fe301d5ff"
+  version = "v0.0.15"
 
 [[projects]]
   digest = "1:a38c55f4ee4da38689b71b5fbd0d0f2902657546dd39d49e5a5beb8c6b4f1e5c"
@@ -861,6 +869,8 @@
   input-imports = [
     "github.com/fsnotify/fsnotify",
     "github.com/golang/protobuf/ptypes/timestamp",
+    "github.com/golang/snappy",
+    "github.com/grpc-ecosystem/grpc-gateway/runtime",
     "github.com/nalej/derrors",
     "github.com/nalej/grpc-app-cluster-api-go",
     "github.com/nalej/grpc-common-go",
@@ -882,6 +892,8 @@
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",
     "github.com/spf13/cobra",
+    "golang.org/x/net/context",
+    "google.golang.org/genproto/googleapis/api/httpbody",
     "google.golang.org/grpc",
     "google.golang.org/grpc/credentials",
     "google.golang.org/grpc/reflection",

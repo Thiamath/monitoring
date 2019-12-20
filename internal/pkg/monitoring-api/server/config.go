@@ -22,21 +22,16 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/monitoring/version"
 	"github.com/rs/zerolog/log"
-	"time"
 )
 
 // Config struct for the API service.
 type Config struct {
+	// Debug flag of the run command
+	Debug bool
 	// GrpcPort where the API service will listen requests.
-	Port int
-	// SystemModelAddress is the address with host:port of the system model component.
-	SystemModelAddress string
-	// EdgeInventoryProxyAddress with host:port of the edge inventory proxy.
-	EdgeInventoryProxyAddress string
-	// AppClusterPrefix is the prefix for application cluster hostnames.
-	AppClusterPrefix string
-	// AppClusterPort is the port used by app-cluster-api.
-	AppClusterPort int
+	GrpcPort int
+	// HttpPort where the API service will listen requests.
+	HttpPort int
 	// UseTLS Use or not TLS.
 	UseTLS bool
 	// SkipServerCertValidation Don't validate TLS certificates.
@@ -45,23 +40,17 @@ type Config struct {
 	CACertPath string
 	// ClientCertPath Client Cert Path.
 	ClientCertPath string
-	// CacheTTL is the default duration for cache entries.
-	CacheTTL time.Duration
+	// MonitoringManagerAddress is the address to the monitoring manager service
+	MonitoringManagerAddress string
 }
 
 // Validate the configuration.
 func (conf *Config) Validate() derrors.Error {
-	if conf.Port <= 0 {
-		return derrors.NewInvalidArgumentError("port must be specified")
+	if conf.GrpcPort <= 0 {
+		return derrors.NewInvalidArgumentError("grpc port must be specified")
 	}
-	if conf.SystemModelAddress == "" {
-		return derrors.NewInvalidArgumentError("systemModelAddress is required")
-	}
-	if conf.EdgeInventoryProxyAddress == "" {
-		return derrors.NewInvalidArgumentError("edgeInventoryProxyAddress is required")
-	}
-	if conf.AppClusterPort <= 0 {
-		return derrors.NewInvalidArgumentError("appClusterPort is required")
+	if conf.HttpPort <= 0 {
+		return derrors.NewInvalidArgumentError("http port must be specified")
 	}
 	if conf.CACertPath == "" {
 		return derrors.NewInvalidArgumentError("caCertPath is required")
@@ -69,17 +58,17 @@ func (conf *Config) Validate() derrors.Error {
 	if conf.ClientCertPath == "" {
 		return derrors.NewInvalidArgumentError("clientCertPath is required")
 	}
+	if conf.MonitoringManagerAddress == "" {
+		return derrors.NewInvalidArgumentError("monitoringManagerAddress is required")
+	}
 	return nil
 }
 
 // Print the current API configuration to the log.
 func (conf *Config) Print() {
 	log.Info().Str("app", version.AppVersion).Str("commit", version.Commit).Msg("version")
-	log.Info().Int("port", conf.Port).Msg("gRPC port")
-	log.Info().Str("URL", conf.SystemModelAddress).Msg("systemModelAddress")
-	log.Info().Str("URL", conf.EdgeInventoryProxyAddress).Msg("edgeInventoryProxyAddress")
-	log.Info().Str("prefix", conf.AppClusterPrefix).Msg("appClusterPrefix")
-	log.Info().Int("port", conf.AppClusterPort).Msg("appClusterPort")
+	log.Info().Int("port", conf.GrpcPort).Msg("gRPC port")
+	log.Info().Int("port", conf.HttpPort).Msg("HTTP port")
 	log.Info().Bool("tls", conf.UseTLS).Bool("skipServerCertValidation", conf.SkipServerCertValidation).Str("cert", conf.CACertPath).Str("cert", conf.ClientCertPath).Msg("TLS parameters")
-	log.Info().Dur("CacheTTL", conf.CacheTTL).Msg("selected TTL for the stats cache in milliseconds")
+	log.Info().Str("MonitoringManagerAddress", conf.MonitoringManagerAddress).Msg("address of the  monitoring manager service")
 }

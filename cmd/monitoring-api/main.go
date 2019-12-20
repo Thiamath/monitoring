@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package utils
+// Monitoring manager component for management clusters.
+// Forward all queries to requested application cluster.
 
-const (
-	NalejPodLabelAppInstanceId          = "nalej-app-instance-id"
-	NalejPodLabelAppName                = "nalej-app-name"
-	NalejPodLabelServiceGroupInstanceId = "nalej-service-group-instance-id"
-	NalejPodLabelServiceGroupName       = "nalej-service-group-name"
-	NalejPodLabelServiceInstanceId      = "nalej-service-instance-id"
-	NalejPodLabelServiceName            = "nalej-service-name"
+package main
 
-	NalejMetricsNamespace = "namespace"
-	NalejMetricsPod       = "pod_name"
-	NalejMetricsContainer = "container_name"
-	NalejMetricsImage     = "image"
+import (
+	"github.com/nalej/monitoring/cmd/monitoring-api/commands"
+	"github.com/nalej/monitoring/version"
 )
+
+var MainVersion string
+var MainCommit string
+
+func main() {
+	version.AppVersion = MainVersion
+	version.Commit = MainCommit
+	commands.Execute()
+}
